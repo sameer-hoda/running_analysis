@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mynextpr — Setup</title>
+<style>
+  :root{ --ink:#191412; --muted:#6f625c; --line:#e9e2dc; --accent:#FC5200; --bg:#ffffff; --soft:#f7f4f1; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif; }
+  .num, time, .count, .preview-body, .chip{ font-variant-numeric:tabular-nums; }
+  .preview-body, .count, input.mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  header.top{ border-bottom:1px solid var(--line); }
+  .wrap{ max-width:1060px; margin:0 auto; padding:0 22px; }
+  .top-in{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; }
+  .brand{ font-weight:700; letter-spacing:-.01em; }
+  .brand span{ color:var(--accent); }
+  .top-note{ color:var(--muted); font-size:13px; }
+  main .wrap{ display:grid; grid-template-columns:1.15fr .85fr; gap:28px; padding-top:26px; padding-bottom:40px; }
+  @media (max-width:860px){ main .wrap{ grid-template-columns:1fr; } }
+  h1{ font-size:30px; line-height:1.15; letter-spacing:-.02em; margin:0 0 6px; }
+  .sub{ color:var(--muted); font-size:14px; margin:0 0 18px; }
+  label.lbl{ display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:18px 0 8px; }
+  input[type=search], input[type=text]{ width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:9px; font-size:14px; color:var(--ink); background:#fff; }
+  input:focus{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{ border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:999px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .chip[aria-pressed=true]{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .chip.accent[aria-pressed=true]{ background:var(--accent); border-color:var(--accent); }
+  .results{ list-style:none; margin:12px 0 0; padding:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .results li{ border-bottom:1px solid var(--line); }
+  .results li:last-child{ border-bottom:0; }
+  .ev{ display:block; width:100%; text-align:left; background:#fff; border:0; padding:12px 14px; cursor:pointer; }
+  .ev:hover{ background:var(--soft); }
+  .ev[aria-selected=true]{ background:var(--soft); box-shadow:inset 3px 0 0 var(--accent); }
+  .ev-name{ font-weight:650; font-size:14px; }
+  .ev-meta{ color:var(--muted); font-size:13px; margin-top:3px; }
+  .tags{ display:inline-flex; gap:4px; margin-left:8px; }
+  .tag{ font-size:11px; border:1px solid var(--line); border-radius:5px; padding:1px 6px; color:var(--muted); }
+  .empty{ padding:16px 14px; color:var(--muted); font-size:14px; }
+  .panel{ border:1px solid var(--line); border-radius:14px; padding:20px; background:#fff; align-self:start; position:sticky; top:16px; }
+  .panel h2{ margin:0 0 4px; font-size:18px; letter-spacing:-.01em; }
+  .sel{ font-size:14px; margin:0 0 4px; }
+  .sel-meta{ color:var(--muted); font-size:13px; margin:0 0 6px; }
+  .goalrow{ display:flex; gap:10px; align-items:end; margin-top:10px; }
+  .goalrow > div{ flex:1; }
+  .hint{ font-size:12px; color:var(--muted); margin:6px 0 0; }
+  .preview{ margin-top:14px; border:1px solid var(--line); border-radius:10px; background:var(--soft); padding:12px; }
+  .preview-head{ display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
+  .count{ font-size:12px; color:var(--muted); }
+  .preview-body{ white-space:pre-wrap; font-size:13px; line-height:1.55; margin:8px 0 0; }
+  .btn{ display:inline-block; border:0; border-radius:9px; padding:11px 16px; font-size:14px; font-weight:700; cursor:pointer; }
+  .btn-acc{ background:var(--accent); color:#fff; width:100%; margin-top:14px; }
+  .btn-ghost{ background:#fff; color:var(--ink); border:1px solid var(--line); width:100%; margin-top:8px; }
+  .callout{ margin-top:14px; border-left:3px solid var(--accent); background:#fff; padding:10px 12px; font-size:13px; }
+  .callout a{ color:var(--accent); font-weight:700; }
+  .fine{ font-size:12px; color:var(--muted); margin-top:10px; }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap top-in">
+  <div class="brand">mynextpr<span>.</span></div>
+  <div class="top-note">Setup &middot; writes to the Strava activity description, never the title</div>
+</div></header>
+<main><div class="wrap">
+  <section aria-label="Find your race">
+    <h1>Pick your next start line</h1>
+    <p class="sub">Search 15 races. Filters compose: text + distance + month.</p>
+    <label class="lbl" for="q">Search</label>
+    <input type="search" id="q" placeholder="Type a race or city — e.g. delhi, pune, trail" autocomplete="off">
+    <label class="lbl">Distance</label>
+    <div class="chips" id="distChips" role="group" aria-label="Distance">
+      <button class="chip" data-v="5K" aria-pressed="false">5K</button>
+      <button class="chip" data-v="10K" aria-pressed="false">10K</button>
+      <button class="chip accent" data-v="Half" aria-pressed="true">Half</button>
+      <button class="chip" data-v="Full" aria-pressed="false">Full</button>
+    </div>
+    <label class="lbl">Month</label>
+    <div class="chips" id="monthChips" role="group" aria-label="Month">
+      <button class="chip" data-v="2026-10" aria-pressed="true">Oct 2026</button>
+      <button class="chip" data-v="2026-11" aria-pressed="false">Nov 2026</button>
+      <button class="chip" data-v="2026-12" aria-pressed="false">Dec 2026</button>
+    </div>
+    <label class="lbl">Results <span id="resCount" class="num"></span></label>
+    <ul class="results" id="results"></ul>
+  </section>
+  <aside class="panel" aria-label="Configure">
+    <h2>Race countdown</h2>
+    <p class="sel" id="selName"></p>
+    <p class="sel-meta num" id="selMeta"></p>
+    <div class="goalrow"><div>
+      <label class="lbl" for="goal" style="margin-top:0">Goal time (optional)</label>
+      <input type="text" id="goal" class="mono" inputmode="numeric" placeholder="1:45:00" value="1:45:00">
+    </div></div>
+    <p class="hint">Format H:MM:SS or MM:SS. Leave blank to skip the goal line.</p>
+    <div class="preview" aria-live="polite">
+      <div class="preview-head"><span>Description preview</span><span class="count num" id="charCount"></span></div>
+      <p class="preview-body" id="preview"></p>
+    </div>
+    <button class="btn btn-acc" id="connectBtn" type="button">Connect with Strava</button>
+    <button class="btn btn-ghost" id="saveBtn" type="button">Save setup</button>
+    <div class="callout" id="signup"></div>
+    <p class="fine">Demo only — buttons do nothing real. The bot edits the activity description; your titles stay yours.</p>
+  </aside>
+</div></main>
+<script>
+var EVENTS = [
+  {"name":"Sarmang Dehradun Marathon","date":"2026-10-04","city":"Dehradun, India","url":"/event/sarmang-dehradun-marathon","buckets":["5K","10K","Half","Full"]},
+  {"name":"Punjab Half Marathon 2026 - 17th Edition","date":"2026-10-04","city":"Chandigarh","url":"/events/punjab-half-marathon-2026-17th-edition-5914/","buckets":["5K","10K","Half"]},
+  {"name":"SEARATHON - India's First Maritime Awareness & Public Engagement Run","date":"2026-10-10","city":"Mumbai","url":"https://www.indiarunning.com/event/searathon_2026_28021","buckets":["5K","10K"]},
+  {"name":"Delhi Half Marathon","date":"2026-10-18","city":"New Delhi","url":"https://vedantadelhihalfmarathon.procam.in","buckets":["10K","Half"]},
+  {"name":"KHARGHAR HALF MARATHON","date":"2026-10-24","city":"","url":"https://www.indiarunning.com/event/kharghar_half_marathon_51162","buckets":["5K","10K","Half"]},
+  {"name":"Hyderabad Hitec Marathon 26","date":"2026-10-31","city":"Gachibowli Stadium, Hyderabad, Hyderabad","url":"https://www.mysamay.in/public/event/info/c6acc89a-9536-4a23-bb3f-41edffff79ac","buckets":["5K","10K","Half","Full"]},
+  {"name":"Winter Delhi Half Marathon 2026","date":"2026-11-01","city":"Delhi","url":"https://www.indiarunning.com/event/winter_delhi_half_marathon_2025_25337","buckets":["5K","10K","Half"]},
+  {"name":"UST Trivandrum Marathon 26","date":"2026-11-14","city":"UST Campus, Trivandrum, Trivandrum","url":"https://www.mysamay.in/public/event/info/e3e02f08-0651-493f-b7eb-953a359bf17f","buckets":["5K","10K","Half","Full"]},
+  {"name":"Kaveri Trail Marathon 2026","date":"2026-11-21","city":"Near Ranganthittu Bird Sanctuary, Srirangapatna, Srirangapatna","url":"https://www.mysamay.in/public/event/info/425ed83a-c1a7-42af-88a9-40a86791e0e7","buckets":["5K","10K","Half","Full"]},
+  {"name":"Baramati Power Marathon 2026","date":"2026-11-28","city":"Baramati Pune","url":"https://www.indiarunning.com/event/baramatipowermarathon2026-17158","buckets":["5K","10K","Half","Full"]},
+  {"name":"Chennai Half Marathon 2026","date":"2026-11-28","city":"Island Grounds, Chennai, Chennai","url":"https://www.mysamay.in/public/event/info/fea9ecc8-af79-46b4-baa1-0e521341da4b","buckets":["5K","10K","Half"]},
+  {"name":"Mysuru Marathon 26","date":"2026-12-12","city":"Police Grounds, Mysuru, Mysuru","url":"https://www.mysamay.in/public/event/info/81ca6197-062c-4f3e-b41d-d21a44fafe21","buckets":["5K","10K","Half","Full"]},
+  {"name":"Bajaj Pune Marathon 2026","date":"2026-12-13","city":"Maharashtra","url":"https://www.indiarunning.com/event/bajajpunemarathon2026-48091","buckets":["5K","10K","Half","Full"]},
+  {"name":"Udupi Full Marathon 26","date":"2026-12-19","city":"Mahatma Gandhi District Stadium, Udupi","url":"https://www.mysamay.in/public/event/info/8879ecfd-812d-4c7b-b8d5-51fdf229b704","buckets":["5K","10K","Half","Full"]},
+  {"name":"Tata Steel Kolkata 25K","date":"2026-12-20","city":"Kolkata","url":"https://tatasteelkolkata25k.procam.in","buckets":["10K","Half"]}
+];
+function signupUrl(u){ return u.charAt(0)==="/" ? "https://mynextbib.com"+u : u; }
+function fmtDate(ds){ var d=new Date(ds+"T00:00:00"); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); }
+function daysTo(ds){ var t=new Date(); t.setHours(0,0,0,0); var d=new Date(ds+"T00:00:00"); return Math.round((d-t)/86400000); }
+function fuzzy(hay,q){ hay=hay.toLowerCase(); q=q.trim().toLowerCase(); if(!q) return true;
+  if(hay.indexOf(q)>-1) return true;
+  var hi=0; for(var i=0;i<q.length;i++){ hi=hay.indexOf(q[i],hi); if(hi===-1) return false; hi++; } return true; }
+var state={ q:"", dist:{"Half":true}, month:{"2026-10":true}, sel:"Delhi Half Marathon|2026-10-18" };
+function key(e){ return e.name+"|"+e.date; }
+function filtered(){ return EVENTS.filter(function(e){
+  var dsel=Object.keys(state.dist).filter(function(k){return state.dist[k];});
+  var msel=Object.keys(state.month).filter(function(k){return state.month[k];});
+  if(dsel.length && dsel.every(function(b){return e.buckets.indexOf(b)===-1;})) return false;
+  if(msel.length && msel.indexOf(e.date.slice(0,7))===-1) return false;
+  return fuzzy(e.name+" "+e.city, state.q);
+}); }
+function renderList(){
+  var list=filtered(), ul=document.getElementById("results"); ul.innerHTML="";
+  document.getElementById("resCount").textContent="— "+list.length+" of "+EVENTS.length;
+  if(!list.length){ var li=document.createElement("li"); li.className="empty"; li.textContent="No races match. Clear a chip or shorten your search."; ul.appendChild(li); return; }
+  list.forEach(function(e){
+    var li=document.createElement("li");
+    var b=document.createElement("button"); b.className="ev"; b.type="button";
+    b.setAttribute("aria-selected", key(e)===state.sel ? "true":"false");
+    var tags=e.buckets.map(function(t){return '<span class="tag">'+t+'</span>';}).join("");
+    b.innerHTML='<div class="ev-name"></div><div class="ev-meta num"></div>';
+    b.querySelector(".ev-name").textContent=e.name;
+    var meta=b.querySelector(".ev-meta"); meta.textContent=fmtDate(e.date)+(e.city?" · "+e.city:"");
+    var sp=document.createElement("span"); sp.className="tags"; sp.innerHTML=tags; meta.appendChild(sp);
+    (function(ev){ b.addEventListener("click",function(){ state.sel=key(ev); renderList(); renderPanel(); }); })(e);
+    li.appendChild(b); ul.appendChild(li);
+  });
+}
+function selEvent(){ for(var i=0;i<EVENTS.length;i++){ if(key(EVENTS[i])===state.sel) return EVENTS[i]; } return filtered()[0]||EVENTS[0]; }
+function renderPanel(){
+  var e=selEvent(); if(!e) return; state.sel=key(e);
+  var n=daysTo(e.date);
+  var when = n>1 ? n+" days to go" : n===1 ? "tomorrow" : n===0 ? "race day today" : "race day passed";
+  document.getElementById("selName").textContent=e.name;
+  document.getElementById("selMeta").textContent=fmtDate(e.date)+(e.city?" · "+e.city:"")+" · "+when;
+  var goal=document.getElementById("goal").value.trim();
+  var dist="Half"; var dk=Object.keys(state.dist).filter(function(k){return state.dist[k];});
+  if(dk.length===1) dist=dk[0];
+  var lines=["Training for "+e.name+" ("+fmtDate(e.date)+") — "+when+".",
+    "Target distance: "+dist+(e.city?". "+e.city+".":"."),
+    goal?("Goal time: "+goal+"."):null,
+    "Follow along — countdown updates on every activity description."];
+  var body=lines.filter(Boolean).join("\n");
+  document.getElementById("preview").textContent=body;
+  document.getElementById("charCount").textContent=body.length+" / 500 chars";
+  document.getElementById("signup").innerHTML="";
+  var s=document.createElement("span"); s.textContent="Not signed up yet? Register via MyNextBib: ";
+  var a=document.createElement("a"); a.href=signupUrl(e.url); a.textContent="Sign up"; a.rel="noopener";
+  var s2=document.createElement("span"); s2.textContent=" — the bot starts your countdown once you pick this race.";
+  document.getElementById("signup").appendChild(s); document.getElementById("signup").appendChild(a); document.getElementById("signup").appendChild(s2);
+}
+function chipGroup(id, store){ document.querySelectorAll("#"+id+" .chip").forEach(function(c){
+  c.addEventListener("click",function(){ var v=c.getAttribute("data-v");
+    store[v]=!store[v]; c.setAttribute("aria-pressed",store[v]?"true":"false"); renderList(); renderPanel(); }); }); }
+document.getElementById("q").addEventListener("input",function(ev){ state.q=ev.target.value; renderList(); });
+document.getElementById("goal").addEventListener("input",renderPanel);
+chipGroup("distChips",state.dist); chipGroup("monthChips",state.month);
+document.getElementById("connectBtn").addEventListener("click",function(){ this.textContent="Connected (mock)"; });
+document.getElementById("saveBtn").addEventListener("click",function(){ this.textContent="Saved (mock)"; setTimeout(function(){document.getElementById("saveBtn").textContent="Save setup";},1500); });
+renderList(); renderPanel();
+</script>
+</body>
+</html>

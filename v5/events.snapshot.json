@@ -1,0 +1,176 @@
+{
+ "generated": "2026-10-03",
+ "count": 15,
+ "events": [
+  {
+   "name": "Sarmang Dehradun Marathon",
+   "date": "2026-10-04",
+   "city": "Dehradun, India",
+   "url": "/event/sarmang-dehradun-marathon",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Punjab Half Marathon 2026 - 17th Edition",
+   "date": "2026-10-04",
+   "city": "Chandigarh",
+   "url": "/events/punjab-half-marathon-2026-17th-edition-5914/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "SEARATHON - India's First Maritime Awareness & Public Engagement Run",
+   "date": "2026-10-10",
+   "city": "Mumbai",
+   "url": "https://www.indiarunning.com/event/searathon_2026_28021",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "Delhi Half Marathon",
+   "date": "2026-10-18",
+   "city": "New Delhi",
+   "url": "https://vedantadelhihalfmarathon.procam.in",
+   "buckets": [
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "KHARGHAR HALF MARATHON",
+   "date": "2026-10-24",
+   "city": "",
+   "url": "https://www.indiarunning.com/event/kharghar_half_marathon_51162",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Hyderabad Hitec Marathon 26",
+   "date": "2026-10-31",
+   "city": "Gachibowli Stadium, Hyderabad, Hyderabad",
+   "url": "https://www.mysamay.in/public/event/info/c6acc89a-9536-4a23-bb3f-41edffff79ac",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Winter Delhi Half Marathon 2026",
+   "date": "2026-11-01",
+   "city": "Delhi",
+   "url": "https://www.indiarunning.com/event/winter_delhi_half_marathon_2025_25337",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "UST Trivandrum Marathon 26",
+   "date": "2026-11-14",
+   "city": "UST Campus, Trivandrum, Trivandrum",
+   "url": "https://www.mysamay.in/public/event/info/e3e02f08-0651-493f-b7eb-953a359bf17f",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Kaveri Trail Marathon 2026",
+   "date": "2026-11-21",
+   "city": "Near Ranganthittu Bird Sanctuary, Srirangapatna, Srirangapatna",
+   "url": "https://www.mysamay.in/public/event/info/425ed83a-c1a7-42af-88a9-40a86791e0e7",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Baramati Power Marathon 2026",
+   "date": "2026-11-28",
+   "city": "Baramati Pune",
+   "url": "https://www.indiarunning.com/event/baramatipowermarathon2026-17158",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Chennai Half Marathon 2026",
+   "date": "2026-11-28",
+   "city": "Island Grounds, Chennai, Chennai",
+   "url": "https://www.mysamay.in/public/event/info/fea9ecc8-af79-46b4-baa1-0e521341da4b",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Mysuru Marathon 26",
+   "date": "2026-12-12",
+   "city": "Police Grounds, Mysuru, Mysuru",
+   "url": "https://www.mysamay.in/public/event/info/81ca6197-062c-4f3e-b41d-d21a44fafe21",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Bajaj Pune Marathon 2026",
+   "date": "2026-12-13",
+   "city": "Maharashtra",
+   "url": "https://www.indiarunning.com/event/bajajpunemarathon2026-48091",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Udupi Full Marathon 26",
+   "date": "2026-12-19",
+   "city": "Mahatma Gandhi District Stadium, Udupi",
+   "url": "https://www.mysamay.in/public/event/info/8879ecfd-812d-4c7b-b8d5-51fdf229b704",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Tata Steel Kolkata 25K",
+   "date": "2026-12-20",
+   "city": "Kolkata",
+   "url": "https://tatasteelkolkata25k.procam.in",
+   "buckets": [
+    "10K",
+    "Half"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mynextpr — Your race countdown, in your Strava description</title>
+<style>
+:root{--ink:#191412;--muted:#6b625c;--accent:#FC5200;--line:#e8e2dc;--card:#ffffff;--bg:#ffffff;--soft:#f6f3f0}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em}
+.brand-mark{width:26px;height:26px;background:var(--accent);border-radius:7px;position:relative;flex:none}
+.brand-mark::after{content:"";position:absolute;left:7px;top:5px;width:12px;height:12px;border-left:3.5px solid #fff;border-bottom:3.5px solid #fff;transform:skewX(-12deg) rotate(-8deg);border-bottom-left-radius:2px}
+.topbar nav{display:flex;gap:22px;font-size:14px;color:var(--muted)}
+.topbar nav a{color:var(--muted);text-decoration:none}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding:64px 0 84px}
+.eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:6px 12px;margin-bottom:20px}
+h1{font-size:46px;line-height:1.06;letter-spacing:-.025em;font-weight:800;margin-bottom:18px}
+h1 .thin{font-weight:400;color:var(--muted)}
+.sub{font-size:17px;line-height:1.6;color:var(--muted);max-width:44ch;margin-bottom:28px}
+.sub code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--ink)}
+.cta-row{display:flex;align-items:center;gap:16px}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:13px 24px;font-size:15px;font-weight:700;cursor:pointer}
+.btn:hover{background:#d94800}
+.ghost-link{font-size:14px;color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.meta{margin-top:26px;font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.dot{width:7px;height:7px;border-radius:50%;background:#22a35c;display:inline-block}
+/* Activity card */
+.stage{position:relative}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px -30px rgba(25,20,18,.28);overflow:hidden}
+.card-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none}
+.who b{display:block;font-size:14px}
+.who span{font-size:12px;color:var(--muted)}
+.card-body{padding:16px 18px 18px}
+.run-title{font-size:15px;font-weight:700;margin-bottom:12px}
+.stats{display:flex;gap:26px;margin-bottom:14px}
+.stat b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:19px;font-weight:700;display:block}
+.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.desc-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.desc-label em{font-style:normal;color:var(--accent)}
+.desc-box{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.55;min-height:66px}
+.typing{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;white-space:nowrap;overflow:hidden;width:0;border-right:2px solid var(--accent);animation:type 5s steps(46,end) 1s forwards,caret .8s step-end infinite}
+@keyframes type{to{width:100%}}
+@keyframes caret{50%{border-color:transparent}}
+.refill{margin-top:10px;font-size:12px;color:var(--muted)}
+.refill i{display:inline-block;width:120px;height:8px;border-radius:99px;background:var(--line);position:relative;overflow:hidden;vertical-align:middle;margin-right:8px}
+.refill i::after{content:"";position:absolute;inset:0;width:40%;background:var(--accent);border-radius:99px;animation:slide 2.4s ease-in-out 1s infinite}
+@keyframes slide{0%{left:-40%}100%{left:100%}}
+.route{margin:16px 18px 18px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.badge-row{display:flex;gap:8px;padding:14px 16px 0;font-size:11px;font-weight:700}
+.pill{border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.pill.hot{background:var(--accent);border-color:var(--accent);color:#fff}
+/* teaser */
+.teaser{border-top:1px solid var(--line);padding:72px 0 90px;background:#fff}
+.teaser h2{font-size:30px;letter-spacing:-.02em;margin-bottom:10px}
+.teaser p{color:var(--muted);font-size:15px;margin-bottom:26px;max-width:60ch}
+.events{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.ev{display:grid;grid-template-columns:64px 1fr auto;gap:16px;align-items:center;padding:15px 18px;border-bottom:1px solid var(--line);cursor:pointer}
+.ev:last-child{border-bottom:none}
+.ev:hover{background:var(--soft)}
+.ev.sel{background:#fff4ee;box-shadow:inset 3px 0 0 var(--accent)}
+.date{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;border:1px solid var(--line);border-radius:10px;padding:7px 0;background:#fff}
+.date b{display:block;font-size:17px}
+.date span{font-size:10px;color:var(--muted);text-transform:uppercase}
+.ev b.name{display:block;font-size:14.5px}
+.ev span.city{font-size:13px;color:var(--muted)}
+.tag{font-size:11.5px;font-weight:700;color:var(--accent);border:1px solid var(--accent);padding:5px 11px;border-radius:999px;white-space:nowrap}
+footer{border-top:1px solid var(--line);padding:22px 0 34px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between}
+@media(max-width:860px){.hero{grid-template-columns:1fr}h1{font-size:36px}}
+@media(prefers-reduced-motion:reduce){.typing{animation:none;width:100%;border:none}.refill i::after{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="wrap topbar">
+<div class="brand"><span class="brand-mark"></span>mynextpr</div>
+<nav><a href="#how">How it works</a><a href="#events">Races</a><a href="setup.html">Set up</a></nav>
+</header>
+<main class="wrap hero" id="how">
+<div>
+<span class="eyebrow">Strava bot &middot; Description writer</span>
+<h1>Your next race, <span class="thin">counted down inside every run you log.</span></h1>
+<p class="sub">mynextpr writes to your Strava activity <code>description</code> — never the title — so each workout ends with a live line like <code>Delhi Half Marathon in 15d</code>. Pick a race once; every sync keeps the countdown fresh.</p>
+<div class="cta-row">
+<button class="btn" type="button">Connect Strava</button>
+<a class="ghost-link" href="setup.html">Set up your countdown</a>
+</div>
+<div class="meta"><span class="dot"></span>Synced this morning &middot; 15 races tracked for Oct&ndash;Dec 2026</div>
+</div>
+<div class="stage" aria-hidden="true">
+<div class="card">
+<div class="card-head"><div class="avatar">AR</div><div class="who"><b>Morning Run</b><span>Today &middot; 10.2 km &middot; 52:14</span></div></div>
+<div class="card-body">
+<div class="run-title">Easy aerobic loop</div>
+<div class="stats"><div class="stat"><b>10.24</b><span>km</span></div><div class="stat"><b>5:06</b><span>/km</span></div><div class="stat"><b>142</b><span>bpm</span></div></div>
+<div class="desc-label"><span>Activity description</span><em>updated by mynextpr</em></div>
+<div class="desc-box"><div class="typing">Delhi Half Marathon &mdash; 15 days to go.</div></div>
+<div class="refill"><i></i>syncs after every upload</div>
+</div>
+<svg class="route" viewBox="0 0 400 110" width="100%" height="110" role="img">
+<path d="M18 88 C 70 90, 90 40, 140 48 S 210 95, 260 70 S 340 20, 384 44" fill="none" stroke="#191412" stroke-width="3" stroke-linecap="round"/>
+<circle cx="18" cy="88" r="5" fill="#FC5200"/><circle cx="384" cy="44" r="5" fill="#FC5200"/>
+</svg>
+<div class="badge-row"><span class="pill hot">21.1K goal</span><span class="pill">10K tune-up</span><span class="pill">5K speed</span></div>
+<div style="height:16px"></div>
+</div>
+</div>
+</main>
+<section class="wrap teaser" id="events">
+<h2>Pick your race. We handle the countdown.</h2>
+<p>A teaser of this weekend&rsquo;s board — the full page lets you follow one race and preview the exact description line before you connect.</p>
+<div class="events">
+<div class="ev sel"><div class="date"><b>18</b><span>Oct</span></div><div><b class="name">Delhi Half Marathon</b><span class="city">New Delhi &middot; 10K / Half &middot; 15 days to go</span></div><span class="tag">Following</span></div>
+<div class="ev"><div class="date"><b>04</b><span>Oct</span></div><div><b class="name">Sarmang Dehradun Marathon</b><span class="city">Dehradun &middot; 5K / 10K / Half / Full</span></div><span class="tag">Follow</span></div>
+<div class="ev"><div class="date"><b>10</b><span>Oct</span></div><div><b class="name">SEARATHON Awareness Run</b><span class="city">Mumbai &middot; 5K / 10K</span></div><span class="tag">Follow</span></div>
+<div class="ev"><div class="date"><b>31</b><span>Oct</span></div><div><b class="name">Hyderabad Hitec Marathon 26</b><span class="city">Hyderabad &middot; 5K / 10K / Half / Full</span></div><span class="tag">Follow</span></div>
+</div>
+</section>
+<footer class="wrap"><span>mynextpr &middot; writes descriptions, never titles.</span><span>Mock buttons &middot; no data leaves this page.</span></footer>
+</body>
+</html>

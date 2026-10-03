@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mynextpr — mock</title>
+<style>
+  :root{
+    --ink:#191412; --muted:#6f645c; --line:#e7e0d8; --paper:#ffffff;
+    --accent:#fc5200; --panel:#201a16;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    line-height:1.45;
+  }
+  .wrap{max-width:680px; margin:0 auto; padding:32px 20px 64px}
+  .mast{display:flex; align-items:baseline; justify-content:space-between;
+    border-bottom:2px solid var(--ink); padding-bottom:12px}
+  .wordmark{font-weight:800; font-size:22px; letter-spacing:-0.03em}
+  .wordmark span{color:var(--accent)}
+  .mocktag{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px;
+    border:1px solid var(--muted); color:var(--muted); border-radius:4px; padding:2px 7px}
+  .lede{font-size:19px; letter-spacing:-0.01em; margin:22px 0 6px; max-width:34em}
+  .sub{color:var(--muted); font-size:14px; margin:0 0 28px}
+  .step{margin:30px 0 0}
+  .stephead{display:flex; gap:10px; align-items:baseline; margin-bottom:10px}
+  .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px;
+    color:var(--accent); font-weight:700}
+  h2{font-size:15px; margin:0; letter-spacing:-0.01em}
+  .hint{font-size:13px; color:var(--muted); margin:2px 0 0}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+  .chip{border:1px solid var(--ink); background:#fff; color:var(--ink);
+    border-radius:999px; padding:8px 16px; font-size:14px; font-weight:600; cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--ink); color:#fff}
+  .chip:disabled{opacity:.3; cursor:default}
+  .races{list-style:none; margin:12px 0 0; padding:0; border-top:1px solid var(--line)}
+  .race{display:flex; gap:12px; align-items:center; width:100%; text-align:left;
+    background:none; border:none; border-bottom:1px solid var(--line);
+    padding:13px 4px; cursor:pointer; font:inherit; color:inherit}
+  .race .when{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px;
+    color:var(--muted); white-space:nowrap; min-width:86px}
+  .race .who{min-width:0}
+  .race .name{font-weight:700; font-size:15px; letter-spacing:-0.01em}
+  .race .meta{font-size:13px; color:var(--muted)}
+  .race .left{margin-left:auto; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px; white-space:nowrap}
+  .race[aria-pressed="true"]{background:#faf6f1; box-shadow:inset 3px 0 0 var(--accent)}
+  .empty{color:var(--muted); font-size:14px; padding:14px 4px}
+  .goalrow{display:flex; gap:8px; margin-top:12px}
+  input[type="text"]{font:inherit; font-size:15px; padding:9px 12px;
+    border:1px solid var(--ink); border-radius:6px; width:220px}
+  .bibcall{margin-top:14px; border:1px dashed var(--accent); border-radius:8px;
+    padding:10px 14px; font-size:14px; display:none}
+  .bibcall.show{display:block}
+  .bibcall a{color:var(--accent); font-weight:700}
+  .preview{margin-top:34px; background:var(--panel); color:#f5efe8; border-radius:10px;
+    padding:20px 20px 22px}
+  .preview .k{font-size:12px; color:#b9a99c; margin:0 0 8px}
+  .status{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:16px;
+    overflow-wrap:anywhere; margin:0}
+  .count{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px;
+    color:#b9a99c; margin:10px 0 16px}
+  .strava{display:inline-block; background:var(--accent); color:#fff; border:none;
+    border-radius:6px; font-weight:800; font-size:15px; padding:12px 22px; cursor:pointer}
+  .fine{font-size:12px; color:#b9a99c; margin:12px 0 0}
+  .fine a{color:#f5efe8}
+  footer{margin-top:40px; border-top:1px solid var(--line); padding-top:12px;
+    font-size:12px; color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mast">
+    <div class="wordmark">mynext<span>pr</span></div>
+    <div class="mocktag">MOCK · Compatible with Strava</div>
+  </div>
+  <p class="lede">Pick your race. Every run you log gets your countdown written into its Strava title.</p>
+  <p class="sub">Three taps: distance, month, race. Then connect Strava and forget about it.</p>
+
+  <section class="step" id="s1">
+    <div class="stephead"><span class="num">01</span><h2>Race distance</h2></div>
+    <div class="chips" id="buckets" role="group" aria-label="Distance"></div>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="stephead"><span class="num">02</span><h2>Month</h2></div>
+    <p class="hint" id="monthhint"></p>
+    <div class="chips" id="months" role="group" aria-label="Month"></div>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="stephead"><span class="num">03</span><h2>Your race</h2></div>
+    <ul class="races" id="races"></ul>
+    <div class="bibcall" id="bibcall"></div>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="stephead"><span class="num">04</span><h2>Target finish <span style="font-weight:400;color:var(--muted)">(optional)</span></h2></div>
+    <p class="hint">e.g. sub-4, 3:59:59, 1:44:00. Shown beside the countdown.</p>
+    <div class="goalrow">
+      <input type="text" id="goal" inputmode="text" autocomplete="off"
+        placeholder="sub-4" aria-label="Target finish time">
+    </div>
+  </section>
+
+  <section class="preview" aria-live="polite">
+    <p class="k">YOUR STRAVA TITLE AFTER EVERY RUN</p>
+    <p class="status" id="status">Select a race above.</p>
+    <p class="count" id="charcount"></p>
+    <button class="strava" id="connect" type="button">Connect with Strava</button>
+    <p class="fine">Mock button — production uses the official Strava OAuth flow
+      (<span>read + activity:write</span>). Titles update only on your own activities,
+      with your consent. <a href="https://mynextbib.com">Find more races on MyNextBib</a>.</p>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+<script>
+"use strict";
+var GENERATED = "2026-10-03";
+var BIB = "https://mynextbib.com";
+var EVENTS = [
+["Sarmang Dehradun Marathon","2026-10-04","Dehradun, India","/event/sarmang-dehradun-marathon",["5K","10K","Half","Full"]],
+["Punjab Half Marathon 2026 - 17th Edition","2026-10-04","Chandigarh","/events/punjab-half-marathon-2026-17th-edition-5914/",["5K","10K","Half"]],
+["SEARATHON - India's First Maritime Awareness & Public Engagement Run","2026-10-10","Mumbai","https://www.indiarunning.com/event/searathon_2026_28021",["5K","10K"]],
+["Delhi Half Marathon","2026-10-18","New Delhi","https://vedantadelhihalfmarathon.procam.in",["10K","Half"]],
+["KHARGHAR HALF MARATHON","2026-10-24","","https://www.indiarunning.com/event/kharghar_half_marathon_51162",["5K","10K","Half"]],
+["Hyderabad Hitec Marathon 26","2026-10-31","Gachibowli Stadium, Hyderabad","https://www.mysamay.in/public/event/info/c6acc89a-9536-4a23-bb3f-41edffff79ac",["5K","10K","Half","Full"]],
+["Winter Delhi Half Marathon 2026","2026-11-01","Delhi","https://www.indiarunning.com/event/winter_delhi_half_marathon_2025_25337",["5K","10K","Half"]],
+["UST Trivandrum Marathon 26","2026-11-14","UST Campus, Trivandrum","https://www.mysamay.in/public/event/info/e3e02f08-0651-493f-b7eb-953a359bf17f",["5K","10K","Half","Full"]],
+["Kaveri Trail Marathon 2026","2026-11-21","Srirangapatna","https://www.mysamay.in/public/event/info/425ed83a-c1a7-42af-88a9-40a86791e0e7",["5K","10K","Half","Full"]],
+["Baramati Power Marathon 2026","2026-11-28","Baramati, Pune","https://www.indiarunning.com/event/baramatipowermarathon2026-17158",["5K","10K","Half","Full"]],
+["Chennai Half Marathon 2026","2026-11-28","Island Grounds, Chennai","https://www.mysamay.in/public/event/info/fea9ecc8-af79-46b4-baa1-0e521341da4b",["5K","10K","Half"]],
+["Mysuru Marathon 26","2026-12-12","Police Grounds, Mysuru","https://www.mysamay.in/public/event/info/81ca6197-062c-4f3e-b41d-d21a44fafe21",["5K","10K","Half","Full"]],
+["Bajaj Pune Marathon 2026","2026-12-13","Maharashtra","https://www.indiarunning.com/event/bajajpunemarathon2026-48091",["5K","10K","Half","Full"]],
+["Udupi Full Marathon 26","2026-12-19","Udupi","https://www.mysamay.in/public/event/info/8879ecfd-812d-4c7b-b8d5-51fdf229b704",["5K","10K","Half","Full"]],
+["Tata Steel Kolkata 25K","2026-12-20","Kolkata","https://tatasteelkolkata25k.procam.in",["10K","Half"]]
+];
+var state = { bucket: "Half", month: null, race: null };
+var $ = function(id){ return document.getElementById(id); };
+var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function dayLabel(iso){
+  var d = new Date(iso + "T00:00:00");
+  return d.getDate() + " " + MONTHS[d.getMonth()];
+}
+function monthKey(iso){ return iso.slice(0, 7); }
+function monthName(key){
+  var p = key.split("-");
+  return MONTHS[parseInt(p[1], 10) - 1] + " " + p[0];
+}
+function daysLeft(iso){
+  var now = new Date(); now.setHours(0, 0, 0, 0);
+  var then = new Date(iso + "T00:00:00");
+  return Math.round((then - now) / 86400000);
+}
+function bibUrl(u){
+  if (!u) return BIB;
+  return u.charAt(0) === "/" ? BIB + u : u;
+}
+function raceKey(r){ return r[0] + "|" + r[1]; }
+
+function renderBuckets(){
+  var box = $("buckets"); box.innerHTML = "";
+  ["5K", "10K", "Half", "Full"].forEach(function(b){
+    var n = EVENTS.filter(function(e){ return e[4].indexOf(b) !== -1; }).length;
+    var el = document.createElement("button");
+    el.type = "button"; el.className = "chip"; el.textContent = b + " · " + n;
+    el.setAttribute("aria-pressed", b === state.bucket ? "true" : "false");
+    el.onclick = function(){
+      state.bucket = b; state.month = null; state.race = null;
+      renderAll();
+    };
+    box.appendChild(el);
+  });
+}
+function monthsFor(){
+  var seen = {};
+  EVENTS.forEach(function(e){
+    if (e[4].indexOf(state.bucket) !== -1) seen[monthKey(e[1])] = 1;
+  });
+  return Object.keys(seen).sort();
+}
+function renderMonths(){
+  var box = $("months"); box.innerHTML = "";
+  var ms = monthsFor();
+  if (!state.month || ms.indexOf(state.month) === -1) state.month = ms[0] || null;
+  $("monthhint").textContent = ms.length
+    ? "Months with a " + state.bucket + " race in the MyNextBib feed."
+    : "No " + state.bucket + " races in this snapshot.";
+  ms.forEach(function(m){
+    var n = EVENTS.filter(function(e){
+      return e[4].indexOf(state.bucket) !== -1 && monthKey(e[1]) === m;
+    }).length;
+    var el = document.createElement("button");
+    el.type = "button"; el.className = "chip";
+    el.textContent = monthName(m) + " · " + n;
+    el.setAttribute("aria-pressed", m === state.month ? "true" : "false");
+    el.onclick = function(){ state.month = m; state.race = null; renderAll(); };
+    box.appendChild(el);
+  });
+}
+function renderRaces(){
+  var box = $("races"); box.innerHTML = "";
+  var list = EVENTS.filter(function(e){
+    return e[4].indexOf(state.bucket) !== -1 && monthKey(e[1]) === state.month;
+  });
+  if (!list.length){
+    var li = document.createElement("li");
+    li.className = "empty"; li.textContent = "Nothing here in this snapshot.";
+    box.appendChild(li);
+  }
+  list.forEach(function(e){
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "race";
+    var sel = state.race && raceKey(state.race) === raceKey(e);
+    b.setAttribute("aria-pressed", sel ? "true" : "false");
+    var dl = daysLeft(e[1]);
+    var left = dl <= 0 ? "race day" : dl + (dl === 1 ? " day" : " days") + " left";
+    b.innerHTML = '<span class="when">' + dayLabel(e[1]) + '</span>' +
+      '<span class="who"><span class="name"></span><br>' +
+      '<span class="meta"></span></span>' +
+      '<span class="left"></span>';
+    b.querySelector(".name").textContent = e[0];
+    b.querySelector(".meta").textContent =
+      (e[2] ? e[2].split(",")[0] + " · " : "") + e[4].join(" / ");
+    b.querySelector(".left").textContent = left;
+    b.onclick = function(){
+      state.race = sel ? null : e;
+      renderAll();
+    };
+    li.appendChild(b); box.appendChild(li);
+  });
+  var call = $("bibcall");
+  if (state.race){
+    call.className = "bibcall show";
+    call.innerHTML = 'Not signed up yet? <a id="biblink" href="#">' +
+      'Register on MyNextBib</a> for this race.';
+    $("biblink").href = bibUrl(state.race[3]);
+    $("biblink").textContent = "Register for " + state.race[0] + " on MyNextBib";
+  } else {
+    call.className = "bibcall"; call.innerHTML = "";
+  }
+}
+function statusText(){
+  if (!state.race) return "Select a race above.";
+  var dl = daysLeft(state.race[1]);
+  var left = dl <= 0 ? "race day is here" : dl + (dl === 1 ? " day" : " days") + " to go";
+  var goal = $("goal").value.trim();
+  return state.race[0] + " — " + left + (goal ? " — Target " + goal : "");
+}
+function renderPreview(){
+  var t = statusText();
+  $("status").textContent = t;
+  $("charcount").textContent = state.race ? t.length + " characters" : "";
+  $("foot").textContent = "Race data: MyNextBib feed snapshot · generated " +
+    GENERATED + " · refreshes nightly in production. " +
+    EVENTS.length + " upcoming races in this snapshot.";
+}
+function renderAll(){
+  renderBuckets(); renderMonths(); renderRaces(); renderPreview();
+}
+$("goal").addEventListener("input", renderPreview);
+$("connect").onclick = function(){
+  if (!state.race){ $("status").textContent = "Pick a race first — then connect."; return; }
+  $("status").textContent = "[mock] Connected. " + statusText();
+};
+renderAll();
+</script>
+</body>
+</html>
