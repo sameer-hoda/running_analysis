@@ -1,0 +1,17 @@
+PROMPT (for Gemini 2.5 Flash Image / nano banana) — Instagram 4:5 portrait:
+
+Photorealistic close-up of a runner's legs and worn training shoes mid-stride on asphalt at sunrise, shallow depth of field, warm natural light, white morning sky, one small Strava-orange (#FC5200) shoelace accent. Minimal composition with empty sky space at top for the 3-word overlay. No purple gradients, no gym-stock look, no crowd. At most three words of large bold overlay text reading "15 days to go". No other text, no logos, no watermarks.
+
+Negative: purple, gradient background, paragraphs of text, small illegible type, collage grid, watermark, logo, dark filter.
+
+STATUS: RENDERED as ig-45.png (Gemini 2.5 Flash Image, 4:5, visually checked).
+
+RUNNABLE COMMAND (pick one):
+
+belt:
+belt app run google/gemini-2-5-flash-image --input '{"prompt": "Photorealistic close-up of a runner legs and worn training shoes mid-stride on asphalt at sunrise, shallow depth of field, warm natural light, one small Strava-orange (#FC5200) shoelace accent, minimal composition with empty sky space at top. No purple gradients, no stock look. Overlay at most three large bold words reading 15 days to go. No other text, no logos, no watermarks.", "aspect_ratio": "4:5"}'
+
+curl:
+curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=$GEMINI_API_KEY" -H 'Content-Type: application/json' -d '{"contents":[{"parts":[{"text":"Photorealistic close-up of a runner legs and worn training shoes mid-stride on asphalt at sunrise, shallow depth of field, warm natural light, one small Strava-orange (#FC5200) shoelace accent, minimal composition with empty sky space at top. No purple gradients, no stock look. Overlay at most three large bold words reading 15 days to go. No other text, no logos, no watermarks."}]}]}' -o launch-kit/images/ig-45-raw.json
+
+Save output as launch-kit/images/ig-45.png

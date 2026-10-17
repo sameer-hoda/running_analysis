@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strava Activity Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Analyze Your Strava Activities</h1>
+    </header>
+    <main>
+        <section class="benefits">
+            <div class="card">
+                <h2>Benefit 1</h2>
+                <p>Unlock deeper insights into your runs and rides.</p>
+            </div>
+            <div class="card">
+                <h2>Benefit 2</h2>
+                <p>Track your progress over time with detailed analytics.</p>
+            </div>
+            <div class="card">
+                <h2>Benefit 3</h2>
+                <p>Understand your performance patterns and improve.</p>
+            </div>
+        </section>
+        <section class="login">
+            <button id="stravaLoginBtn">Login with Strava</button>
+        </section>
+
+        <section class="social-share-section" id="socialShareSection" style="display: none;">
+            <h2>Share Your Activity</h2>
+          
+            <div class="image-preview-container">
+              <canvas id="activity-image-preview" width="1080" height="1920"></canvas>
+              <div class="loading-overlay" id="image-loading" style="display: none;">Generating image...</div>
+            </div>
+          
+            <div class="image-controls">
+              <div class="template-selector">
+                <label for="image-template">Choose a template:</label>
+                <select id="image-template">
+                  <option value="standard">Standard</option>
+                  <option value="minimal">Minimal</option>
+                  <option value="detailed">Detailed</option>
+                  <option value="achievement">Achievement Focus</option>
+                </select>
+              </div>
+              
+              <div class="color-theme-selector">
+                <label for="color-theme">Color theme:</label>
+                <div class="color-options">
+                  <button class="color-option" data-theme="gradient-blue" style="background-color: blue;"></button>
+                  <button class="color-option" data-theme="gradient-red" style="background-color: red;"></button>
+                  <button class="color-option" data-theme="dark" style="background-color: black;"></button>
+                  <button class="color-option" data-theme="light" style="background-color: lightgray;"></button>
+                  <!-- <button class="color-option" data-theme="custom">Custom</button> -->
+                </div>
+              </div>
+              
+              <div class="element-toggles">
+                <label>Elements to include:</label>
+                <div class="toggle-options">
+                  <label><input type="checkbox" id="include-map" checked> Map</label>
+                  <label><input type="checkbox" id="include-hr" checked> Heart Rate</label>
+                  <label><input type="checkbox" id="include-pace" checked> Pace</label>
+                  <label><input type="checkbox" id="include-elevation" checked> Elevation</label>
+                </div>
+              </div>
+              
+              <div class="custom-text">
+                <label for="custom-message">Add a custom message:</label>
+                <textarea id="custom-message" placeholder="Great run today!"></textarea>
+              </div>
+            </div>
+          
+            <div class="action-buttons">
+              <button id="regenerate-image" class="btn btn-secondary">Regenerate Image</button>
+              <button id="download-image" class="btn btn-primary">Download Image</button>
+              <!-- <button id="attach-to-strava" class="btn btn-strava">Attach to Strava Activity</button> -->
+              <!-- <button id="share-instagram" class="btn btn-instagram">Share to Instagram</button> -->
+            </div>
+          
+            <!-- <div class="auto-generate-toggle">
+              <label>
+                <input type="checkbox" id="auto-generate-images">
+                Automatically generate images for new activities
+              </label>
+            </div> -->
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Strava Activity Analyzer</p>
+    </footer>
+    <script src="EnhancedActivityImageGenerator.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

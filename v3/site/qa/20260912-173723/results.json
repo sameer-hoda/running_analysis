@@ -1,0 +1,38 @@
+[
+ {
+  "image": "gettyimages-2002620668-612x612.jpg",
+  "job": "bacadc64e595",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 69,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "gettyimages-2002620668-612x612.jpg.png"
+ },
+ {
+  "image": "images-3.jpeg",
+  "job": "43b992232a58",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 71,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-3.jpeg.png"
+ }
+]

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mynextpr — Go-to-Market Plan (Launch Bible)</title>
+<meta name="description" content="Complete pre-launch go-to-market plan for mynextpr: positioning, channels, all 14 post drafts, 4-week calendar, launch-day checklist, metrics, risks, assets, sources.">
+<style>
+:root{
+  --paper:#ffffff; --ink:#191412; --muted:#6f645c; --line:#e7e0d8;
+  --soft:#f6f3f0; --accent:#fc5200; --accent-pressed:#d94800;
+  --select:#fff4ee; --panel:#201a16; --on-panel:#f5efe8; --on-panel-muted:#b9a99c;
+  --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+.num,.stat b,.cal td:first-child,time{font-variant-numeric:tabular-nums}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 64px}
+/* Masthead */
+.mast{border-bottom:2px solid var(--ink);padding:28px 0 16px}
+.wordmark{font-size:22px;font-weight:800;letter-spacing:-.03em;margin:0}
+.wordmark span{color:var(--accent)}
+.mocktag{display:inline-block;font-family:var(--mono);font-size:12px;background:var(--soft);
+  border:1px solid var(--line);border-radius:4px;padding:2px 8px;margin-top:10px;color:var(--muted)}
+.mast h1{font-size:clamp(30px,4.4vw,46px);line-height:1.05;letter-spacing:-.03em;margin:14px 0 8px}
+.lede{font-size:19px;letter-spacing:-.01em;margin:0 0 6px;max-width:60ch}
+.sub{font-size:14px;color:var(--muted);margin:0}
+/* Sticky nav */
+nav.toc{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1px solid var(--line);
+  margin:0 -20px;padding:0 20px}
+nav.toc .row{display:flex;gap:4px;overflow-x:auto;padding:10px 0;scrollbar-width:thin}
+nav.toc a{flex:0 0 auto;font-size:13px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--line);border-radius:999px;padding:5px 12px;white-space:nowrap}
+nav.toc a:hover{color:var(--ink);border-color:var(--ink)}
+nav.toc a.active{color:var(--accent-pressed);border-color:var(--accent)}
+/* Sections */
+section{padding-top:36px;scroll-margin-top:76px}
+.kicker{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 6px}
+.kicker .n{color:var(--accent);font-weight:700}
+h2{font-size:24px;letter-spacing:-.02em;margin:0 0 10px;line-height:1.2}
+h3{font-size:17px;margin:26px 0 8px;letter-spacing:-.01em}
+h4{font-size:15px;margin:18px 0 6px}
+p{margin:0 0 12px;max-width:68ch}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:68ch}
+li{margin-bottom:6px}
+a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+a:hover{color:var(--accent-pressed)}
+code{font-family:var(--mono);font-size:.86em;background:var(--soft);
+  border:1px solid var(--line);border-radius:6px;padding:1px 6px;word-break:break-word}
+/* Countdown line highlight — accent only where meaningful */
+.count{font-family:var(--mono);font-size:14px;background:var(--select);
+  border-left:3px solid var(--accent);border-radius:0 10px 10px 0;
+  padding:10px 14px;margin:12px 0;max-width:68ch;overflow-x:auto}
+/* Cards */
+.card{border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0;background:var(--paper)}
+.card.tint{background:var(--soft)}
+.card h4{margin-top:0}
+/* Tables */
+.tblwrap{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:16px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--soft);font-size:13px}
+tr:last-child td{border-bottom:none}
+td:first-child{white-space:nowrap}
+/* Post library */
+.post{border:1px solid var(--line);border-radius:16px;margin:18px 0;overflow:hidden}
+.post-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:12px 16px;border-bottom:1px solid var(--line);background:var(--soft)}
+.post-head .file{font-family:var(--mono);font-size:12px;font-weight:700}
+.tag{font-size:12px;border:1px solid var(--line);background:var(--paper);
+  border-radius:999px;padding:2px 10px;color:var(--muted)}
+.draft{font-size:12px;font-weight:700;color:var(--accent-pressed)}
+.post-body{padding:16px}
+.post-text{font-family:var(--sans);font-size:15px;white-space:pre-wrap;margin:0 0 14px;max-width:68ch}
+.post-text code{white-space:pre-wrap}
+.post figure{margin:0 0 6px}
+.post figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px}
+.post figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.brief{border:1px dashed var(--muted);border-radius:10px;padding:12px 14px;font-size:14px;background:var(--paper)}
+.brief b{display:block;font-size:12px;font-family:var(--mono);color:var(--muted);margin-bottom:4px}
+.copybtn{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--ink);background:var(--paper);
+  color:var(--ink);border-radius:10px;padding:6px 14px;cursor:pointer}
+.copybtn:hover{background:var(--ink);color:#fff}
+.copybtn:focus-visible,.toc a:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Checklist */
+.check{list-style:none;padding:0}
+.check li{border:1px solid var(--line);border-radius:10px;padding:8px 12px 8px 38px;
+  position:relative;font-size:14px}
+.check li::before{content:"";position:absolute;left:12px;top:11px;width:14px;height:14px;
+  border:1.5px solid var(--muted);border-radius:4px}
+.check li.done::before{background:var(--accent);border-color:var(--accent)}
+.check li.done{color:var(--muted);text-decoration:line-through}
+/* Footer */
+footer{border-top:2px solid var(--ink);margin-top:44px;padding-top:16px;font-size:13px;color:var(--muted)}
+.topbtn{display:inline-block;margin-top:12px;font-size:13px}
+/* Print */
+@media print{
+  nav.toc,.copybtn,.topbtn{display:none}
+  section{scroll-margin-top:0;padding-top:20px}
+  .wrap{max-width:none}
+  .card,.post,.tblwrap{break-inside:avoid}
+  body{font-size:11pt}
+}
+@media (max-width:560px){.wrap{padding:0 14px 48px}nav.toc{margin:0 -14px;padding:0 14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast" id="top">
+  <p class="wordmark">mynext<span>pr</span></p>
+  <span class="mocktag">DRAFT LAUNCH BIBLE · PRE-LAUNCH · NOTHING HERE IS POSTED OR SCHEDULED</span>
+  <h1>Go-to-market plan</h1>
+  <p class="lede">One small running app, one honest promise: your race countdown, written into your Strava activity descriptions, automatically.</p>
+  <p class="sub">Single-file plan · generated 2026-10-10 · images load from <code>images/</code> next to this file · print with Ctrl/Cmd+P</p>
+</header>
+
+<nav class="toc" aria-label="Plan sections"><div class="row" id="tocrow">
+<a href="#summary">Summary</a><a href="#positioning">Positioning</a><a href="#audiences">Audiences</a><a href="#competitors">Competitors</a><a href="#channels">Channels</a><a href="#library">Post library</a><a href="#calendar">Calendar</a><a href="#launchday">Launch day</a><a href="#metrics">Metrics</a><a href="#risks">Risks</a><a href="#assets">Assets</a><a href="#appendix">Sources</a>
+</div></nav>
+
+<section id="summary">
+<p class="kicker"><span class="n">01</span> · EXECUTIVE SUMMARY</p>
+<h2>The whole plan on one page</h2>
+<p><strong>mynextpr</strong> is a pre-launch web app for amateur runners training for a picked race. It writes a race countdown into each run's Strava activity description, automatically. Descriptions only, never titles. Minimum OAuth scopes (<code>read</code> + <code>activity:write</code>). The runner's own activities only, after explicit consent. Brand label is <code>Compatible with Strava</code>, nothing more.</p>
+<p><strong>Core message (use everywhere first):</strong></p>
+<p class="count">Every run you log carries its countdown in its Strava description. Your titles stay yours.</p>
+<p>Backups: mechanism-forward — <em>Pick your race in three taps. Every run after that shows the days left.</em> Goal-forward — <em>Set the target. Chase it every run. The countdown and the goal sit in the description, side by side.</em></p>
+<p><strong>The one concrete example to repeat until it sticks:</strong></p>
+<p class="count">15 days to go for Delhi Half Marathon. Easy run.</p>
+<p>Goal variant: <code>15 days to go for Delhi Half Marathon. Easy run. Target sub-2.</code> Race day: <code>Race day for Delhi Half Marathon. Easy run.</code> Past race: nothing is written, ever.</p>
+<p><strong>How this plan runs:</strong> four weeks of build-in-public drafts across X, Instagram, LinkedIn, one Reddit builder post, comment-first participation elsewhere, and one hand-posted Strava club announcement after launch. All 14 existing drafts are embedded verbatim in <a href="#library">section 6</a>. Every claim traces to <code>v6/PRODUCT.md</code> or <code>v6/hero-copy.md</code>. No testimonials, customers, benchmarks, pricing, or licensing claims exist, so none appear anywhere.</p>
+</section>
+
+<section id="positioning">
+<p class="kicker"><span class="n">02</span> · POSITIONING &amp; MESSAGING HOUSE</p>
+<h2>What we say, what we never say</h2>
+<h3>The house</h3>
+<div class="card tint">
+<p><strong>Roof (one line):</strong> mynextpr writes a race countdown into your Strava activity descriptions, automatically, after every run you log.</p>
+<p><strong>Pillar 1 — Restraint.</strong> Description-only writes. Titles are never touched. Proof: the gated Connect button, the manage-page note <em>Applies to future runs only. Your Strava titles are never touched — only descriptions.</em></p>
+<p><strong>Pillar 2 — Minimal permission.</strong> Scopes <code>read</code> + <code>activity:write</code> only, own activities only, explicit consent first, disconnect stops everything. Proof: the fine-print block adjacent to the CTA.</p>
+<p><strong>Pillar 3 — Correctness.</strong> Singular handled (<code>1 day to go</code>), race-day edge (<code>Race day for …</code>), past races write nothing. Proof: the three logged examples in the hero copy.</p>
+<p><strong>Pillar 4 — Three taps and gone.</strong> Distance, month, race, connect, forget about it. Proof: Connect stays disabled until an upcoming race is picked.</p>
+</div>
+<h3>Proof points (the only facts copy may use)</h3>
+<ul>
+<li>Three taps: distance, month, race. Then connect and forget about it.</li>
+<li>Template: <code>15 days to go for Delhi Half Marathon. Easy run.</code> Goal appends <code>Target sub-2.</code> last.</li>
+<li>Run kinds fixed to Easy, Tempo, Long, Recovery, Intervals. Default Easy when unsure.</li>
+<li>Three manage styles: Days to go (default), Motivational (rotates <code>One run closer.</code> / <code>Stack the miles.</code> / <code>Trust the buildup.</code> / <code>Keep showing up.</code>), Auto run classification (kind first).</li>
+<li>Every written description ends with its own <code>— countdown by mynextpr</code> line.</li>
+<li>Race data: MyNextBib feed snapshot, 104 events, generated 2026-10-10.</li>
+</ul>
+<h3>Banned claims</h3>
+<ul>
+<li>Never <em>powered by Strava</em>, <em>in partnership with Strava</em>, <em>endorsed by Strava</em>. Label is <code>Compatible with Strava</code> only. No Strava logo in copy or images.</li>
+<li>Never performance judgments in written descriptions (Strava API Policy §5.11): no <em>on track</em>, <em>ahead</em>, <em>behind</em>, coaching advice, or finish predictions. Arithmetic (days left, goal pace) plus echoes of Strava's own data only.</li>
+<li>Never claim a live product. The v6 Connect button is a mock that flips preview text. Say <em>pre-launch mock</em> wherever the product is shown.</li>
+<li>Never request or mention scopes beyond <code>read</code> + <code>activity:write</code>.</li>
+<li>Never invent stats, testimonials, customers, benchmarks, pricing, or timelines.</li>
+</ul>
+</section>
+
+<section id="audiences">
+<p class="kicker"><span class="n">03</span> · AUDIENCE PERSONAS</p>
+<h2>Three runners we are writing for</h2>
+<div class="card">
+<h4>1. The first-time half-marathoner</h4>
+<p>Training for their first big race (Delhi Half Marathon is the working example). Logs runs on Strava from their phone, loses track of how many days are left. Wants the number to show up without maintaining a spreadsheet. Reaches them: Instagram captions, Reels showing the countdown line, the three-tap flow.</p>
+</div>
+<div class="card">
+<h4>2. The data-careful club runner</h4>
+<p>Runs with a club, curates Strava titles like diary entries. Suspicious of apps that touch their activities. The restraint story wins them: descriptions only, minimum scopes, disconnect deletes tokens, past runs stay as they are. Reaches them: the LinkedIn scopes post, r/SideProject builder story, the Strava club announcement.</p>
+</div>
+<div class="card">
+<h4>3. The goal-chaser</h4>
+<p>Has a target finish in mind (sub-2, sub-4, a specific time). Wants the goal visible next to every run so easy days stay honest. Uses the goal variant and Auto run classification. Reaches them: X edge-case posts, the goal-variant Instagram post, AdvancedRunning comment threads about countdown routines.</p>
+</div>
+</section>
+
+<section id="competitors">
+<p class="kicker"><span class="n">04</span> · COMPETITOR SNAPSHOT</p>
+<h2>What surrounds us</h2>
+<p>Four comparable apps, observed 2026-10-10 from their public homepages. <em>Observed</em> means seen on the page that day. <em>Not observed</em> means not seen on the pages checked, not that it is absent.</p>
+<div class="tblwrap"><table>
+<tr><th>App</th><th>What it is</th><th>Strava relationship</th><th>Where mynextpr differs</th></tr>
+<tr><td><a href="https://activityfix.com/">ActivityFix</a></td><td>Rule engine that rewrites Strava activity fields (title, description, gear, type, commute flags) on 14+ match conditions. Closest direct comparable: it also writes into descriptions.</td><td>Sign-in observed requesting <code>activity:read_all</code>, <code>activity:write</code>, <code>profile:read_all</code>. Carries a Powered-by-Strava lockup.</td><td>One job, not a rule builder. Narrower scopes (<code>read</code> + <code>activity:write</code>), descriptions only, titles sacred, race countdown built in.</td></tr>
+<tr><td><a href="https://www.intervals.icu/">intervals.icu</a></td><td>Free indie training analytics platform: fitness charts, power curves, planning. States 200,000+ active athletes and 300M+ activities analyzed on its homepage.</td><td>Shows a Compatible-with-Strava badge among 250+ integrations.</td><td>Analysis vs. action. intervals.icu reads training deeply; mynextpr writes one countdown line and stays out of the way.</td></tr>
+<tr><td><a href="https://smashrun.com/">Smashrun</a></td><td>Indie run-log analytics by a three-person team (Chris, Jacklyn, Steve, per their about page): badges, history graphs, rankings.</td><td>Imports from Garmin, TomTom, files; Strava-adjacent rather than Strava-writing.</td><td>Backward-looking stats vs. forward-looking countdown. No overlap in the write path.</td></tr>
+<tr><td><a href="https://www.techradar.com/health-fitness/fitness-apps/strava-owned-runna-just-launched-the-feature-ive-been-waiting-for-to-plan-my-race-calendar">Runna (Strava-owned)</a></td><td>Training-plan app now owned by Strava. Launched <em>Races by Runna</em> race discovery integrated with plans and Strava Events.</td><td>First-party sibling of Strava. Race discovery plus coaching plans.</td><td>Discovery vs. countdown. Runna helps you find and train for a race; mynextpr carries the days-left number into every logged run. No coaching claims, no predictions.</td></tr>
+</table></div>
+<p><strong>Takeaway for copy:</strong> nobody in this set sells restraint as the feature. The gated Connect button, description-only writes, and minimum scopes are the open lane. Never name competitors in posts; this table is for planning only.</p>
+</section>
+
+<section id="channels">
+<p class="kicker"><span class="n">05</span> · CHANNEL PLAYBOOKS</p>
+<h2>Where we show up, and how</h2>
+<p>Content split follows the plan: build in public 40%, runner mechanics 30%, trust and scopes 20%, ask and listen 10%. Every rented-platform post points toward an owned signup surface once it exists (owned-list-first). One flagship demo ships once, then becomes one X post, one Reel caption, and one LinkedIn paragraph (atomization).</p>
+
+<h3>X — build in public</h3>
+<div class="card">
+<p><strong>Goal:</strong> 10+ meaningful replies from runners in 30 days. <strong>Cadence:</strong> 2–3 posts per week, plus replies to running-tech conversations daily.</p>
+<p><strong>Format:</strong> short text + one screenshot per post. Lead with the concrete line (<code>15 days to go…</code>), end on the point, no engagement bait.</p>
+<p><strong>Hooks that fit:</strong> the example line itself, the sacred-title rule, the disabled button, the singular/race-day edges.</p>
+<p><strong>CTA:</strong> none until launch. <em>Building in public, more notes to come</em> is the close. No signup link exists yet.</p>
+<p><strong>What NOT to do:</strong> no threads manufactured from one idea, no <em>agree?</em> closers, no posting the same line twice in one week, no Strava logo in screenshots.</p>
+</div>
+
+<h3>Instagram — the visual proof</h3>
+<div class="card">
+<p><strong>Goal:</strong> 50 saves across 3 posts in 30 days (saves over likes). <strong>Cadence:</strong> 1 post per week + Stories of build progress.</p>
+<p><strong>Format specs:</strong> 4:5 single image or carousel (<code>ig-45.png</code>, 1080×1350 space). On-image text max 3 words (<em>15 days to go</em>, <em>Target sub-2</em>, <em>Tempo run</em>). Caption carries the story in plain paragraphs.</p>
+<p><strong>Hooks:</strong> the overlay number, the goal line, the run-kind label.</p>
+<p><strong>CTA:</strong> <em>I post build updates here as I finish them.</em> Follow, not signup.</p>
+<p><strong>What NOT to do:</strong> no hashtag stuffing (5 max, all running-specific), no on-image paragraphs, no stock running quotes, no claiming the mock is live.</p>
+</div>
+
+<h3>LinkedIn — founder story + engineering restraint</h3>
+<div class="card">
+<p><strong>Goal:</strong> 5+ comments from builders or runners per post. <strong>Cadence:</strong> 1 post every two weeks. Two drafts exist; write a third only after those two ship.</p>
+<p><strong>Format:</strong> plain-text founder narrative (post 1), then one engineering decision with the reasoning (post 2: the disabled button, the narrow scopes).</p>
+<p><strong>Hooks:</strong> <em>I kept forgetting how many days were left</em> (real problem), <em>the product decision I am proudest of is a disabled button</em> (specific pride).</p>
+<p><strong>CTA:</strong> a real question — <em>what should the description line carry?</em></p>
+<p><strong>What NOT to do:</strong> no growth theater, no cross-posting the X one-liners, no tagging strangers for reach.</p>
+</div>
+
+<h3>Reddit — one post, many comments</h3>
+<div class="card">
+<p><strong>Goal:</strong> r/SideProject post score above 20, zero removals anywhere. <strong>Cadence:</strong> one standalone post total (r/SideProject); 2–3 genuine link-free comments per week in training/Strava threads on r/running and r/AdvancedRunning.</p>
+<p><strong>r/SideProject:</strong> POST allowed. Disclose builder status in the opening lines. One post only, no cross-posting identical text. Flair as appropriate.</p>
+<p><strong>r/running (Rule 3):</strong> no self-promotion of any kind, including blogs and social links. COMMENT-FIRST only, never post the app. Link only if someone asks directly.</p>
+<p><strong>r/AdvancedRunning (Rule 7):</strong> no ads or self-promotion; standalone threads must suit the sub. COMMENT-FIRST only, no links, no mention unless asked.</p>
+<p><strong>r/Strava:</strong> rules could not be verified from a live fetch on 2026-10-10 (rules pages are login-gated). Default to comment-first. Read the sidebar and message the mods before any standalone post.</p>
+<p><strong>What NOT to do:</strong> no link drops, no arguing with mods, no deleting a downvoted post to re-post it, no posting the same day the account is created.</p>
+</div>
+
+<h3>Strava clubs — hand-posted, after launch</h3>
+<div class="card">
+<p><strong>Goal:</strong> 20 members joined from the announcement. <strong>Cadence:</strong> once, posted by hand by a club owner after launch. Not posted now.</p>
+<p><strong>Format:</strong> the club announcement draft in <a href="#library">the library</a>, posted as the club owner in their own words if they prefer. Comments answered by the builder within a day.</p>
+<p><strong>What NOT to do:</strong> no mass-posting to clubs you do not belong to, no DMs to members, no posting before the product is live.</p>
+</div>
+
+<h3>Short-form video — Reels / Shorts / TikTok (3 scripts, new drafts)</h3>
+<p>All three are 9:16, 15–30 seconds, captions on, hook in the first second (visual + verbal + text overlay together). Shot on a phone: Strava app screen + the mock. No new claims; every line traces to the hero copy.</p>
+<div class="card">
+<h4>Script 1 — Problem to countdown (22 sec)</h4>
+<p><code>[0–3s]</code> Phone screen, Strava run with empty description. Overlay: <em>FORGOT THE COUNT AGAIN</em>. Voice: <em>I kept losing track of how many days were left before my half.</em><br>
+<code>[3–18s]</code> Tap through: distance, month, race. Overlay: <em>3 TAPS</em>. Voice: <em>Three taps. Distance, month, race. Then connect.</em> Show the line appearing: <code>15 days to go for Delhi Half Marathon. Easy run.</code><br>
+<code>[18–22s]</code> Overlay: <em>TITLES UNTOUCHED</em>. Voice: <em>Description only. My title stays mine. Pre-launch mock.</em></p>
+</div>
+<div class="card">
+<h4>Script 2 — Edge cases (25 sec)</h4>
+<p><code>[0–3s]</code> Overlay: <em>1 DAY, NOT 1 DAYS</em>. Voice: <em>Countdown edge cases I coded this week.</em><br>
+<code>[3–20s]</code> Three cards, one at a time: <code>1 day to go for Vedanta Delhi Half Marathon.</code> / <code>Race day for Delhi Half Marathon. Easy run.</code> / past race, empty line, <em>writes nothing</em>. Voice reads each line aloud.<br>
+<code>[20–25s]</code> Overlay: <em>WRONG NUMBER &lt; NO NUMBER</em>. Voice: <em>A wrong number is worse than no number.</em></p>
+</div>
+<div class="card">
+<h4>Script 3 — Goal variant (20 sec)</h4>
+<p><code>[0–3s]</code> Overlay: <em>TARGET SUB-2</em>. Voice: <em>Now a run can carry the goal next to the countdown.</em><br>
+<code>[3–16s]</code> Type <em>sub-2</em> into the goal field, show the line: <code>15 days to go for Delhi Half Marathon. Easy run. Target sub-2.</code> Voice: <em>Prints exactly as typed, last in the line. Skip it and you keep the plain countdown.</em><br>
+<code>[16–20s]</code> Overlay: <em>3 STYLES ON MANAGE PAGE</em>. Voice: <em>Three styles on the manage page. Still a mock.</em></p>
+</div>
+</section>
+
+<section id="library">
+<p class="kicker"><span class="n">06</span> · POST LIBRARY — ALL 14 DRAFTS, VERBATIM</p>
+<h2>Every draft in full</h2>
+<p>Each card shows the source file, its channel, its draft status, the complete text exactly as written in <code>launch-kit/posts/</code>, and its visual. Use the Copy button to lift the text. Nothing here is posted, scheduled, or published.</p>
+
+<div class="post" id="post-x-01">
+<div class="post-head"><span class="file">posts/x-01-what-it-does.md</span><span class="tag">X</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># X post 1 (DRAFT, not posted) — what it does
+
+Building mynextpr: pick your race, and every run you log gets this line added to its Strava description automatically.
+
+`15 days to go for Delhi Half Marathon. Easy run.`
+
+Description only. Your titles stay yours. Pre-launch mock, building in public.</p>
+<figure><img src="images/x-card.png" alt="X card visual: runner at dawn near India Gate, mynextpr countdown card" loading="lazy"><figcaption>Paired visual: <code>images/x-card.png</code> (16:9).</figcaption></figure>
+<p><button class="copybtn" data-copy="post-x-01">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-x-02">
+<div class="post-head"><span class="file">posts/x-02-titles-sacred.md</span><span class="tag">X</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># X post 2 (DRAFT, not posted) — titles are sacred
+
+One design rule in mynextpr I will not bend: the app writes to the Strava activity description and never the title.
+
+My run title is mine. My app adds `15 days to go for Delhi Half Marathon. Easy run.` underneath it and stops there.</p>
+<figure><img src="images/x-card.png" alt="X card visual: runner at dawn near India Gate, mynextpr countdown card" loading="lazy"><figcaption>Paired visual: <code>images/x-card.png</code> (16:9).</figcaption></figure>
+<p><button class="copybtn" data-copy="post-x-02">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-x-03">
+<div class="post-head"><span class="file">posts/x-03-three-taps.md</span><span class="tag">X</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># X post 3 (DRAFT, not posted) — three-tap flow
+
+The mynextpr flow is three taps: distance, month, race. Then Connect with Strava lights up.
+
+Connect stays disabled until you pick an upcoming race. Picked a race whose date passed and it stays off. That gating took one afternoon and it prevents the dumbest bug: countdowns to races that already happened.</p>
+<figure><img src="images/x-card.png" alt="X card visual: runner at dawn near India Gate, mynextpr countdown card" loading="lazy"><figcaption>Paired visual: <code>images/x-card.png</code> (16:9).</figcaption></figure>
+<p><button class="copybtn" data-copy="post-x-03">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-x-04">
+<div class="post-head"><span class="file">posts/x-04-edges.md</span><span class="tag">X</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># X post 4 (DRAFT, not posted) — edge cases
+
+Countdown edge cases I coded this week in mynextpr:
+
+1 day out writes `1 day to go for Vedanta Delhi Half Marathon.` Singular, not "1 days".
+Race day writes `Race day for Delhi Half Marathon. Easy run.`
+Race passed writes nothing. The description is left alone.
+
+A wrong number is worse than no number.</p>
+<figure><img src="images/x-card.png" alt="X card visual: runner at dawn near India Gate, mynextpr countdown card" loading="lazy"><figcaption>Paired visual: <code>images/x-card.png</code> (16:9).</figcaption></figure>
+<p><button class="copybtn" data-copy="post-x-04">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-x-05">
+<div class="post-head"><span class="file">posts/x-05-styles.md</span><span class="tag">X</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># X post 5 (DRAFT, not posted) — manage styles
+
+mynextpr has three description styles on the manage page. Default is plain: `15 days to go for Delhi Half Marathon. Easy run.`
+
+Motivational adds one rotating nudge like `One run closer.` Auto run classification leads with the kind: `Tempo run. 1 day to go for Vedanta Delhi Half Marathon.`
+
+Five kinds total: Easy, Tempo, Long, Recovery, Intervals. Still a mock, still pre-launch.</p>
+<figure><img src="images/x-card.png" alt="X card visual: runner at dawn near India Gate, mynextpr countdown card" loading="lazy"><figcaption>Paired visual: <code>images/x-card.png</code> (16:9).</figcaption></figure>
+<p><button class="copybtn" data-copy="post-x-05">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-ig-01">
+<div class="post-head"><span class="file">posts/ig-01-countdown.md</span><span class="tag">Instagram</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># Instagram post 1 (DRAFT, not posted)
+
+Caption:
+I keep losing track of how many days are left before my half marathon, so I built a tiny app that writes the countdown into each run's Strava description for me. Pick the race in three taps (distance, month, race), connect Strava, and runs like this carry `15 days to go for Delhi Half Marathon. Easy run.` on their own. Titles never touched, only descriptions. Still a pre-launch mock. I post build updates here as I finish them.
+
+On-image text: 15 days to go</p>
+<figure><img src="images/ig-45.png" alt="Instagram visual: stride close-up with 15 days to go overlay" loading="lazy"><figcaption>Paired visual: <code>images/ig-45.png</code> (4:5). Overlay matches the on-image text.</figcaption></figure>
+<p><button class="copybtn" data-copy="post-ig-01">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-ig-02">
+<div class="post-head"><span class="file">posts/ig-02-goal.md</span><span class="tag">Instagram</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># Instagram post 2 (DRAFT, not posted)
+
+Caption:
+Adding an optional target finish was the most requested thing from the two runners who saw my mock. Now a run can carry `15 days to go for Delhi Half Marathon. Easy run. Target sub-2.` The goal prints exactly as typed, last in the line, and skipping it keeps the plain countdown. Three description styles on the manage page: Days to go, Motivational, Auto run classification. Mock UI, pre-launch, building in public.
+
+On-image text: Target sub-2</p>
+<figure><img src="images/ig-45.png" alt="Instagram visual: stride close-up with countdown overlay, reused for goal variant" loading="lazy"><figcaption>Paired visual: <code>images/ig-45.png</code> (4:5) reused — crop to the overlay area and set the caption's goal line as the first comment for context.</figcaption></figure>
+<p><button class="copybtn" data-copy="post-ig-02">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-ig-03">
+<div class="post-head"><span class="file">posts/ig-03-run-kinds.md</span><span class="tag">Instagram</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># Instagram post 3 (DRAFT, not posted)
+
+Caption:
+Every run my app labels gets one of five kinds: Easy, Tempo, Long, Recovery, Intervals. Unsure defaults to Easy. A tempo workout the day before the race reads `Tempo run. 1 day to go for Vedanta Delhi Half Marathon.` Kind first, countdown second, title untouched. Race data comes from a MyNextBib snapshot of 104 events. Pre-launch mock, more build notes to come.
+
+On-image text: Tempo run</p>
+<figure><img src="images/ig-45.png" alt="Instagram visual: stride close-up, reused for run-kinds post" loading="lazy"><figcaption>Paired visual: <code>images/ig-45.png</code> (4:5) reused — pairs with the <em>Tempo run</em> on-image text; carousel slide 2 can list the five kinds as plain text.</figcaption></figure>
+<p><button class="copybtn" data-copy="post-ig-03">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-li-01">
+<div class="post-head"><span class="file">posts/li-01-founder-story.md</span><span class="tag">LinkedIn</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># LinkedIn post 1 (DRAFT, not posted) — founder story
+
+I am training for a half marathon and I kept forgetting how many days were left, so I started building mynextpr: a small web app that writes the race countdown into each run's Strava activity description.
+
+The flow is deliberately tiny. Three taps (distance, month, race), an optional target finish like sub-2, then Connect with Strava. After that every logged run carries a line such as `15 days to go for Delhi Half Marathon. Easy run. Target sub-2.` Race-day runs read `Race day for Delhi Half Marathon. Easy run.` Past races write nothing.
+
+Two constraints shaped everything. The app writes descriptions only and never touches activity titles. It requests the minimum Strava scopes, `read` plus `activity:write`, on the user's own activities, after explicit consent.
+
+It is a pre-launch mock today. The Connect button flips preview text; production uses the official Strava OAuth flow. I am sharing the build notes as I go and I want critical feedback from runners on what the description line should carry.</p>
+<figure><img src="images/hero.png" alt="Founder-story visual: runner tying shoes, negative space left for headline" loading="lazy"><figcaption>Paired visual: <code>images/hero.png</code> (16:9) — headline sits in the negative space.</figcaption></figure>
+<p><button class="copybtn" data-copy="post-li-01">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-li-02">
+<div class="post-head"><span class="file">posts/li-02-minimal-scopes.md</span><span class="tag">LinkedIn</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># LinkedIn post 2 (DRAFT, not posted) — minimal scopes
+
+A note on restraint in integrations, from building mynextpr.
+
+My app needs exactly two Strava scopes: `read` and `activity:write`. Sign-in happens on strava.com, which never shows this page a password. Writes go to the activity description only, never the title, on the authenticated user's own activities, only after consent. Disconnecting stops future updates and stored tokens are deleted. Past runs stay as they are.
+
+The product decision I am proudest of is a disabled button. Connect stays off until an upcoming race is picked, and a race whose date passed keeps it off. One afternoon of work, and it removes a whole class of wrong-countdown bugs.
+
+Pre-launch mock. If you build on third-party APIs, I would argue the narrowest scope that does the job is a feature, not a limitation.</p>
+<figure><img src="images/hero.png" alt="Scopes visual: runner tying shoes, reused for engineering-restraint post" loading="lazy"><figcaption>Paired visual: <code>images/hero.png</code> (16:9) reused — plain-text post, image optional.</figcaption></figure>
+<p><button class="copybtn" data-copy="post-li-02">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-reddit-01">
+<div class="post-head"><span class="file">posts/reddit-01-sideproject.md</span><span class="tag">Reddit · r/SideProject</span><span class="draft">DRAFT — NOT POSTED</span></div>
+<div class="post-body">
+<p class="post-text"># Reddit post 1 (DRAFT, not posted)
+
+Target subreddit: r/SideProject
+Rule check: r/SideProject exists for sharing projects. Self-promo builder stories are allowed. No promo-day restriction found. Multiple launch guides list it as self-promo OK with story plus demo.
+Compliance: POST allowed. Disclose builder status in the opening lines (done below). One post only, no cross-posting identical text elsewhere. Flair as appropriate.
+Decision: POST.
+
+---
+
+Title: I built a tiny app that writes my race countdown into my Strava run descriptions
+
+I am the builder, and this is pre-launch with a mock UI. No signup link yet.
+
+I am training for a half marathon and I kept losing count of the days left. So I built mynextpr: pick a race in three taps (distance, month, race), optionally set a target finish, connect Strava, and every run you log afterward gets a countdown line added to its Strava activity description. Example: `15 days to go for Delhi Half Marathon. Easy run. Target sub-2.`
+
+Three decisions I would like feedback on:
+
+1. It writes descriptions only, never titles. My title stays mine.
+2. It asks for `read` + `activity:write` only, own activities, consent first.
+3. Connect stays disabled until an upcoming race is picked. Past races stay unconnectable, so it can never count down to a race that already happened.
+
+Edge cases handled: `1 day to go` singular, `Race day for Delhi Half Marathon. Easy run.` on the day, and nothing written once the date passes. Five run kinds (Easy, Tempo, Long, Recovery, Intervals), default Easy when unsure.
+
+What I want to know: would you trust an app to write into your activity descriptions, and what would the line need to carry for you?</p>
+<div class="brief"><b>VISUAL BRIEF — text post, no image required</b>Plain-text builder story. Optional: one mock screenshot of the race picker (no Strava logo, <code>MOCK · Compatible with Strava</code> tag visible) attached only if the subreddit allows images that week. Flair as appropriate.</div>
+<p><button class="copybtn" data-copy="post-reddit-01">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-reddit-02">
+<div class="post-head"><span class="file">posts/reddit-02-running.md</span><span class="tag">Reddit · r/running (comment only)</span><span class="draft">DRAFT — NEVER A STANDALONE POST</span></div>
+<div class="post-body">
+<p class="post-text"># Reddit post 2 (DRAFT, never a standalone post)
+
+Target subreddit: r/running
+Rule check: Rule 3 states no self-promotion including links to personal blogs, social media, Youtube channels, advertising, spam, or surveys. This covers giveaways and charity events too. A standalone app post would be removed and repeat offenses risk a ban.
+Compliance: DO NOT POST the app here. Comment-first only. Participate in training and Strava threads with genuine, link-free answers. Mention the project only if someone asks directly.
+Decision: COMMENT-FIRST. Draft comment below for use when relevant, no links.
+
+---
+
+Draft comment (link-free, for a thread about tracking race countdowns or Strava habits):
+
+I had the same problem during my half marathon block, so I mocked up a tiny flow for myself: pick the race, and each logged run carries a line like `15 days to go for Delhi Half Marathon. Easy run.` in the description. One thing I learned from the mock: writing descriptions only and leaving titles alone matters more than I expected. Happy to share what the edge cases looked like (singular day, race day, past race) if useful.</p>
+<div class="brief"><b>VISUAL BRIEF — comment draft, no visual</b>Plain-text reply, no links, no images. Post only inside a relevant training or Strava-habits thread, and only after genuine participation elsewhere in the sub.</div>
+<p><button class="copybtn" data-copy="post-reddit-02">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-reddit-03">
+<div class="post-head"><span class="file">posts/reddit-03-advancedrunning.md</span><span class="tag">Reddit · r/AdvancedRunning (comment only)</span><span class="draft">DRAFT — NEVER A STANDALONE POST</span></div>
+<div class="post-body">
+<p class="post-text"># Reddit post 3 (DRAFT, never a standalone post)
+
+Target subreddit: r/AdvancedRunning
+Rule check: Rule 7 prohibits offering coaching services, advertisements, and self-promotion. Standalone threads need to suit the sub, and promo posts are removed. Training posts must carry enough background for the community to help.
+Compliance: DO NOT POST the app here. Comment-first only. Answer training questions with substance, no links, no mention of the app unless asked.
+Decision: COMMENT-FIRST. Draft comment below for use when relevant, no links.
+
+---
+
+Draft comment (link-free, for a thread about race-day countdown routines or taper tracking):
+
+What worked for me in my last half block was making the countdown impossible to ignore: every training log carried the days-left number next to the workout. A tempo the day before the race read something like `Tempo run. 1 day to go for Vedanta Delhi Half Marathon.` Seeing the kind plus the number each day kept easy days honest. The fiddly part was race day itself and past races, which need their own handling so a stale number never sits in the log.</p>
+<div class="brief"><b>VISUAL BRIEF — comment draft, no visual</b>Plain-text reply, no links, no images, no app mention unless someone asks directly. Substance first: answer the training question, let the countdown detail support it.</div>
+<p><button class="copybtn" data-copy="post-reddit-03">Copy text</button></p>
+</div></div>
+
+<div class="post" id="post-strava-club">
+<div class="post-head"><span class="file">posts/strava-club-announcement.md</span><span class="tag">Strava club</span><span class="draft">DRAFT — HAND-POST AFTER LAUNCH</span></div>
+<div class="post-body">
+<p class="post-text"># Strava club announcement (DRAFT, not posted — hand-post by a club owner after launch)
+
+Training for a race with us? I built a small countdown helper called mynextpr (Compatible with Strava, pre-launch).
+
+Pick your race in three taps, add an optional target finish, connect Strava once. Every run you log afterward carries its countdown in the activity description, for example `15 days to go for Delhi Half Marathon. Easy run. Target sub-2.`
+
+It writes descriptions only and never touches your titles. It uses Strava scopes `read` + `activity:write` on your own activities, with your consent. Disconnect anytime and future updates stop.
+
+Race-day runs read `Race day for Delhi Half Marathon. Easy run.` Once the date passes it writes nothing. Questions welcome in the comments.</p>
+<div class="brief"><b>VISUAL BRIEF — club post, image optional</b>Text-first announcement. Optional attachment: <code>images/x-card.png</code> if the club board supports images. Posted by hand by a club owner, in their own words if they prefer, after launch only.</div>
+<p><button class="copybtn" data-copy="post-strava-club">Copy text</button></p>
+</div></div>
+</section>
+
+<section id="calendar">
+<p class="kicker"><span class="n">07</span> · FOUR-WEEK CONTENT CALENDAR</p>
+<h2>Day by day</h2>
+<p>Weeks 1–2 ship the 14 existing drafts. Weeks 3–4 repeat the winners with the video scripts, then review. Sundays are rest and replies only. Comment-first work (2–3 link-free comments per week) runs in the background every week and is not a post.</p>
+<div class="tblwrap"><table>
+<tr><th>Day</th><th>Ship</th><th>Source</th></tr>
+<tr><td>Week 1 · Mon</td><td>X-01 — what it does, with example line</td><td><a href="#post-x-01">library</a></td></tr>
+<tr><td>Week 1 · Tue</td><td>IG-01 — countdown visual</td><td><a href="#post-ig-01">library</a></td></tr>
+<tr><td>Week 1 · Wed</td><td>X-02 — titles-are-sacred restraint post</td><td><a href="#post-x-02">library</a></td></tr>
+<tr><td>Week 1 · Thu</td><td>LinkedIn-01 — founder story</td><td><a href="#post-li-01">library</a></td></tr>
+<tr><td>Week 1 · Fri</td><td>X-03 — three-tap flow</td><td><a href="#post-x-03">library</a></td></tr>
+<tr><td>Week 1 · Sat</td><td>Reddit r/SideProject builder story (with disclosure)</td><td><a href="#post-reddit-01">library</a></td></tr>
+<tr><td>Week 1 · Sun</td><td>Rest. Reply to comments only.</td><td>—</td></tr>
+<tr><td>Week 2 · Mon</td><td>X-04 — race-day and past-race edges</td><td><a href="#post-x-04">library</a></td></tr>
+<tr><td>Week 2 · Tue</td><td>IG-02 — goal variant</td><td><a href="#post-ig-02">library</a></td></tr>
+<tr><td>Week 2 · Wed</td><td>LinkedIn-02 — minimal scopes engineering post</td><td><a href="#post-li-02">library</a></td></tr>
+<tr><td>Week 2 · Thu</td><td>X-05 — manage styles</td><td><a href="#post-x-05">library</a></td></tr>
+<tr><td>Week 2 · Fri</td><td>IG-03 — run kinds</td><td><a href="#post-ig-03">library</a></td></tr>
+<tr><td>Week 2 · Sat</td><td>Strava club announcement (hand-post after launch)</td><td><a href="#post-strava-club">library</a></td></tr>
+<tr><td>Week 2 · Sun</td><td>Review metrics, pick one winner to repeat.</td><td><a href="#metrics">metrics</a></td></tr>
+<tr><td>Week 3 · Mon</td><td>Repeat best X post with a fresh screenshot</td><td>week 1–2 winner</td></tr>
+<tr><td>Week 3 · Tue</td><td>Reel/Short script 1 — problem to countdown</td><td><a href="#channels">scripts</a></td></tr>
+<tr><td>Week 3 · Wed</td><td>X — answer the best question the r/SideProject thread asked</td><td>new, same voice</td></tr>
+<tr><td>Week 3 · Thu</td><td>IG carousel — five run kinds, one slide each</td><td>extends <a href="#post-ig-03">IG-03</a></td></tr>
+<tr><td>Week 3 · Fri</td><td>X — behind-the-mock: one thing the Connect gating prevented</td><td>new, same voice</td></tr>
+<tr><td>Week 3 · Sat</td><td>Submit to 5 curated running-tool / marketing-tool lists</td><td>awesome-list tactic</td></tr>
+<tr><td>Week 3 · Sun</td><td>Rest. Reply to comments only.</td><td>—</td></tr>
+<tr><td>Week 4 · Mon</td><td>Reel/Short script 2 — edge cases</td><td><a href="#channels">scripts</a></td></tr>
+<tr><td>Week 4 · Tue</td><td>LinkedIn — what the comments taught us (only if weeks 1–3 earned comments)</td><td>new, same voice</td></tr>
+<tr><td>Week 4 · Wed</td><td>X — goal variant example with a real race name and number</td><td>extends <a href="#post-x-05">X-05</a></td></tr>
+<tr><td>Week 4 · Thu</td><td>Reel/Short script 3 — goal variant</td><td><a href="#channels">scripts</a></td></tr>
+<tr><td>Week 4 · Fri</td><td>X — month-one note: what shipped, what changed, what is next</td><td>new, same voice</td></tr>
+<tr><td>Week 4 · Sat</td><td>Full 30-day metrics review + kill-rule decision</td><td><a href="#metrics">metrics</a></td></tr>
+<tr><td>Week 4 · Sun</td><td>Rest. Plan the next four weeks or stop and build.</td><td>—</td></tr>
+</table></div>
+</section>
+
+<section id="launchday">
+<p class="kicker"><span class="n">08</span> · LAUNCH-DAY CHECKLIST</p>
+<h2>Minute by minute</h2>
+<p>Launch day means the first public posts go out (Week 1 Monday). Times are local, run top to bottom, tick each item before moving on.</p>
+<ul class="check" id="launchcheck">
+<li><strong>T-60 — Read every draft once more.</strong> Check race names, numbers, and scopes against the hero copy. Fix the file, not the post.</li>
+<li><strong>T-45 — Verify images.</strong> Open <code>images/x-card.png</code>, <code>images/ig-45.png</code>, <code>images/hero.png</code>. Confirm no Strava logo, no mangled text at post size.</li>
+<li><strong>T-30 — Re-read the r/SideProject rules.</strong> Rules change; confirm self-promo builder stories are still allowed before Saturday's post.</li>
+<li><strong>T-15 — Log into X and Instagram.</strong> Confirm the accounts, the image uploads, and that nothing is pre-scheduled by accident.</li>
+<li><strong>T-00 — Post X-01 by hand.</strong> Text plus <code>x-card.png</code>. No scheduler for day one.</li>
+<li><strong>T+15 — Reply window.</strong> Answer the first comments within the hour. No links, no DMs.</li>
+<li><strong>T+30 — Log the baseline.</strong> Record follower counts, then close the apps: replies, saves, comments, signup intent.</li>
+<li><strong>T+60 — Comment-first round.</strong> Two genuine, link-free answers in running threads. Leave the app out of it unless asked.</li>
+<li><strong>Evening — Day-one note.</strong> One paragraph: what got a reply, what got silence, what changes tomorrow. File it next to this plan.</li>
+</ul>
+</section>
+
+<section id="metrics">
+<p class="kicker"><span class="n">09</span> · METRICS &amp; TARGETS</p>
+<h2>What good looks like in 30 days</h2>
+<h3>Lagging (the scoreboard)</h3>
+<ul>
+<li>Waitlist or connect-intent signups: <strong>100</strong>.</li>
+<li>X: <strong>10+ meaningful replies</strong> from runners (not likes).</li>
+<li>Reddit: r/SideProject post score <strong>above 20</strong>, zero removals anywhere.</li>
+<li>Instagram: <strong>saves over likes</strong>; 50 saves across 3 posts.</li>
+<li>LinkedIn: <strong>5+ comments</strong> from builders or runners per post.</li>
+<li>Strava club: <strong>20 members</strong> joined from the announcement.</li>
+</ul>
+<h3>Leading (the early signals, checked weekly)</h3>
+<ul>
+<li>Replies per post (quality beats reach).</li>
+<li>Saves per Instagram post.</li>
+<li>Comment-to-view ratio on the r/SideProject post in its first 24 hours.</li>
+<li>Questions asked back (a real question means the idea landed).</li>
+<li>UTM-tagged link clicks from each post to the signup surface, one funnel, no bloated stack.</li>
+</ul>
+<h3>Weekly review ritual (30 minutes, every Sunday)</h3>
+<ol>
+<li>Top 3 posts: why did they work? Bottom 3: what do we learn?</li>
+<li>Follower trend and engagement-rate trend per channel.</li>
+<li>One decision: repeat, rewrite, or retire the core message.</li>
+<li><strong>Kill rule:</strong> if two weeks produce zero signup intent, rewrite the core message before posting more.</li>
+</ol>
+</section>
+
+<section id="risks">
+<p class="kicker"><span class="n">10</span> · RISKS &amp; COMPLIANCE</p>
+<h2>What can go wrong, and the rule that prevents it</h2>
+<div class="tblwrap"><table>
+<tr><th>Risk</th><th>Rule</th></tr>
+<tr><td>Strava API rejection or takedown over brand misuse</td><td><code>Compatible with Strava</code> only. No logo, no <em>powered by / partnered / endorsed</em>, no <em>Strava</em> in the app name, company name at normal prominence. Official buttons and lockups only, unmodified.</td></tr>
+<tr><td>Strava API Policy §5.11 violation (verdicts in descriptions)</td><td>Written descriptions carry arithmetic (days left, goal pace) plus echoes of Strava's own data only. Never <em>on track / ahead / behind</em>, coaching advice, or finish predictions.</td></tr>
+<tr><td>Over-scoping the OAuth ask</td><td><code>read</code> + <code>activity:write</code> only. Own activities only, explicit consent first, disconnect deletes tokens, past runs stay as they are.</td></tr>
+<tr><td>Wrong countdown written to a real activity</td><td>Upcoming-race gating on Connect, singular/race-day/past-race edges, and the standing rule: a wrong number is worse than no number — write nothing when unsure.</td></tr>
+<tr><td>Reddit removal or ban (r/running Rule 3, r/AdvancedRunning Rule 7)</td><td>Comment-first only in both subs, link-free, app mentioned only if asked. One standalone post total (r/SideProject, disclosed). Re-check rules before posting; message mods when unsure.</td></tr>
+<tr><td>Pre-launch honesty slip (mock shown as live)</td><td>Every demo says <em>pre-launch mock</em>. The Connect button flips preview text only until production OAuth ships.</td></tr>
+<tr><td>Fabricated proof (fake stats, testimonials, timelines)</td><td>Every claim traces to <code>v6/PRODUCT.md</code> or <code>v6/hero-copy.md</code>. None exist beyond those files, so none appear in copy.</td></tr>
+</table></div>
+</section>
+
+<section id="assets">
+<p class="kicker"><span class="n">11</span> · ASSET INVENTORY</p>
+<h2>Every file in launch-kit, and what it is for</h2>
+<div class="tblwrap"><table>
+<tr><th>File</th><th>What it is for</th></tr>
+<tr><td><code>gtm-plan.html</code></td><td>This document — the launch bible. Open via file://, no server needed.</td></tr>
+<tr><td><code>PLAN.md</code></td><td>Strategy source: positioning, pillars, channel plan, two-week calendar, metrics, GitHub-topics research, image status.</td></tr>
+<tr><td><code>posts/x-01-what-it-does.md</code></td><td>X draft: what the app does + example line. Pair with <code>images/x-card.png</code>.</td></tr>
+<tr><td><code>posts/x-02-titles-sacred.md</code></td><td>X draft: description-only restraint. Pair with <code>images/x-card.png</code>.</td></tr>
+<tr><td><code>posts/x-03-three-taps.md</code></td><td>X draft: three-tap flow + Connect gating. Pair with <code>images/x-card.png</code>.</td></tr>
+<tr><td><code>posts/x-04-edges.md</code></td><td>X draft: singular / race-day / past-race edges. Pair with <code>images/x-card.png</code>.</td></tr>
+<tr><td><code>posts/x-05-styles.md</code></td><td>X draft: three manage styles. Pair with <code>images/x-card.png</code>.</td></tr>
+<tr><td><code>posts/ig-01-countdown.md</code></td><td>Instagram draft: countdown caption, on-image <em>15 days to go</em>. Pair with <code>images/ig-45.png</code>.</td></tr>
+<tr><td><code>posts/ig-02-goal.md</code></td><td>Instagram draft: goal variant, on-image <em>Target sub-2</em>. Reuse <code>images/ig-45.png</code>.</td></tr>
+<tr><td><code>posts/ig-03-run-kinds.md</code></td><td>Instagram draft: five run kinds, on-image <em>Tempo run</em>. Reuse <code>images/ig-45.png</code>.</td></tr>
+<tr><td><code>posts/li-01-founder-story.md</code></td><td>LinkedIn draft: founder story. Pair with <code>images/hero.png</code>.</td></tr>
+<tr><td><code>posts/li-02-minimal-scopes.md</code></td><td>LinkedIn draft: minimal-scopes engineering post. Reuse <code>images/hero.png</code>.</td></tr>
+<tr><td><code>posts/reddit-01-sideproject.md</code></td><td>Reddit draft: r/SideProject builder story (POST allowed, disclosed). Text-first.</td></tr>
+<tr><td><code>posts/reddit-02-running.md</code></td><td>Reddit draft: r/running link-free comment (COMMENT-FIRST, never a post).</td></tr>
+<tr><td><code>posts/reddit-03-advancedrunning.md</code></td><td>Reddit draft: r/AdvancedRunning link-free comment (COMMENT-FIRST, never a post).</td></tr>
+<tr><td><code>posts/strava-club-announcement.md</code></td><td>Strava club draft: hand-post by a club owner after launch.</td></tr>
+<tr><td><code>images/x-card.png</code></td><td>16:9 X card: dawn runner near India Gate. Used by all 5 X posts.</td></tr>
+<tr><td><code>images/ig-45.png</code></td><td>4:5 Instagram visual: stride close-up with countdown overlay. Used by all 3 IG posts.</td></tr>
+<tr><td><code>images/hero.png</code></td><td>16:9 hero: shoe-tying with negative space left. Used by both LinkedIn posts.</td></tr>
+<tr><td><code>images/x-card-prompt.txt</code></td><td>Generation prompt for the X card (regenerate if a large crop is needed).</td></tr>
+<tr><td><code>images/ig-45-prompt.txt</code></td><td>Generation prompt for the Instagram visual.</td></tr>
+<tr><td><code>images/hero-prompt.txt</code></td><td>Generation prompt for the hero image.</td></tr>
+</table></div>
+</section>
+
+<section id="appendix">
+<p class="kicker"><span class="n">12</span> · APPENDIX — SOURCES</p>
+<h2>Where the grounding came from</h2>
+<h3>Product truth (repo files, read 2026-10-10)</h3>
+<ul>
+<li><code>v6/PRODUCT.md</code> — platform, users, positioning, constraints, brand commitments.</li>
+<li><code>v6/hero-copy.md</code> — headline lockup, description templates, manage styles, CTA and consent microcopy.</li>
+<li><code>v6/design-tokens.md</code> + <code>v6/tokens.css</code> — visual language reused by this document (paper, ink, muted, line, soft, accent).</li>
+<li><code>launch-kit/PLAN.md</code> — strategy, pillars, two-week calendar, metrics, GitHub-topics research, image status.</li>
+<li><code>launch-kit/posts/*.md</code> — all 14 drafts, embedded verbatim in <a href="#library">section 6</a>.</li>
+</ul>
+<h3>Competitor pages (fetched and observed 2026-10-10)</h3>
+<ul>
+<li><a href="https://activityfix.com/">ActivityFix homepage</a> — rule engine, observed OAuth scopes, Powered-by-Strava lockup.</li>
+<li><a href="https://www.intervals.icu/">intervals.icu homepage</a> — free training platform, athlete/activity counts, Compatible-with-Strava badge.</li>
+<li><a href="https://smashrun.com/">Smashrun homepage and about page</a> — indie run analytics, three-person team.</li>
+<li><a href="https://www.techradar.com/health-fitness/fitness-apps/strava-owned-runna-just-launched-the-feature-ive-been-waiting-for-to-plan-my-race-calendar">Runna / Races by Runna coverage (TechRadar)</a> — Strava ownership, race discovery.</li>
+</ul>
+<h3>Guidelines and rules</h3>
+<ul>
+<li><a href="http://strava.github.io/api/v3/guidelines/">Strava API Brand Guidelines</a> — Connect button, Compatible/Powered lockups, logo rules.</li>
+<li><a href="https://developers.strava.com/">Strava developer portal</a> — API agreement and policy home (re-check §5.11 verdict ban before production writes).</li>
+<li>r/running Rule 3 and r/AdvancedRunning Rule 7 as quoted in the repo drafts (live rules pages are login-gated; re-check in a browser before posting).</li>
+<li><a href="https://support.reddithelp.com/hc/en-us/articles/28012014962580-How-do-I-keep-spam-out-of-my-community">Reddit spam guidance (10% self-promotion rule)</a>.</li>
+</ul>
+<h3>GitHub topics research (from PLAN.md §7, consulted for this plan)</h3>
+<ul>
+<li><a href="https://github.com/topics/digital-marketing">github.com/topics/digital-marketing</a>, <a href="https://github.com/topics/marketing-tools">marketing-tools</a>, <a href="https://github.com/topics/marketing-skills">marketing-skills</a></li>
+<li><a href="https://github.com/marketingtoolslist/awesome-marketing">marketingtoolslist/awesome-marketing</a> — awesome-list distribution tactic.</li>
+<li><a href="https://github.com/marketinguys/awesome-gtm-engineering">marketinguys/awesome-gtm-engineering</a> — UTM discipline, minimal-stack attribution.</li>
+<li><a href="https://github.com/paulbradish/awesome-digital-marketing">paulbradish/awesome-digital-marketing</a> — owned-list-first sequencing.</li>
+<li><a href="https://github.com/coreyhaines31/marketingskills">coreyhaines31/marketingskills</a> — content atomization.</li>
+<li><a href="https://github.com/mautic/mautic">mautic/mautic</a> — used negatively: no self-hosted mail stack pre-launch.</li>
+</ul>
+</section>
+
+<footer>
+<p>mynextpr · writes descriptions, never titles. Not endorsed by Strava. This plan is drafts only — nothing here is posted, scheduled, or published.</p>
+<p><a class="topbtn" href="#top">Back to top ↑</a></p>
+</footer>
+
+</div><!-- /wrap -->
+<script>
+(function(){
+  "use strict";
+  /* Active nav highlight */
+  var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+  var map={}; links.forEach(function(a){ map[a.getAttribute('href').slice(1)]=a; });
+  function onScroll(){
+    var cur=null;
+    Object.keys(map).forEach(function(id){
+      var el=document.getElementById(id);
+      if(el && el.getBoundingClientRect().top<120) cur=id;
+    });
+    links.forEach(function(a){ a.classList.toggle('active', a===map[cur]); });
+  }
+  document.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  /* Copy buttons */
+  document.querySelectorAll('.copybtn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var card=document.getElementById(btn.getAttribute('data-copy'));
+      var txt=card.querySelector('.post-text').innerText;
+      function done(){ btn.textContent='Copied'; setTimeout(function(){btn.textContent='Copy text';},1500); }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(done,function(){ fallback(); });
+      } else { fallback(); }
+      function fallback(){
+        var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+        ta.select(); try{document.execCommand('copy'); done();}catch(e){btn.textContent='Copy failed';}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+  /* Launch checklist ticks */
+  var items=document.querySelectorAll('#launchcheck li');
+  items.forEach(function(li){
+    li.setAttribute('role','checkbox'); li.setAttribute('tabindex','0');
+    li.setAttribute('aria-checked','false');
+    function toggle(){
+      li.classList.toggle('done');
+      li.setAttribute('aria-checked', li.classList.contains('done')?'true':'false');
+    }
+    li.addEventListener('click',toggle);
+    li.addEventListener('keydown',function(e){ if(e.key===' '||e.key==='Enter'){e.preventDefault();toggle();} });
+  });
+})();
+</script>
+</body>
+</html>

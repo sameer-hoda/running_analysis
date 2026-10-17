@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+<rect width="400" height="300" rx="16" fill="#0a0c11"/>
+<rect width="400" height="300" rx="16" fill="none" stroke="#1c232d" stroke-width="2"/>
+<rect x="0" y="0" width="10" height="300" rx="5" fill="#c8f04a"/>
+<text x="28" y="42" font-size="12" letter-spacing="3" fill="#c8f04a" font-family="system-ui,sans-serif">RUNFORM EVIDENCE</text>
+<text x="28" y="96" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">Influence of stride frequency and</text>
+<text x="28" y="122" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">length on running mechanics: a</text>
+<text x="28" y="148" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">systematic review</text>
+<text x="28" y="182" font-size="13" fill="#8b938a" font-family="system-ui,sans-serif">Schubert AG et al.</text>
+<text x="28" y="202" font-size="12" fill="#5b635c" font-family="system-ui,sans-serif">Sports Health · 2014</text>
+<text x="28" y="278" font-size="11" fill="#c8f04a" font-family="system-ui,sans-serif">knees feet strike hips pelvis</text>
+</svg>

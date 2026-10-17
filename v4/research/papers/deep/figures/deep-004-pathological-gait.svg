@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Control versus injured-runner posture schematic">
+  <rect width="640" height="360" fill="#0a0c11"/>
+  <text x="320" y="28" text-anchor="middle" fill="#c8f04a" font-family="sans-serif" font-size="16" font-weight="bold">The pathological cluster: control vs injured pattern</text>
+  <!-- control runner -->
+  <text x="170" y="56" text-anchor="middle" fill="#c8f04a" font-family="sans-serif" font-size="13" font-weight="bold">Control</text>
+  <line x1="40" y1="270" x2="300" y2="270" stroke="#3a4152" stroke-width="2"/>
+  <circle cx="170" cy="112" r="12" fill="none" stroke="#e8ecf4" stroke-width="2"/>
+  <line x1="170" y1="124" x2="170" y2="195" stroke="#e8ecf4" stroke-width="3"/>
+  <line x1="150" y1="196" x2="190" y2="196" stroke="#c8f04a" stroke-width="4"/>
+  <line x1="170" y1="196" x2="162" y2="268" stroke="#e8ecf4" stroke-width="3"/>
+  <line x1="170" y1="196" x2="182" y2="268" stroke="#e8ecf4" stroke-width="3"/>
+  <line x1="170" y1="142" x2="152" y2="172" stroke="#e8ecf4" stroke-width="2.5"/>
+  <line x1="170" y1="142" x2="188" y2="172" stroke="#e8ecf4" stroke-width="2.5"/>
+  <text x="170" y="292" text-anchor="middle" fill="#c8f04a" font-family="sans-serif" font-size="11">level pelvis, tall trunk</text>
+  <text x="170" y="310" text-anchor="middle" fill="#8b93a7" font-family="sans-serif" font-size="11">soft knee at contact</text>
+  <!-- injured pattern -->
+  <text x="480" y="56" text-anchor="middle" fill="#ff6b6b" font-family="sans-serif" font-size="13" font-weight="bold">Injured pattern</text>
+  <line x1="350" y1="270" x2="610" y2="270" stroke="#3a4152" stroke-width="2"/>
+  <circle cx="500" cy="104" r="12" fill="none" stroke="#e8ecf4" stroke-width="2"/>
+  <line x1="496" y1="116" x2="478" y2="192" stroke="#e8ecf4" stroke-width="3"/>
+  <line x1="452" y1="188" x2="496" y2="200" stroke="#ff6b6b" stroke-width="4"/>
+  <line x1="478" y1="194" x2="470" y2="268" stroke="#e8ecf4" stroke-width="3"/>
+  <line x1="478" y1="194" x2="500" y2="268" stroke="#e8ecf4" stroke-width="3"/>
+  <line x1="490" y1="134" x2="470" y2="164" stroke="#e8ecf4" stroke-width="2.5"/>
+  <line x1="490" y1="134" x2="510" y2="164" stroke="#e8ecf4" stroke-width="2.5"/>
+  <text x="480" y="292" text-anchor="middle" fill="#ff6b6b" font-family="sans-serif" font-size="11">pelvic drop + extra trunk lean</text>
+  <text x="480" y="310" text-anchor="middle" fill="#8b93a7" font-family="sans-serif" font-size="11">extended knee at contact</text>
+  <text x="320" y="340" text-anchor="middle" fill="#8b93a7" font-family="sans-serif" font-size="11">Midstance tells the story: level and tall vs dropped and leaning.</text>
+  <text x="320" y="76" text-anchor="middle" fill="#5a6376" font-family="sans-serif" font-size="10">original schematic after Bramah et al. 2018 — not paper artwork</text>
+</svg>

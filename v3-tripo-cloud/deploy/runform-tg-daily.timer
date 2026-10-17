@@ -1,0 +1,10 @@
+[Unit]
+Description=RunForm Telegram daily usage report timer
+
+[Timer]
+OnCalendar=*-*-* 08:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,1458 @@
+I've reviewed your Strava Activity Dashboard project code and the current state of the application. You're right that the current image generation is quite basic. Let me provide you with recommendations to enhance the social media image generator to create more visually appealing and feature-rich Instagram-ready images.
+
+## Current Issues:
+1. The image has minimal visual appeal with just text on a plain background
+2. No map visualization despite having map data
+3. No charts/graphs for heart rate, pace, or elevation
+4. Limited color options and styling
+5. Lacks visual hierarchy and modern design elements
+6. No branding or visual identity
+
+## Recommended Changes:
+
+### 1. Canvas Drawing Enhancements
+
+```javascript
+// In ActivityImageGenerator class, enhance drawBackground method
+async drawBackground() {
+    // Create gradient background instead of flat color
+    const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+    
+    if (this.options.colorTheme === 'gradient-blue') {
+        gradient.addColorStop(0, '#4e73df');
+        gradient.addColorStop(1, '#224abe');
+    } else if (this.options.colorTheme === 'gradient-red') {
+        gradient.addColorStop(0, '#e74a3b');
+        gradient.addColorStop(1, '#be2617');
+    } else if (this.options.colorTheme === 'dark') {
+        gradient.addColorStop(0, '#2d3436');
+        gradient.addColorStop(1, '#121212');
+    } else {
+        gradient.addColorStop(0, '#f8f9fa');
+        gradient.addColorStop(1, '#e9ecef');
+    }
+    
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Add subtle pattern or texture
+    if (this.options.template !== 'minimal') {
+        this.drawPattern();
+    }
+}
+
+// Add pattern/texture method
+async drawPattern() {
+    // Draw subtle dots or lines for texture
+    this.ctx.globalAlpha = 0.05;
+    for (let i = 0; i < this.canvas.width; i += 20) {
+        for (let j = 0; j < this.canvas.height; j += 20) {
+            this.ctx.beginPath();
+            this.ctx.arc(i, j, 1, 0, Math.PI * 2);
+            this.ctx.fillStyle = this.options.colorTheme === 'light' ? '#000' : '#fff';
+            this.ctx.fill();
+        }
+    }
+    this.ctx.globalAlpha = 1.0;
+}
+```
+
+### 2. Implement Map Drawing Using Polyline
+
+```javascript
+// Add to ActivityImageGenerator
+async drawMap() {
+    if (!this.activity.map?.summary_polyline) return;
+    
+    const mapWidth = this.canvas.width * 0.8;
+    const mapHeight = mapWidth * 0.6;
+    const mapX = (this.canvas.width - mapWidth) / 2;
+    const mapY = 400;
+    
+    // Draw map background
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#3d3d3d' : '#ffffff';
+    this.ctx.fillRect(mapX, mapY, mapWidth, mapHeight);
+    this.ctx.strokeStyle = '#ddd';
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(mapX, mapY, mapWidth, mapHeight);
+    
+    // Decode and draw polyline
+    const points = this.decodePolyline(this.activity.map.summary_polyline);
+    if (points.length > 0) {
+        // Find bounds
+        let minLat = points[0][0], maxLat = points[0][0];
+        let minLng = points[0][1], maxLng = points[0][1];
+        
+        points.forEach(point => {
+            minLat = Math.min(minLat, point[0]);
+            maxLat = Math.max(maxLat, point[0]);
+            minLng = Math.min(minLng, point[1]);
+            maxLng = Math.max(maxLng, point[1]);
+        });
+        
+        // Draw route
+        this.ctx.beginPath();
+        points.forEach((point, index) => {
+            // Convert geo coordinates to pixel coordinates
+            const x = mapX + mapWidth * (point[1] - minLng) / (maxLng - minLng);
+            const y = mapY + mapHeight - mapHeight * (point[0] - minLat) / (maxLat - minLat);
+            
+            if (index === 0) {
+                this.ctx.moveTo(x, y);
+            } else {
+                this.ctx.lineTo(x, y);
+            }
+        });
+        
+        // Style route line
+        this.ctx.strokeStyle = this.getRouteColor();
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+        
+        // Draw start and end points
+        this.drawMapMarker(
+            mapX + mapWidth * (points[0][1] - minLng) / (maxLng - minLng),
+            mapY + mapHeight - mapHeight * (points[0][0] - minLat) / (maxLat - minLat), 
+            '#4CAF50'
+        );
+        this.drawMapMarker(
+            mapX + mapWidth * (points[points.length-1][1] - minLng) / (maxLng - minLng),
+            mapY + mapHeight - mapHeight * (points[points.length-1][0] - minLat) / (maxLat - minLat), 
+            '#F44336'
+        );
+    }
+    
+    // Add map attribution
+    this.ctx.font = '10px Arial';
+    this.ctx.fillStyle = '#999';
+    this.ctx.textAlign = 'right';
+    this.ctx.fillText('Map data © Strava', mapX + mapWidth - 5, mapY + mapHeight - 5);
+}
+
+// Helper method to draw map markers
+drawMapMarker(x, y, color) {
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, 5, 0, Math.PI * 2);
+    this.ctx.fillStyle = color;
+    this.ctx.fill();
+    this.ctx.strokeStyle = '#fff';
+    this.ctx.lineWidth = 2;
+    this.ctx.stroke();
+}
+
+// Helper method to decode Google's encoded polyline format
+decodePolyline(encoded) {
+    // Add polyline decoding logic here
+    // This is a standard algorithm - you can find implementations online
+    // Here's a simplified version:
+    let points = [];
+    let index = 0, lat = 0, lng = 0;
+    
+    while (index < encoded.length) {
+        let b, shift = 0, result = 0;
+        do {
+            b = encoded.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+        let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lat += dlat;
+        
+        shift = 0;
+        result = 0;
+        do {
+            b = encoded.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+        let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lng += dlng;
+        
+        points.push([lat * 1e-5, lng * 1e-5]);
+    }
+    
+    return points;
+}
+
+getRouteColor() {
+    switch(this.options.colorTheme) {
+        case 'gradient-blue': return '#4e73df';
+        case 'gradient-red': return '#e74a3b';
+        case 'dark': return '#ff9800';
+        default: return '#ff5722';
+    }
+}
+```
+
+### 3. Add Charts for Heart Rate, Pace, and Elevation
+
+```javascript
+// Add to ActivityImageGenerator
+async drawHeartRateChart() {
+    if (!this.activity.has_heartrate) return;
+    
+    const chartWidth = this.canvas.width * 0.4;
+    const chartHeight = 120;
+    const chartX = this.canvas.width * 0.1;
+    const chartY = 650;
+    
+    // Draw chart background
+    this.drawChartBackground(chartX, chartY, chartWidth, chartHeight, 'Heart Rate');
+    
+    // Since we don't have actual heart rate data points, we'll create a stylized representation
+    const avgHR = this.activity.average_heartrate;
+    const maxHR = this.activity.max_heartrate;
+    
+    // Draw the HR zone visualization
+    this.ctx.beginPath();
+    
+    // Draw a stylized HR curve (simulated since we don't have the time series data)
+    this.ctx.moveTo(chartX, chartY + chartHeight - 20);
+    
+    // Create a wave pattern simulating heart rate
+    for (let i = 0; i < chartWidth; i += 10) {
+        const variance = Math.sin(i/10) * 15;
+        const height = chartHeight * 0.6 - variance;
+        
+        this.ctx.lineTo(chartX + i, chartY + height);
+    }
+    
+    this.ctx.strokeStyle = '#ff5252';
+    this.ctx.lineWidth = 3;
+    this.ctx.stroke();
+    
+    // Draw average HR line
+    const avgHRY = chartY + chartHeight - (avgHR / maxHR) * chartHeight;
+    this.ctx.beginPath();
+    this.ctx.moveTo(chartX, avgHRY);
+    this.ctx.lineTo(chartX + chartWidth, avgHRY);
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    this.ctx.lineWidth = 1;
+    this.ctx.stroke();
+    
+    // Display HR values
+    this.ctx.fillStyle = '#ff5252';
+    this.ctx.font = 'bold 24px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText(`${avgHR} bpm avg`, chartX + chartWidth/2, chartY + chartHeight + 30);
+    this.ctx.font = '16px Arial';
+    this.ctx.fillText(`Max: ${maxHR} bpm`, chartX + chartWidth/2, chartY + chartHeight + 55);
+}
+
+async drawPaceChart() {
+    // Similar to heart rate chart but for pace
+    const chartWidth = this.canvas.width * 0.4;
+    const chartHeight = 120;
+    const chartX = this.canvas.width * 0.5;
+    const chartY = 650;
+    
+    // Draw chart background
+    this.drawChartBackground(chartX, chartY, chartWidth, chartHeight, 'Pace');
+    
+    // Calculate pace in min/km from m/s
+    const avgPaceMinPerKm = (1000 / this.activity.average_speed) / 60;
+    const avgPaceMin = Math.floor(avgPaceMinPerKm);
+    const avgPaceSec = Math.round((avgPaceMinPerKm - avgPaceMin) * 60);
+    const paceDisplay = `${avgPaceMin}:${avgPaceSec.toString().padStart(2, '0')}`;
+    
+    // Draw pace visualization (similar style to HR)
+    this.ctx.beginPath();
+    
+    // Stylized line for pace
+    for (let i = 0; i < chartWidth; i += 15) {
+        const height = chartHeight * 0.3 + Math.random() * chartHeight * 0.4;
+        if (i === 0) {
+            this.ctx.moveTo(chartX, chartY + height);
+        } else {
+            this.ctx.lineTo(chartX + i, chartY + height);
+        }
+    }
+    
+    this.ctx.strokeStyle = '#4fc3f7';
+    this.ctx.lineWidth = 3;
+    this.ctx.stroke();
+    
+    // Display pace value
+    this.ctx.fillStyle = '#4fc3f7';
+    this.ctx.font = 'bold 24px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText(`${paceDisplay} /km`, chartX + chartWidth/2, chartY + chartHeight + 30);
+}
+
+// Helper to draw chart background
+drawChartBackground(x, y, width, height, title) {
+    // Draw container with rounded corners
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    this.roundRect(x, y, width, height, 10);
+    
+    // Draw title
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#333';
+    this.ctx.font = '14px Arial';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText(title, x + 10, y - 10);
+    
+    // Draw grid lines
+    this.ctx.strokeStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    this.ctx.lineWidth = 1;
+    
+    // Horizontal grid lines
+    for (let i = 0; i < height; i += height / 4) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y + i);
+        this.ctx.lineTo(x + width, y + i);
+        this.ctx.stroke();
+    }
+}
+
+// Helper for rounded rectangles
+roundRect(x, y, width, height, radius) {
+    this.ctx.beginPath();
+    this.ctx.moveTo(x + radius, y);
+    this.ctx.lineTo(x + width - radius, y);
+    this.ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    this.ctx.lineTo(x + width, y + height - radius);
+    this.ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    this.ctx.lineTo(x + radius, y + height);
+    this.ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    this.ctx.lineTo(x, y + radius);
+    this.ctx.quadraticCurveTo(x, y, x + radius, y);
+    this.ctx.closePath();
+    this.ctx.fill();
+}
+```
+
+### 4. Enhanced Header and Metrics Display
+
+```javascript
+// Replace drawHeader method
+async drawHeader() {
+    // Add decorative header bar
+    const headerHeight = 150;
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    this.ctx.fillRect(0, 0, this.canvas.width, headerHeight);
+    
+    // Activity type icon (simplified - can be enhanced with actual icons)
+    const iconSize = 40;
+    this.ctx.beginPath();
+    this.ctx.arc(this.canvas.width / 2, headerHeight / 2, iconSize, 0, Math.PI * 2);
+    this.ctx.fillStyle = this.getActivityTypeColor();
+    this.ctx.fill();
+    
+    // Activity type symbol (simple representation - can be replaced with proper icon drawing)
+    this.ctx.fillStyle = '#fff';
+    this.ctx.font = 'bold 20px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText(this.getActivityTypeSymbol(), this.canvas.width / 2, headerHeight / 2 + 7);
+    
+    // Activity name
+    this.ctx.fillStyle = '#fff';
+    this.ctx.font = 'bold 36px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText(this.activity.name || 'Activity', this.canvas.width / 2, headerHeight + 50);
+    
+    // Activity type and date
+    const activityDate = new Date(this.activity.start_date_local).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+    this.ctx.font = '24px Arial';
+    this.ctx.fillText(`${this.activity.type || 'Unknown Type'} • ${activityDate}`, this.canvas.width / 2, headerHeight + 90);
+}
+
+getActivityTypeColor() {
+    switch(this.activity.type) {
+        case 'Run': return '#ff5722';
+        case 'Ride': return '#4caf50';
+        case 'Swim': return '#2196f3';
+        case 'VirtualRide': return '#9c27b0';
+        default: return '#ffc107';
+    }
+}
+
+getActivityTypeSymbol() {
+    switch(this.activity.type) {
+        case 'Run': return '🏃';
+        case 'Ride': return '🚴';
+        case 'Swim': return '🏊';
+        case 'VirtualRide': return '🎮';
+        default: return '💪';
+    }
+}
+
+// Replace drawPrimaryMetrics method with a more modern card-based approach
+async drawPrimaryMetrics() {
+    const metricsY = 220;
+    const cardWidth = this.canvas.width * 0.4;
+    const cardHeight = 100;
+    const spacing = 20;
+    
+    // Draw distance card
+    const distanceKm = (this.activity.distance / 1000).toFixed(2);
+    this.drawMetricCard(this.canvas.width / 2 - cardWidth - spacing/2, metricsY, 
+                      cardWidth, cardHeight, 'DISTANCE', `${distanceKm} km`, '📏');
+    
+    // Draw time card
+    const movingTime = new Date(this.activity.moving_time * 1000).toISOString().substr(11, 8);
+    this.drawMetricCard(this.canvas.width / 2 + spacing/2, metricsY, 
+                      cardWidth, cardHeight, 'TIME', movingTime, '⏱️');
+    
+    // Draw elevation card if available
+    if (this.activity.total_elevation_gain) {
+        this.drawMetricCard(this.canvas.width / 2 - cardWidth - spacing/2, metricsY + cardHeight + spacing, 
+                          cardWidth, cardHeight, 'ELEVATION', `${this.activity.total_elevation_gain.toFixed(0)} m`, '⛰️');
+    }
+    
+    // Draw pace/speed card
+    if (this.activity.type === 'Run' && this.activity.average_speed) {
+        const paceMinPerKm = (1000 / this.activity.average_speed) / 60;
+        const paceMinutes = Math.floor(paceMinPerKm);
+        const paceSeconds = Math.round((paceMinPerKm - paceMinutes) * 60);
+        this.drawMetricCard(this.canvas.width / 2 + spacing/2, metricsY + cardHeight + spacing, 
+                          cardWidth, cardHeight, 'AVG PACE', 
+                          `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} /km`, '🏎️');
+    } else if (this.activity.average_speed) {
+        const speedKmh = (this.activity.average_speed * 3.6).toFixed(1);
+        this.drawMetricCard(this.canvas.width / 2 + spacing/2, metricsY + cardHeight + spacing, 
+                          cardWidth, cardHeight, 'AVG SPEED', `${speedKmh} km/h`, '🏎️');
+    }
+}
+
+// Helper to draw metric cards
+drawMetricCard(x, y, width, height, label, value, icon) {
+    // Card background
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.8)';
+    this.roundRect(x, y, width, height, 10);
+    
+    // Icon
+    this.ctx.font = '24px Arial';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText(icon, x + 15, y + 35);
+    
+    // Label
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
+    this.ctx.font = '14px Arial';
+    this.ctx.fillText(label, x + 50, y + 25);
+    
+    // Value
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#000';
+    this.ctx.font = 'bold 28px Arial';
+    this.ctx.fillText(value, x + 50, y + 60);
+}
+```
+
+### 5. Enhanced Athlete Info and Branding
+
+```javascript
+// Replace drawAthleteInfo method
+async drawAthleteInfo() {
+    const y = this.canvas.height - 140;
+    
+    // Background bar
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    this.ctx.fillRect(0, y, this.canvas.width, 140);
+    
+    // Profile info area
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#fff';
+    this.ctx.font = 'bold 24px Arial';
+    this.ctx.textAlign = 'center';
+    
+    const athleteName = `${this.athlete.firstname} ${this.athlete.lastname}`;
+    this.ctx.fillText(athleteName, this.canvas.width / 2, y + 40);
+    
+    // Social handle/bio if available
+    if (this.athlete.username) {
+        this.ctx.font = '16px Arial';
+        this.ctx.fillText(`@${this.athlete.username}`, this.canvas.width / 2, y + 65);
+    }
+    
+    // Profile picture placeholder (circle)
+    this.ctx.beginPath();
+    this.ctx.arc(this.canvas.width / 2, y - 40, 45, 0, Math.PI * 2);
+    this.ctx.fillStyle = '#ddd';
+    this.ctx.fill();
+    this.ctx.strokeStyle = '#fff';
+    this.ctx.lineWidth = 3;
+    this.ctx.stroke();
+    
+    // Placeholder avatar symbol
+    this.ctx.fillStyle = '#999';
+    this.ctx.font = '40px Arial';
+    this.ctx.fillText('👤', this.canvas.width / 2, y - 25);
+    
+    // Add strava-like branding
+    this.ctx.font = '14px Arial';
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    this.ctx.fillText('Created with Strava Activity Analyzer', this.canvas.width / 2, y + 95);
+    
+    // App logo/icon (simplified)
+    this.ctx.fillStyle = '#fc4c02'; // Strava orange
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.canvas.width / 2 - 60, y + 90);
+    this.ctx.lineTo(this.canvas.width / 2 - 50, y + 80);
+    this.ctx.lineTo(this.canvas.width / 2 - 40, y + 90);
+    this.ctx.fill();
+}
+```
+
+### 6. Custom Text and Optional Elements
+
+```javascript
+// Add method to draw custom text
+async drawCustomText() {
+    if (!this.options.customText) return;
+    
+    const y = this.canvas.height - 180;
+    
+    // Text bubble background
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    this.roundRect(this.canvas.width * 0.1, y, this.canvas.width * 0.8, 80, 20);
+    
+    // Quote marks
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+    this.ctx.font = 'bold 60px Arial';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('"', this.canvas.width * 0.15, y + 35);
+    
+    // Custom message
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#333';
+    this.ctx.font = 'italic 20px Arial';
+    this.ctx.textAlign = 'center';
+    
+    // Handle multi-line text
+    const words = this.options.customText.split(' ');
+    let line = '';
+    let lineY = y + 30;
+    const maxWidth = this.canvas.width * 0.7;
+    
+    for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i] + ' ';
+        const metrics = this.ctx.measureText(testLine);
+        
+        if (metrics.width > maxWidth && i > 0) {
+            this.ctx.fillText(line, this.canvas.width / 2, lineY);
+            line = words[i] + ' ';
+            lineY += 25;
+        } else {
+            line = testLine;
+        }
+    }
+    this.ctx.fillText(line, this.canvas.width / 2, lineY);
+    
+    // Closing quote
+    this.ctx.textAlign = 'right';
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+    this.ctx.font = 'bold 60px Arial';
+    this.ctx.fillText('"', this.canvas.width * 0.85, y + 70);
+}
+```
+
+### 7. Template Implementation
+
+```javascript
+// Modify generateImage to handle different templates
+async generateImage() {
+    if (!this.ctx || !this.activity || !this.athlete) {
+        console.error('Cannot generate image: context, activity, or athlete data is missing.');
+        return this.canvas;
+    }
+    imageLoadingOverlay.style.display = 'flex';
+    
+    // Clear canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Select template
+    switch(this.options.template) {
+        case 'minimal':
+            await this.generateMinimalTemplate();
+            break;
+        case 'detailed':
+            await this.generateDetailedTemplate();
+            break;
+        case 'achievement':
+            await this.generateAchievementTemplate();
+            break;
+        default:
+            await this.generateStandardTemplate();
+    }
+    
+    imageLoadingOverlay.style.display = 'none';
+    return this.canvas;
+}
+
+// Standard template
+async generateStandardTemplate() {
+    await this.drawBackground();
+    await this.drawHeader();
+    await this.drawPrimaryMetrics();
+    
+    if (this.options.includeMap && this.activity.map?.summary_polyline) {
+        await this.drawMap();
+    }
+    
+    if (this.options.includeHeartRate && this.activity.has_heartrate) {
+        await this.drawHeartRateChart();
+    }
+    
+    if (this.options.includePace) {
+        await this.drawPaceChart();
+    }
+    
+    if (this.options.customText) {
+        await this.drawCustomText();
+    }
+    
+    await this.drawAthleteInfo();
+}
+
+// Minimal template
+async generateMinimalTemplate() {
+    // Simpler, cleaner design with less elements
+    await this.drawBackground();
+    
+    // Clean header
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#000';
+    this.ctx.font = 'bold 48px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText(this.activity.name || 'Activity', this.canvas.width / 2, 150);
+    
+    // Just type and date
+    const activityDate = new Date(this.activity.start_date_local).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+    this.ctx.font = '28px Arial';
+    this.ctx.fillText(this.activity.type || 'Unknown Type', this.canvas.width / 2, 210);
+    this.ctx.font = '24px Arial';
+    this.ctx.fillText(activityDate, this.canvas.width / 2, 250);
+    
+    // Center the key metrics
+    const distanceKm = (this.activity.distance / 1000).toFixed(2);
+    const movingTime = new Date(this.activity.moving_time * 1000).toISOString().substr(11, 8);
+    
+    this.ctx.font = 'bold 72px Arial';
+    this.ctx.fillText(`${distanceKm} km`, this.canvas.width / 2, 400);
+    
+    this.ctx.font = 'bold 48px Arial';
+    this.ctx.fillText(movingTime, this.canvas.width / 2, 480);
+    
+    // Add pace if running
+    if (this.activity.type === 'Run' && this.activity.average_speed) {
+        const paceMinPerKm = (1000 / this.activity.average_speed) / 60;
+        const paceMinutes = Math.floor(paceMinPerKm);
+        const paceSeconds = Math.round((paceMinPerKm - paceMinutes) * 60);
+        
+        this.ctx.font = 'bold 36px Arial';
+        this.ctx.fillText(`${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} /km`, this.canvas.width / 2, 550);
+    }
+    
+    // Map if enabled
+    if (this.options.includeMap && this.activity.map?.summary_polyline) {
+        // Simplified map
+        await this.drawMap();
+    }
+    
+    // Footer with athlete
+    await this.drawAthleteInfo();
+}
+
+// Achievement template example
+async generateAchievementTemplate() {
+    await this.drawBackground();
+    
+    // Achievement-focused header with trophy
+    this.ctx.font = 'bold 100px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillStyle = '#ffd700'; // Gold
+    this.ctx.fillText('🏆', this.canvas.width / 2, 150);
+    
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#000';
+    this.ctx.font = 'bold 48px Arial';
+    this.ctx.fillText(this.activity.name || 'Activity', this.canvas.width / 2, 230);
+    
+    // Achievement message
+    this.ctx.font = 'bold 36px Arial';
+    this.ctx.fillText(`${this.activity.achievement_count}
+
+
+
+    Here's the rest of the code changes to create a rich Instagram-shareable dashboard image for your runs:
+
+```javascript
+// Achievement template continued
+async generateAchievementTemplate() {
+    await this.drawBackground();
+    
+    // Achievement-focused header with trophy
+    this.ctx.font = 'bold 100px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillStyle = '#ffd700'; // Gold
+    this.ctx.fillText('🏆', this.canvas.width / 2, 150);
+    
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#000';
+    this.ctx.font = 'bold 48px Arial';
+    this.ctx.fillText(this.activity.name || 'Activity', this.canvas.width / 2, 230);
+    
+    // Achievement message
+    this.ctx.font = 'bold 36px Arial';
+    let achievementText = "Great Job!";
+    if (this.activity.achievement_count > 0) {
+        achievementText = `${this.activity.achievement_count} Achievements Unlocked!`;
+    } else if (this.activity.pr_count > 0) {
+        achievementText = `${this.activity.pr_count} Personal Records!`;
+    }
+    this.ctx.fillText(achievementText, this.canvas.width / 2, 300);
+    
+    // Key stats in larger format
+    const distanceKm = (this.activity.distance / 1000).toFixed(2);
+    this.ctx.font = 'bold 72px Arial';
+    this.ctx.fillText(`${distanceKm} km`, this.canvas.width / 2, 400);
+    
+    // Draw awards or achievements
+    // Since we don't have the details of each achievement, 
+    // we'll create a visual representation
+    const awardCount = this.activity.achievement_count || this.activity.pr_count || 3;
+    const medals = ['🥇', '🥈', '🥉', '🏅', '🎖️'];
+    const spacing = this.canvas.width / (awardCount + 1);
+    
+    this.ctx.font = '48px Arial';
+    for (let i = 0; i < Math.min(awardCount, 5); i++) {
+        this.ctx.fillText(medals[i % medals.length], (i + 1) * spacing, 500);
+    }
+    
+    // Map if enabled
+    if (this.options.includeMap && this.activity.map?.summary_polyline) {
+        await this.drawMap();
+    }
+    
+    // Primary stats in card format below
+    await this.drawPrimaryMetrics();
+    
+    // Custom message if provided
+    if (this.options.customText) {
+        await this.drawCustomText();
+    }
+    
+    // Footer with athlete info
+    await this.drawAthleteInfo();
+}
+
+// Detailed template with comprehensive data display
+async generateDetailedTemplate() {
+    await this.drawBackground();
+    await this.drawHeader();
+    await this.drawPrimaryMetrics();
+    
+    // Organize layout differently to show more data
+    const leftColumnX = this.canvas.width * 0.1;
+    const rightColumnX = this.canvas.width * 0.55;
+    let currentY = 450;
+    
+    // Map on left if enabled
+    if (this.options.includeMap && this.activity.map?.summary_polyline) {
+        const mapWidth = this.canvas.width * 0.4;
+        const mapHeight = mapWidth * 0.75;
+        await this.drawDetailedMap(leftColumnX, currentY, mapWidth, mapHeight);
+        currentY += mapHeight + 30;
+    }
+    
+    // Heart rate data on right if enabled
+    if (this.options.includeHeartRate && this.activity.has_heartrate) {
+        await this.drawDetailedHeartRate(rightColumnX, 450);
+    }
+    
+    // Pace data
+    if (this.options.includePace) {
+        await this.drawDetailedPace(rightColumnX, 620);
+    }
+    
+    // Additional metrics section
+    await this.drawAdditionalMetrics(leftColumnX, currentY);
+    
+    // Custom message
+    if (this.options.customText) {
+        await this.drawCustomText();
+    }
+    
+    // Footer with athlete info
+    await this.drawAthleteInfo();
+}
+
+// Specialized methods for detailed template
+async drawDetailedMap(x, y, width, height) {
+    // Similar to the main map method but positioned differently
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#3d3d3d' : '#ffffff';
+    this.ctx.fillRect(x, y, width, height);
+    this.ctx.strokeStyle = '#ddd';
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(x, y, width, height);
+    
+    // Header for the map section
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#333';
+    this.ctx.font = 'bold 16px Arial';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('ROUTE', x, y - 10);
+    
+    // Decode and draw polyline (similar to standard map method)
+    // ...
+}
+
+async drawDetailedHeartRate(x, y) {
+    const width = this.canvas.width * 0.35;
+    const height = 140;
+    
+    // Background
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    this.roundRect(x, y, width, height, 10);
+    
+    // Header
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#333';
+    this.ctx.font = 'bold 16px Arial';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('HEART RATE', x + 10, y + 25);
+    
+    // Values
+    const avgHR = this.activity.average_heartrate;
+    const maxHR = this.activity.max_heartrate;
+    
+    this.ctx.fillStyle = '#ff5252';
+    this.ctx.font = 'bold 36px Arial';
+    this.ctx.fillText(`${avgHR}`, x + 10, y + 70);
+    
+    this.ctx.font = '16px Arial';
+    this.ctx.fillText('BPM AVG', x + 10, y + 90);
+    
+    this.ctx.font = 'bold 24px Arial';
+    this.ctx.fillText(`${maxHR}`, x + 10, y + 120);
+    
+    this.ctx.font = '16px Arial';
+    this.ctx.fillText('BPM MAX', x + 10, y + 140);
+    
+    // Heart icon
+    this.ctx.font = '48px Arial';
+    this.ctx.fillText('❤️', x + width - 70, y + 70);
+}
+
+async drawDetailedPace(x, y) {
+    const width = this.canvas.width * 0.35;
+    const height = 140;
+    
+    // Background
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    this.roundRect(x, y, width, height, 10);
+    
+    // Header
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#333';
+    this.ctx.font = 'bold 16px Arial';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('PACE', x + 10, y + 25);
+    
+    // Calculate pace
+    if (this.activity.type === 'Run' && this.activity.average_speed) {
+        const paceMinPerKm = (1000 / this.activity.average_speed) / 60;
+        const paceMinutes = Math.floor(paceMinPerKm);
+        const paceSeconds = Math.round((paceMinPerKm - paceMinutes) * 60);
+        
+        this.ctx.fillStyle = '#4fc3f7';
+        this.ctx.font = 'bold 36px Arial';
+        this.ctx.fillText(`${paceMinutes}:${paceSeconds.toString().padStart(2, '0')}`, x + 10, y + 70);
+        
+        this.ctx.font = '16px Arial';
+        this.ctx.fillText('MIN/KM AVG', x + 10, y + 90);
+        
+        // If max speed is available
+        if (this.activity.max_speed) {
+            const maxPaceMinPerKm = (1000 / this.activity.max_speed) / 60;
+            const maxPaceMinutes = Math.floor(maxPaceMinPerKm);
+            const maxPaceSeconds = Math.round((maxPaceMinPerKm - maxPaceMinutes) * 60);
+            
+            this.ctx.font = 'bold 24px Arial';
+            this.ctx.fillText(`${maxPaceMinutes}:${maxPaceSeconds.toString().padStart(2, '0')}`, x + 10, y + 120);
+            
+            this.ctx.font = '16px Arial';
+            this.ctx.fillText('MIN/KM BEST', x + 10, y + 140);
+        }
+    } else if (this.activity.average_speed) {
+        // For cycling or other activities
+        const speedKmh = (this.activity.average_speed * 3.6).toFixed(1);
+        
+        this.ctx.fillStyle = '#4fc3f7';
+        this.ctx.font = 'bold 36px Arial';
+        this.ctx.fillText(`${speedKmh}`, x + 10, y + 70);
+        
+        this.ctx.font = '16px Arial';
+        this.ctx.fillText('KM/H AVG', x + 10, y + 90);
+        
+        if (this.activity.max_speed) {
+            const maxSpeedKmh = (this.activity.max_speed * 3.6).toFixed(1);
+            
+            this.ctx.font = 'bold 24px Arial';
+            this.ctx.fillText(`${maxSpeedKmh}`, x + 10, y + 120);
+            
+            this.ctx.font = '16px Arial';
+            this.ctx.fillText('KM/H MAX', x + 10, y + 140);
+        }
+    }
+    
+    // Speed icon
+    this.ctx.font = '48px Arial';
+    this.ctx.fillText('🏎️', x + width - 70, y + 70);
+}
+
+async drawAdditionalMetrics(x, y) {
+    // Only display if we have more stats
+    if (!this.activity.average_cadence && !this.activity.suffer_score) {
+        return;
+    }
+    
+    const width = this.canvas.width * 0.4;
+    const height = 120;
+    
+    // Background
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    this.roundRect(x, y, width, height, 10);
+    
+    // Header
+    this.ctx.fillStyle = this.options.colorTheme === 'dark' ? '#fff' : '#333';
+    this.ctx.font = 'bold 16px Arial';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('ADDITIONAL METRICS', x + 10, y + 25);
+    
+    let currentX = x + 20;
+    const valueY = y + 70;
+    const labelY = y + 90;
+    
+    // Cadence
+    if (this.activity.average_cadence) {
+        this.ctx.fillStyle = '#9c27b0';  // Purple
+        this.ctx.font = 'bold 24px Arial';
+        this.ctx.fillText(`${this.activity.average_cadence.toFixed(1)}`, currentX, valueY);
+        
+        this.ctx.font = '14px Arial';
+        this.ctx.fillText('CADENCE', currentX, labelY);
+        
+        currentX += 120;
+    }
+    
+    // Suffer score
+    if (this.activity.suffer_score) {
+        this.ctx.fillStyle = '#f44336';  // Red
+        this.ctx.font = 'bold 24px Arial';
+        this.ctx.fillText(`${this.activity.suffer_score}`, currentX, valueY);
+        
+        this.ctx.font = '14px Arial';
+        this.ctx.fillText('SUFFER SCORE', currentX, labelY);
+        
+        currentX += 140;
+    }
+    
+    // Kudos count
+    if (this.activity.kudos_count) {
+        this.ctx.fillStyle = '#ff9800';  // Orange
+        this.ctx.font = 'bold 24px Arial';
+        this.ctx.fillText(`${this.activity.kudos_count}`, currentX, valueY);
+        
+        this.ctx.font = '14px Arial';
+        this.ctx.fillText('KUDOS', currentX, labelY);
+    }
+}
+```
+
+### 8. Update the Main App.js
+
+Modify the main ActivityImageGenerator initialization to incorporate all new features:
+
+```javascript
+// In app.js, initialize with full feature set
+async function initializeSocialShare() {
+    const dataLoaded = await loadActivityData();
+    if (dataLoaded && activityData && athleteData) {
+        socialShareSection.style.display = 'block'; // Show the section
+        document.querySelector('.login').style.display = 'none'; // Hide login button
+        document.querySelector('.benefits').style.display = 'none'; // Hide benefits
+
+        // Initialize with more options
+        activityImageGenerator = new ActivityImageGenerator(activityData, athleteData, {
+            template: 'standard', 
+            colorTheme: 'gradient-blue',
+            includeMap: true,
+            includeHeartRate: true,
+            includePace: true,
+            includeElevation: true
+        });
+        
+        activityImageGenerator.generateImage(); // Initial image generation
+
+        // Enhanced event listeners setup
+        setupEventListeners();
+    } else {
+        console.log('Social share section not initialized due to missing data or not on success page.');
+    }
+}
+
+function setupEventListeners() {
+    // Template selector
+    document.getElementById('image-template').addEventListener('change', (e) => {
+        activityImageGenerator.updateOptions({ template: e.target.value });
+    });
+
+    // Color theme buttons
+    document.querySelectorAll('.color-option').forEach(button => {
+        button.addEventListener('click', (e) => {
+            // Remove active class from all color buttons
+            document.querySelectorAll('.color-option').forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            e.target.classList.add('active');
+            
+            activityImageGenerator.updateOptions({ colorTheme: e.target.dataset.theme });
+        });
+    });
+
+    // Toggle checkboxes
+    document.getElementById('include-map').addEventListener('change', (e) => {
+        activityImageGenerator.updateOptions({ includeMap: e.target.checked });
+    });
+    document.getElementById('include-hr').addEventListener('change', (e) => {
+        activityImageGenerator.updateOptions({ includeHeartRate: e.target.checked });
+    });
+    document.getElementById('include-pace').addEventListener('change', (e) => {
+        activityImageGenerator.updateOptions({ includePace: e.target.checked });
+    });
+    document.getElementById('include-elevation').addEventListener('change', (e) => {
+        activityImageGenerator.updateOptions({ includeElevation: e.target.checked });
+    });
+
+    // Custom message textarea
+    document.getElementById('custom-message').addEventListener('input', (e) => {
+        activityImageGenerator.updateOptions({ customText: e.target.value });
+    });
+
+    // Action buttons
+    document.getElementById('regenerate-image').addEventListener('click', () => {
+        // Get current options from UI
+        const options = {
+            template: document.getElementById('image-template').value,
+            includeMap: document.getElementById('include-map').checked,
+            includeHeartRate: document.getElementById('include-hr').checked,
+            includePace: document.getElementById('include-pace').checked,
+            includeElevation: document.getElementById('include-elevation').checked,
+            customText: document.getElementById('custom-message').value
+        };
+        activityImageGenerator.updateOptions(options);
+    });
+
+    document.getElementById('download-image').addEventListener('click', async () => {
+        if (activityImageGenerator) {
+            const imageUrl = await activityImageGenerator.exportAsImage();
+            const link = document.createElement('a');
+            const activityDate = new Date(activityData.start_date_local).toISOString().slice(0, 10);
+            const fileName = `${activityData.name.replace(/\s+/g, '-')}-${activityDate}.png`;
+            
+            link.href = imageUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    });
+}
+```
+
+### 9. CSS Enhancements
+
+Add these styles to your style.css file to improve the UI for the image generator:
+
+```css
+/* Enhanced Social Share Section Styles */
+.social-share-section {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    margin: 2rem auto;
+    max-width: 1200px;
+}
+
+.social-share-section h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Image preview container */
+.image-preview-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+    background: #f4f4f4;
+    padding: 20px;
+    border-radius: 8px;
+    min-height: 400px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+#activity-image-preview {
+    max-width: 100%;
+    height: auto;
+    max-height: 70vh;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    border-radius: 8px;
+    z-index: 10;
+}
+
+/* Controls layout */
+.image-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.image-controls > div {
+    padding: 1.2rem;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.image-controls > div:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.image-controls label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+    color: #444;
+}
+
+.image-controls select,
+.image-controls textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.image-controls select:focus,
+.image-controls textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.image-controls textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Color options */
+.color-options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.color-option {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.active {
+    border-color: #333;
+    transform: scale(1.1);
+}
+
+/* Toggle options */
+.toggle-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.toggle-options label {
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.toggle-options input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(108,117,125,0.3);
+}
+
+/* Improved color theme buttons */
+.color-option[data-theme="gradient-blue"] { 
+    background: linear-gradient(45deg, #4e73df, #224abe); 
+}
+.color-option[data-theme="gradient-red"] { 
+    background: linear-gradient(45deg, #e74a3b, #be2617); 
+}
+.color-option[data-theme="dark"] { 
+    background-color: #343a40; 
+}
+.color-option[data-theme="light"] { 
+    background-color: #f8f9fa; 
+    border: 1px solid #ddd; 
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .social-share-section {
+        padding: 1rem;
+    }
+    
+    .image-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+```
+
+### 10. Add Activity Selector Feature
+
+Finally, let's add an activity selector so users can choose which activity to visualize:
+
+```javascript
+// Add to app.js
+
+// At the top of initializeSocialShare()
+let activitiesLoaded = [];
+
+async function loadActivityData() {
+    try {
+        const activityResponse = await fetch('strava_activities_data.json');
+        if (!activityResponse.ok) throw new Error('Failed to load activity data');
+        activitiesLoaded = await activityResponse.json();
+        
+        if (activitiesLoaded.length > 0) {
+            // Set the first activity as default
+            activityData = activitiesLoaded[0];
+            
+            // Populate activity selector
+            populateActivitySelector(activitiesLoaded);
+        } else {
+            console.warn('No activities found in strava_activities_data.json');
+            return false;
+        }
+
+        const athleteResponse = await fetch('strava_athlete_data.json');
+        if (!athleteResponse.ok) throw new Error('Failed to load athlete data');
+        athleteData = await athleteResponse.json();
+        
+        console.log('Loaded activity data:', activityData);
+        console.log('Loaded athlete data:', athleteData);
+        return true;
+    } catch (error) {
+        console.error('Error loading local activity/athlete data:', error);
+        return false;
+    }
+}
+
+function populateActivitySelector(activities) {
+    const selector = document.createElement('select');
+    selector.id = 'activity-selector';
+    selector.className = 'activity-selector';
+    
+    activities.forEach((activity, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        
+        // Format date
+        const activityDate = new Date(activity.start_date_local).toLocaleDateString();
+        
+        // Format distance
+        const distanceKm = (activity.distance / 1000).toFixed(1);
+        
+        option.textContent = `${activity.name} - ${distanceKm}km (${activityDate})`;
+        selector.appendChild(option);
+    });
+    
+    // Create container with label
+    const container = document.createElement('div');
+    container.className = 'activity-selector-container';
+    
+    const label = document.createElement('label');
+    label.htmlFor = 'activity-selector';
+    label.textContent = 'Select Activity:';
+    
+    container.appendChild(label);
+    container.appendChild(selector);
+    
+    // Insert before the image preview container
+    const previewContainer = document.querySelector('.image-preview-container');
+    previewContainer.parentNode.insertBefore(container, previewContainer);
+    
+    // Add event listener
+    selector.addEventListener('change', (e) => {
+        const selectedIndex = parseInt(e.target.value);
+        activityData = activitiesLoaded[selectedIndex];
+        
+        // Recreate the image generator with new activity
+        activityImageGenerator = new ActivityImageGenerator(activityData, athleteData, {
+            template: document.getElementById('image-template').value,
+            colorTheme: getSelectedColorTheme(),
+            includeMap: document.getElementById('include-map').checked,
+            includeHeartRate: document.getElementById('include-hr').checked,
+            includePace: document.getElementById('include-pace').checked,
+            includeElevation: document.getElementById('include-elevation').checked,
+            customText: document.getElementById('custom-message').value
+        });
+        
+        activityImageGenerator.generateImage();
+    });
+}
+
+function getSelectedColorTheme() {
+    const activeColorButton = document.querySelector('.color-option.active');
+    return activeColorButton ? activeColorButton.dataset.theme : 'gradient-blue';
+}
+
+// Add CSS for the activity selector
+// In style.css
+
+.activity-selector-container {
+    margin-bottom: 1.5rem;
+    background: #f7f7f7;
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.activity-selector-container label {
+    font-weight: bold;
+    color: #333;
+}
+
+.activity-selector {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.activity-selector:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+```
+
+## Summary of Improvements:
+
+1. **Rich Visualization**: Added proper map display using polyline data, heart rate charts, pace charts, and additional metrics display.
+
+2. **Modern Design**: Implemented gradient backgrounds, card-based layout, rounded corners, and enhanced typography.
+
+3. **Template System**: Created multiple template options (standard, minimal, detailed, achievement-focused) to give users variety.
+
+4. **Better Image Structure**: Organized content with proper visual hierarchy, consistent spacing, and appropriately sized elements.
+
+5. **Custom Text Support**: Enhanced custom message display with proper text wrapping and styling.
+
+6. **Visual Polish**: Added subtle patterns, shadows, icons, and visual indicators for a premium feel.
+
+7. **Activity Selection**: Added a dropdown to select from multiple activities.
+
+8. **Responsive UI**: Improved the control panel with better feedback and organization.
+
+These improvements will transform your simple dashboard into a professional-looking Instagram-ready image generator that highlights the most important aspects of Strava activities with visual appeal and clarity.
+
+

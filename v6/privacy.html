@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>mynextpr — Privacy Policy</title>
+<meta name="description" content="How mynextpr collects, uses, stores, and deletes your Strava data.">
+<style>
+body{font-family:Georgia,'Times New Roman',serif;max-width:44rem;margin:0 auto;padding:2rem 1.25rem;line-height:1.65;color:#1a1a1a}
+h1{font-size:1.8rem}h2{font-size:1.2rem;margin-top:2rem}
+a{color:#b83e1b}.fine{color:#666;font-size:.9rem}
+nav{margin:1.5rem 0;border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:.6rem 0;font-size:.9rem}
+nav a{margin-right:1rem}
+</style>
+</head>
+<body>
+<p><a href="index.html">← mynextpr home</a></p>
+<h1>Privacy Policy</h1>
+<p class="fine">Effective 17 Oct 2026. mynextpr writes a race countdown into the descriptions of your own new Strava runs. Nothing else.</p>
+<nav><a href="terms.html">Terms</a><a href="support.html">Support</a><a href="connect.html">Connect</a><a href="manage.html">Manage</a></nav>
+
+<h2>Data we collect</h2>
+<ul>
+<li>Strava tokens (access + refresh) and token expiry — stored server-side only, never shown to pages, never logged.</li>
+<li>Your Strava athlete ID and display name, your chosen race + goal, pause flag, and the IDs of activities already stamped (so nothing is stamped twice).</li>
+<li>Month and year run totals, fetched live to compose the countdown — shown to you only, never stored.</li>
+</ul>
+
+<h2>How we collect it</h2>
+<p>Only through Strava's official OAuth sign-in on strava.com, and through Strava webhooks when one of your activities is created or updated. This page never sees your Strava password. Scopes requested: <code>read</code> (identity), <code>activity:read</code> (find your new run), <code>activity:write</code> (update its description).</p>
+
+<h2>How we use it</h2>
+<ul>
+<li>One purpose only: writing the countdown block into the <em>description</em> of your own new runs. Titles are never touched.</li>
+<li>Your data is shown only to you. We never show one athlete's data to another user.</li>
+<li>We do not train AI models on your data, do not aggregate or anonymize it for analytics, do not sell or transfer it, and do not use it for advertising.</li>
+<li>Activity content is not cached beyond the stamped-ID list. Cached values expire within 7 days.</li>
+</ul>
+
+<h2>Withdrawing consent</h2>
+<p>Pause updates any time on the <a href="manage.html">Manage</a> page. Disconnecting stops all future writes. You can also revoke access in your <a href="https://www.strava.com/settings/apps">Strava app settings</a> — revoking there deletes your data here automatically.</p>
+
+<h2 id="delete">Deleting your data</h2>
+<p>On the <a href="manage.html">Manage</a> page choose “Delete my data”, or POST to <code>/api/delete-account</code>. This revokes our Strava access and permanently deletes your tokens, race selection, and stamped-ID list from our servers. Descriptions already written on Strava stay as they are unless you edit them on Strava. Deletion completes promptly and always within 30 days. To download what we hold first, use <code>/api/export</code> (tokens are never included in exports).</p>
+
+<h2>Security</h2>
+<p>Tokens live in server-side files only, never in pages, logs, or the repo. API responses are marked no-store. If you suspect misuse, contact <a href="support.html">support</a> immediately.</p>
+
+<h2>Strava's own policy</h2>
+<p>Strava processes your Strava account data under the <a href="https://www.strava.com/legal/privacy">Strava Privacy Policy</a>, which controls where it conflicts with this page.</p>
+
+<h2>Contact</h2>
+<p>Questions or deletion requests: see <a href="support.html">Support</a>.</p>
+
+<p class="fine">mynextpr · Compatible with Strava. Not endorsed by Strava.</p>
+</body>
+</html>

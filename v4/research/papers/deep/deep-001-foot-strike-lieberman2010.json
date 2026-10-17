@@ -1,0 +1,29 @@
+{
+  "deep_id": "deep-001",
+  "catalog_id": "lieberman-2010",
+  "rule_link": {
+    "zone": "feet_strike",
+    "finding_title": "Foot Strike & Overstride",
+    "how_it_backs": "Justifies scoring rearfoot landing ahead of the center of mass as a braking/impact flaw: habitually barefoot forefoot strikers generate smaller collision forces than shod rearfoot strikers, so the feet_strike rule penalizes overstriding and cues landing closer under the body."
+  },
+  "summary": "Lieberman and colleagues compared foot-strike patterns and collision forces between habitually barefoot runners and habitually shod runners. Barefoot runners tended to forefoot- or midfoot-strike, while shod runners mostly rearfoot-strike. The forefoot-strike pattern produced smaller collision (impact-transient) forces than rearfoot striking in shoes. The authors conclude that the way the foot meets the ground — not barefoot-vs-shod per se — drives impact loading.",
+  "methods_signal": "Observational + biomechanical comparison of habitually barefoot vs shod adult runners, combining foot-strike classification with force-plate collision-force measurement during running.",
+  "snippet": {
+    "text": "Landing on the forefoot with a compliant ankle avoids the sharp impact transient of a heel-first landing; runners who overstride onto the heel take the largest collision hit.",
+    "grounds_in": "Paraphrase of Abstract + Results (collision-force comparison across strike types)"
+  },
+  "figure": {
+    "file": "figures/deep-001-foot-strike.svg",
+    "caption": "Rearfoot vs forefoot landing: contact point relative to the body and the resulting impact transient.",
+    "what_it_shows": "Side-view schematic: overstriding heel landing ahead of center of mass with a sharp vertical-force spike vs forefoot landing under the body with a blunted impact curve.",
+    "redrawn": true
+  },
+  "citation": {
+    "authors": "Lieberman DE, Venkadesan M, Werbel WA, Daoud AI, D'Andrea S, Davis IS, Mang'eni RO, Pitsiladis Y",
+    "year": 2010,
+    "title": "Foot strike patterns and collision forces in habitually barefoot versus shod runners",
+    "journal": "Nature 463(7280):531-535",
+    "doi_url": "https://doi.org/10.1038/nature08723",
+    "pubmed_url": "https://pubmed.ncbi.nlm.nih.gov/20111000/"
+  }
+}

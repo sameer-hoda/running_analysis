@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mynextpr — manage your countdown</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--font-sans); line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--accent); color:var(--paper)}
+  .wrap{
+    max-width:var(--layout-narrow); margin:0 auto;
+    padding:var(--wrap-pad-top) var(--wrap-pad-x) var(--wrap-pad-bottom);
+  }
+  /* Masthead: bib pinned to the wall */
+  .mast{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:var(--space-3); border-bottom:2px solid var(--ink);
+    padding-bottom:var(--space-3);
+  }
+  .wordmark{
+    font-size:var(--text-wordmark); font-weight:800; letter-spacing:-0.03em;
+  }
+  .wordmark span{color:var(--accent)}
+  .mocktag{
+    font-family:var(--font-mono); font-size:var(--text-mono-sm);
+    border:1px solid var(--muted); color:var(--muted);
+    border-radius:var(--radius-xs); padding:2px 7px; white-space:nowrap;
+  }
+  /* First viewport: the task, not a banner */
+  h1{
+    font-size:var(--text-display); line-height:1.02; letter-spacing:-0.03em;
+    text-wrap:balance; margin:var(--space-8) 0 var(--space-2);
+  }
+  h1 .n{
+    font-family:var(--font-mono); font-variant-numeric:tabular-nums;
+    color:var(--accent); letter-spacing:0; font-weight:700;
+  }
+  .lede{font-size:var(--text-lede); letter-spacing:-0.01em; margin:0 0 var(--space-2); max-width:34em}
+  .sub{color:var(--muted); font-size:var(--text-sub); margin:0 0 var(--space-8); max-width:65ch}
+  .statusline{
+    display:flex; align-items:center; gap:var(--space-2);
+    font-family:var(--font-mono); font-size:var(--text-status);
+    font-variant-numeric:tabular-nums;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:var(--space-3) var(--space-1); margin:0 0 var(--space-8);
+  }
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--ok); flex:none}
+  .dot.paused{background:var(--muted)}
+  .statusline .race{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  /* Sections: hairlines do the separating, cards hold decisions */
+  section{margin-top:var(--space-10)}
+  section > h2{
+    font-size:var(--text-h2); letter-spacing:-0.01em; margin:0 0 var(--space-1);
+  }
+  section > .hint{color:var(--muted); font-size:var(--text-hint); margin:0 0 var(--space-4); max-width:65ch}
+  .card{
+    border:var(--border-line); border-radius:var(--radius-card);
+    padding:var(--space-5); background:var(--paper);
+  }
+  /* Race row: selected tint + inset accent bar */
+  .racerow{
+    background:var(--select); box-shadow:var(--select-bar);
+    border-radius:var(--radius-control); padding:var(--space-4);
+  }
+  .racerow .name{font-size:var(--text-race-name); font-weight:700; letter-spacing:-0.01em; margin:0}
+  .racerow .meta{
+    color:var(--muted); font-size:var(--text-race-meta); margin:var(--space-1) 0 0;
+    font-variant-numeric:tabular-nums; font-family:var(--font-mono);
+  }
+  .racerow .goal{font-size:var(--text-sub); margin:var(--space-2) 0 0}
+  .racerow .goal a{color:var(--ink)}
+  /* Style options: segmented pills, selection is ink */
+  .opts{display:flex; gap:var(--space-2); flex-wrap:wrap}
+  .opt{
+    border:1px solid var(--ink); background:var(--paper); color:var(--ink);
+    border-radius:var(--radius-pill); padding:var(--space-2) var(--space-4);
+    font-family:var(--font-sans); font-size:var(--text-chip); font-weight:600;
+    cursor:pointer; text-align:left;
+  }
+  .opt small{display:block; font-weight:400; color:var(--muted); font-size:var(--text-hint)}
+  .opt[aria-checked="true"]{background:var(--ink); color:var(--paper)}
+  .opt[aria-checked="true"] small{color:var(--on-panel-muted)}
+  /* Switch: pause/resume as one labelled toggle. Track is ink when on,
+     paper with an ink hairline when off; thumb rides the track. Accent
+     stays reserved, so on/off is carried by fill + the state word, never
+     by color alone. */
+  .switchrow{display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap}
+  .switch{
+    display:inline-flex; align-items:center; gap:var(--space-2);
+    border:none; background:none; padding:var(--space-1);
+    font-family:var(--font-sans); font-size:var(--text-sub); font-weight:700;
+    color:var(--ink); cursor:pointer;
+  }
+  .switch .track{
+    width:44px; height:24px; flex:none;
+    border:var(--border-ink); border-radius:var(--radius-pill);
+    background:var(--paper); position:relative;
+    transition:background-color .18s ease-out;
+  }
+  .switch .track::after{
+    content:""; position:absolute; top:2px; left:2px;
+    width:18px; height:18px; border-radius:50%;
+    background:var(--muted);
+    transition:left .18s ease-out, background-color .18s ease-out;
+  }
+  .switch[aria-checked="true"] .track{background:var(--ink)}
+  .switch[aria-checked="true"] .track::after{left:22px; background:var(--paper)}
+  .switch:disabled{opacity:.45; cursor:not-allowed}
+  .switchstate{font-family:var(--font-mono); font-size:var(--text-mono-sm); color:var(--muted)}
+  /* Inline disconnect confirm: hairline box, explicit consequence wording,
+     ink-filled confirm (no red token exists) + quiet keep-connected. */
+  .confirm{
+    border:var(--border-line); border-radius:var(--radius-control);
+    padding:var(--space-4); margin-top:var(--space-4); background:var(--paper);
+  }
+  .confirm[hidden]{display:none}
+  .confirm p{margin:0 0 var(--space-3); font-size:var(--text-sub); max-width:65ch}
+  .confirm .row{margin-top:0}
+  .stylehint{
+    font-size:var(--text-hint); color:var(--muted); margin:var(--space-3) 0 0;
+    font-variant-numeric:tabular-nums;
+  }
+  .futures{
+    font-size:var(--text-hint); color:var(--muted); margin:var(--space-4) 0 0;
+    border-top:1px solid var(--line); padding-top:var(--space-3);
+  }
+  /* Buttons */
+  .row{display:flex; gap:var(--space-2); margin-top:var(--space-4); flex-wrap:wrap; align-items:center}
+  .btn{
+    border:1px solid var(--ink); background:var(--paper); color:var(--ink);
+    border-radius:var(--radius-control); font-weight:800; font-size:var(--text-cta);
+    padding:10px 18px; cursor:pointer; font-family:var(--font-sans);
+  }
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--paper)}
+  .btn.primary:hover{background:var(--accent-pressed); border-color:var(--accent-pressed)}
+  .btn.quiet{border-color:var(--line); font-weight:600}
+  .btn:disabled{opacity:.45; cursor:not-allowed}
+  .scopefine{font-size:var(--text-mono-sm); font-family:var(--font-mono); color:var(--muted); margin:var(--space-3) 0 0; max-width:65ch}
+  .pill{
+    display:inline-block; font-family:var(--font-mono); font-size:var(--text-mono-sm);
+    border:1px solid var(--ink); border-radius:var(--radius-pill);
+    padding:4px 12px; font-variant-numeric:tabular-nums;
+  }
+  .pill.on{background:var(--ink); color:var(--paper)}
+  /* Dark preview panel: the one contrast moment */
+  .preview{
+    background:var(--panel); color:var(--on-panel);
+    border-radius:var(--radius-card); padding:var(--space-5);
+    box-shadow:var(--shadow-panel); margin-top:var(--space-4);
+  }
+  .preview .k{font-family:var(--font-mono); font-size:var(--text-mono-sm); color:var(--on-panel-muted); margin:0 0 var(--space-1)}
+  .preview .title{font-size:var(--text-sub); margin:0}
+  .preview .desc{
+    font-family:var(--font-mono); font-size:var(--text-hint); margin:var(--space-2) 0 0;
+    overflow-wrap:anywhere; white-space:pre-wrap; font-variant-numeric:tabular-nums;
+  }
+  .preview .cap{font-size:var(--text-mono-sm); font-family:var(--font-mono); color:var(--on-panel-muted); margin:var(--space-3) 0 0}
+  .fine{font-size:var(--text-mono-sm); font-family:var(--font-mono); color:var(--muted); margin:var(--space-4) 0 0}
+  .fine a{color:var(--ink)}
+  footer{
+    margin-top:var(--space-10); border-top:1px solid var(--line);
+    padding-top:var(--space-3); font-size:var(--text-mono-sm);
+    font-family:var(--font-mono); color:var(--muted);
+  }
+  /* Motion: content is visible by default; the countdown tick is a text
+     update, not motion. Only state transitions ease, and they collapse
+     under the reduced-motion guard in tokens.css. */
+  .opt, .btn{transition:background-color .18s ease-out, color .18s ease-out, border-color .18s ease-out}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mast">
+    <a class="wordmark" href="index.html" aria-label="mynextpr home" style="text-decoration:none;color:inherit">mynext<span>pr</span></a>
+    <div class="mocktag">Compatible with Strava</div>
+  </div>
+
+  <h1><span class="n" id="bignum">8</span> days to race day.</h1>
+  <p class="lede">Every finished run updates its Strava description. Nothing else to do here.</p>
+
+  <p class="statusline"><span class="dot" id="syncdot" aria-hidden="true"></span><span class="race" id="statusline">Delhi Half Marathon — 8 days to go — updates on</span></p>
+
+  <div class="confirm" id="expiredbanner" hidden>
+    <p role="alert">That race is finished — updates stopped on their own. Pick your next start line to restart the countdown.</p>
+    <div class="row">
+      <a class="btn" href="picker.html" style="text-decoration:none;text-align:center">Pick a new race</a>
+    </div>
+  </div>
+
+  <section aria-labelledby="h-race">
+    <h2 id="h-race">Your race</h2>
+    <div class="racerow">
+      <p class="name">Delhi Half Marathon</p>
+      <p class="meta">18 Oct 2026 · New Delhi · 8 days to go</p>
+      <p class="goal">Target (optional): sub-2</p>
+      <p class="goal"><a href="picker.html">Change race →</a></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-pause">
+    <h2 id="h-pause">Updates</h2>
+    <p class="hint">Turn off to stop stamping. Past runs stay as they are.</p>
+    <div class="card">
+      <p style="margin:0"><span class="pill on" id="pausepill" role="status">Updates on</span></p>
+      <div class="switchrow">
+        <button class="switch" id="pausebtn" type="button" role="switch" aria-checked="true"><span class="track" aria-hidden="true"></span>Run updates</button>
+        <span class="switchstate" id="pausestate">On — every finished run is stamped</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-connect">
+    <h2 id="h-connect">Connection</h2>
+    <div class="card">
+      <p style="margin:0"><span class="pill on" id="loginpill" role="status">Connected</span></p>
+      <div class="row" id="connectrow" hidden>
+        <button class="btn primary" id="loginbtn" type="button">Connect with Strava</button>
+      </div>
+      <div class="confirm" id="logoutconfirm" hidden>
+        <p id="logoutconfirmtext" role="alert">Disconnect Strava? Future runs will stop getting countdown descriptions. Descriptions already written stay as they are — nothing is deleted, and your titles were never touched.</p>
+        <div class="row">
+          <button class="btn" id="logoutyes" type="button">Yes, disconnect</button>
+          <button class="btn quiet" id="logoutno" type="button">Keep connected</button>
+        </div>
+      </div>
+      <p class="scopefine" id="scopefine">Only your own activities are updated, and only with your consent. Titles are never changed.</p>
+      <p class="scopefine"><button class="btn quiet" id="logoutbtn" type="button" aria-describedby="scopefine" style="border:none;padding:0;font-weight:600;color:var(--muted);text-decoration:underline">Disconnect Strava</button></p>
+    </div>
+  </section>
+
+  <p class="fine">Writes the countdown string into the activity <span>description</span>;
+    your titles stay yours.</p>
+  <section aria-labelledby="h-data">
+    <h2 id="h-data">Your data</h2>
+    <div class="card">
+      <p class="scopefine">Only your own activities are updated, and only with your consent. <a href="https://www.strava.com/settings/apps">View on Strava — connected apps</a>.</p>
+      <div class="row">
+        <button class="btn quiet" id="exportbtn" type="button">Download my data</button>
+        <button class="btn quiet" id="deletebtn" type="button">Delete my data</button>
+      </div>
+      <p class="scopefine" id="datamsg" role="status"></p>
+    </div>
+  </section>
+
+  <footer>mynextpr manage · v6 · Compatible with Strava (no endorsement claimed) · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="support.html">Support</a></footer>
+</div>
+<script src="strava-config.js"></script>
+<script src="strava.js"></script>
+<script>
+"use strict";
+var RACE = "Delhi Half Marathon";
+var N = 8;
+var GOAL = "sub-2";
+var state = { paused: false, connected: true, expired: false };
+try { state.connected = window.localStorage.getItem("mynextpr.connected") === "1"; } catch(e) {}
+/* Backend link: when server.py is serving this page, connected/paused are
+   server truth (real Strava tokens + the toggle below). When the backend
+   is unreachable, the same controls fall back to local preview states. */
+var serverLive = false;
+function api(path, method) {
+  return fetch(path, {method: method || "GET", credentials: "same-origin"})
+    .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .catch(function () { return null; });
+}
+function syncServer() {
+  api("/api/status").then(function (s) {
+    if (s && typeof s.connected === "boolean") {
+      serverLive = true;
+      state.connected = s.connected;
+      state.paused = !!s.paused;
+      if (s.race) { RACE = s.race; }
+      if (typeof s.days === "number" && s.days >= 0) { N = s.days; }
+      if (s.goal) { GOAL = s.goal; }
+      state.expired = !!s.expired;
+      var rg = document.querySelector(".racerow .goal");
+      if (rg && GOAL) {
+        rg.innerHTML = "";
+        rg.appendChild(document.createTextNode("Target (optional): " + GOAL + " · "));
+        var fm = document.createElement("a");
+        fm.href = "https://mynextbib.com";
+        fm.textContent = "Find more races on MyNextBib";
+        rg.appendChild(fm);
+      }
+      var rn = document.querySelector(".racerow .name");
+      if (rn && s.race) { rn.textContent = s.race; }
+      var rm = document.querySelector(".racerow .meta");
+      if (rm && s.date) {
+        rm.textContent = s.date + (s.city ? " · " + s.city : "") + " · " + N + " days to go";
+      }
+      render();
+    } else {
+      serverLive = false;
+    }
+  });
+}
+
+function render() {
+  var expired = !!state.expired;
+  var status = !state.connected ? "updates off"
+    : expired ? "race finished — updates stopped"
+    : state.paused ? "updates paused" : "updates on";
+  document.getElementById("statusline").textContent =
+    expired ? RACE + " finished — updates stopped"
+    : RACE + " — " + N + " days to go — " + status;
+  var bn = document.getElementById("bignum");
+  if (bn) bn.textContent = expired ? "0" : N;
+  document.getElementById("syncdot").className =
+    "dot" + ((!state.connected || state.paused || expired) ? " paused" : "");
+  var eb = document.getElementById("expiredbanner");
+  if (eb) eb.hidden = !expired;
+  var sw = document.getElementById("pausebtn");
+  sw.setAttribute("aria-checked", (!state.paused && !expired).toString());
+  sw.disabled = !state.connected || expired;
+  document.getElementById("pausestate").textContent = !state.connected
+    ? "Off — reconnect to resume stamping"
+    : expired ? "Stopped — the race date passed"
+    : state.paused ? "Paused — finished runs are skipped" : "On — every finished run is stamped";
+  var p = document.getElementById("pausepill");
+  if (!state.connected) { p.textContent = "Updates off"; p.className = "pill"; }
+  else if (expired) { p.textContent = "Stopped"; p.className = "pill"; }
+  else { p.textContent = state.paused ? "Paused" : "Updates on"; p.className = "pill" + (state.paused ? "" : " on"); }
+  var lp = document.getElementById("loginpill");
+  if (lp) {
+    lp.textContent = state.connected ? "Connected" : "Not connected";
+    lp.className = "pill" + (state.connected ? " on" : "");
+  }
+  var cr = document.getElementById("connectrow");
+  if (cr) cr.hidden = state.connected;
+}
+function setPaused(paused) {
+  if (!state.connected && !paused) return;
+  state.paused = paused;
+  render();
+}
+/* Switch: one toggle for pause/resume; inert while disconnected. Against the
+   backend it flips real stamping; otherwise it flips the local preview. */
+document.getElementById("pausebtn").addEventListener("click", function () {
+  if (!state.connected) return;
+  var want = !state.paused;
+  if (serverLive) {
+    var btn = this;
+    btn.disabled = true;
+    api(want ? "/api/pause" : "/api/resume", "POST").then(function () {
+      btn.disabled = false;
+      setPaused(want);
+    });
+    return;
+  }
+  setPaused(want);
+});
+/* Disconnect: two-step inline confirm with consequence wording. Esc cancels. */
+function hideConfirm(focusBack) {
+  document.getElementById("logoutconfirm").hidden = true;
+  if (focusBack) document.getElementById("logoutbtn").focus();
+}
+document.getElementById("logoutbtn").addEventListener("click", function () {
+  var c = document.getElementById("logoutconfirm");
+  if (!c.hidden) { hideConfirm(true); return; }
+  c.hidden = false;
+  document.getElementById("logoutno").focus();
+});
+document.getElementById("logoutno").addEventListener("click", function () { hideConfirm(true); });
+document.getElementById("logoutconfirm").addEventListener("keydown", function (e) {
+  if (e.key === "Escape") { e.preventDefault(); hideConfirm(true); }
+});
+document.getElementById("logoutyes").addEventListener("click", function () {
+  state.connected = false;
+  state.paused = false;
+  if (serverLive) { api("/api/disconnect", "POST"); }
+  try { window.localStorage.removeItem("mynextpr.connected"); } catch(e) {}
+  var p = document.getElementById("loginpill");
+  p.textContent = "Not connected"; p.className = "pill";
+  hideConfirm(false);
+  document.getElementById("logoutbtn").focus();
+  render();
+});
+document.getElementById("loginbtn").addEventListener("click", function () {
+  if (state.connected) return;
+  if (window.MyNextPRStrava && window.MyNextPRStrava.ready()) {
+    window.location.href = window.MyNextPRStrava.authorizeUrl("manage");
+    return;
+  }
+  state.connected = true;
+  try { window.localStorage.setItem("mynextpr.connected", "1"); } catch(e) {}
+  var p = document.getElementById("loginpill");
+  p.textContent = "Connected"; p.className = "pill on";
+  hideConfirm(false);
+  setPaused(false);
+});
+(function syncLoginPill() {
+  var p = document.getElementById("loginpill");
+  p.textContent = state.connected ? "Connected" : "Not connected";
+  p.className = "pill" + (state.connected ? " on" : "");
+})();
+document.getElementById("exportbtn").addEventListener("click", function () {
+  var m = document.getElementById("datamsg");
+  m.textContent = "Preparing download…";
+  api("/api/export").then(function (d) {
+    if (!d || !d.ok) { m.textContent = "Not connected — nothing to download."; return; }
+    var blob = new Blob([JSON.stringify(d, null, 2)], {type: "application/json"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "mynextpr-data.json";
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    m.textContent = "Downloaded. Tokens are never included in exports.";
+  });
+});
+document.getElementById("deletebtn").addEventListener("click", function () {
+  var m = document.getElementById("datamsg");
+  if (!window.confirm("Delete all my mynextpr data? This revokes Strava access and cannot be undone.")) return;
+  api("/api/delete-account", "POST").then(function () {
+    state.connected = false; state.paused = false;
+    try { window.localStorage.removeItem("mynextpr.connected"); } catch(e) {}
+    syncLoginPill(); render();
+    m.textContent = "Deleted. Your tokens, race, and stamp history are gone from this server.";
+  });
+});
+try {
+  if (new URLSearchParams(window.location.search).get("connected") === "1") {
+    window.localStorage.setItem("mynextpr.connected", "1");
+    state.connected = true;
+    syncLoginPill();
+  }
+} catch (e) {}
+syncServer();
+render();
+</script>
+</body>
+</html>

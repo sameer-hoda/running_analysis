@@ -1,0 +1,29 @@
+{
+  "deep_id": "deep-002",
+  "catalog_id": "heiderscheit-2011",
+  "rule_link": {
+    "zone": "knees",
+    "finding_title": "Knee drive / stance loading",
+    "how_it_backs": "Justifies the cadence-ladder drill and fair/critical knee scores for overstriding runners: a small (+5 to +10%) step-rate increase at the same speed substantially lowers hip and knee joint loading, so the knees rule treats low-cadence overstride as a trainable loading flaw."
+  },
+  "summary": "Heiderscheit and colleagues tested how changing step rate alters lower-limb joint mechanics during running. Runners ran at their preferred step rate and at slightly higher and lower rates while speed was held constant. Even subtle step-rate increases meaningfully reduced loading at the hip and knee joints. The authors conclude that raising step rate is a practical lever for cutting joint loading and possibly injury risk.",
+  "methods_signal": "Within-subject experiment in healthy recreational runners: preferred step rate manipulated up and down by small percentages at constant treadmill speed, with 3D hip/knee/ankle joint kinetics.",
+  "snippet": {
+    "text": "Nudge cadence up ~5-10% at the same pace and the hips and knees carry meaningfully less load — small step-rate fixes buy large joint-load savings.",
+    "grounds_in": "Paraphrase of Abstract + Conclusion (joint-loading reduction with increased step rate)"
+  },
+  "figure": {
+    "file": "figures/deep-002-step-rate.svg",
+    "caption": "Small step-rate increase, large joint-load drop: hip and knee loading vs cadence.",
+    "what_it_shows": "Schematic dose-response: cadence axis (preferred, +5%, +10%) against relative hip/knee loading bars trending down as step rate rises.",
+    "redrawn": true
+  },
+  "citation": {
+    "authors": "Heiderscheit BC, Chumanov ES, Michalski MP, Wille CM, Ryan MB",
+    "year": 2011,
+    "title": "Effects of step rate manipulation on joint mechanics during running",
+    "journal": "Med Sci Sports Exerc 43(2):296-302",
+    "doi_url": "https://doi.org/10.1249/MSS.0b013e3181ebedf4",
+    "pubmed_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3022995/"
+  }
+}

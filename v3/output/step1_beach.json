@@ -1,0 +1,92 @@
+{
+  "is_running": true,
+  "reject_reason": null,
+  "camera_angle": "side",
+  "gait_phase": "stance",
+  "foot_contact": "yes",
+  "overall_score": 60,
+  "overall_label": "Fair — trainable flaws",
+  "one_line_summary": "Upright beach running stance showing functional sagittal mechanics with minimal forward lean.",
+  "findings": [
+    {
+      "zone": "head_neck",
+      "title": "Head & Neck Position",
+      "status": "fair",
+      "zone_score": 60,
+      "observation": "Head remains upright with forward gaze and slight neck tension.",
+      "signs": ["Forward gaze", "Mild cervical tension"],
+      "tldr": "Neutral gaze with minor neck tightness.",
+      "eli5": "Look straight ahead comfortably. Keep your neck relaxed.",
+      "action": ["Relax jaw", "Fix gaze on horizon"],
+      "evidence": "Cervical orientation influences vestibular stabilization and trunk alignment."
+    },
+    {
+      "zone": "shoulders",
+      "title": "Shoulder Carriage",
+      "status": "fair",
+      "zone_score": 58,
+      "observation": "Shoulders are slightly elevated and drawn back.",
+      "signs": ["Mild elevation", "Upper trapezius contraction"],
+      "tldr": "Minor shoulder tightness wasting energy.",
+      "eli5": "Keep shoulders relaxed away from ears. High shoulders waste effort.",
+      "action": ["Exhale and drop shoulders", "Perform periodic shoulder rolls"],
+      "evidence": "Shoulder elevation raises upper-body tension and increases metabolic cost."
+    },
+    {
+      "zone": "arms_elbows",
+      "title": "Arm Swing",
+      "status": "fair",
+      "zone_score": 62,
+      "observation": "Arms flexed near 90 degrees oscillating primarily in sagittal plane.",
+      "signs": ["Functional 90-degree flexion", "Slight asymmetry on trailing swing"],
+      "tldr": "Functional arm swing tracking sagittal plane.",
+      "eli5": "Swing arms back and forth like pendulums. Avoid swinging across chest.",
+      "action": ["Drive elbows straight back", "Keep hands loosely closed"],
+      "evidence": "Arm drive counterbalances torso rotational moments and optimizes cadence."
+    },
+    {
+      "zone": "trunk_lean",
+      "title": "Trunk & Forward Lean",
+      "status": "fair",
+      "zone_score": 56,
+      "observation": "Torso is overly upright with minimal forward lean from the ankles.",
+      "signs": ["Vertical spine angle", "Absent ankle lean"],
+      "tldr": "Vertical torso limits forward drive.",
+      "eli5": "Lean slightly forward from ankles like a ski jumper.",
+      "action": ["Cue slight forward tilt from ankles", "Maintain engaged core"],
+      "evidence": "Ankle-derived lean utilizes gravitational torque to assist forward progression."
+    },
+    {
+      "zone": "knees",
+      "title": "Knee Mechanics",
+      "status": "fair",
+      "zone_score": 60,
+      "observation": "Stance knee flexes moderately under the body to absorb load.",
+      "signs": ["Adequate load-absorbing flexion", "Appropriate swing clearance"],
+      "tldr": "Knee compliance absorbs impact adequately.",
+      "eli5": "Bend knees softly upon landing like natural springs.",
+      "action": ["Keep landing soft", "Focus on quick cadence"],
+      "evidence": "Knee flexion during early stance attenuates vertical impact loading rates."
+    },
+    {
+      "zone": "feet_strike",
+      "title": "Foot Strike & Overstride",
+      "status": "fair",
+      "zone_score": 62,
+      "observation": "Midfoot ground contact under yielding sand with a nearly vertical tibia.",
+      "signs": ["Midfoot contact pattern", "Minimal overstride"],
+      "tldr": "Foot lands close to center of mass.",
+      "eli5": "Step directly beneath yourself rather than reaching far out.",
+      "action": ["Land beneath hips", "Maintain light foot turnover"],
+      "evidence": "Landing close to the center of mass minimizes braking impulse (Lieberman)."
+    }
+  ],
+  "insufficient": [
+    {
+      "zone": "hips_pelvis",
+      "title": "Pelvic Stability & Hip Drop",
+      "why": "Frontal plane pelvic drop cannot be evaluated from a profile view.",
+      "needed_view": "front-on photo at midstance"
+    }
+  ]
+}

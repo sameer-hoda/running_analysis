@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mynextpr — Track your goal and go for your next PR</title>
+<meta name="description" content="Pick your race. Every run you log gets its countdown added to the run's Strava description — automatically. Titles are never touched.">
+<link rel="stylesheet" href="tokens.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);
+  font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;
+  font-size:var(--text-sub);line-height:1.45}
+::selection{background:var(--select)}
+.wrap{max-width:var(--layout-narrow);margin:0 auto;
+  padding:var(--wrap-pad-top) var(--wrap-pad-x) var(--wrap-pad-bottom)}
+
+/* ---- masthead: wordmark + mock tag, hairline rule ---- */
+.mast{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);
+  padding-bottom:var(--space-3);border-bottom:var(--border-ink)}
+.wordmark{font-size:var(--text-wordmark);font-weight:800;letter-spacing:-0.03em}
+.wordmark span{color:var(--accent)}
+.mocktag{font-family:var(--font-mono);font-size:var(--text-mono-sm);font-weight:600;
+  letter-spacing:.04em;color:var(--muted);white-space:nowrap;
+  border:var(--border-line);border-radius:var(--radius-xs);padding:3px 8px}
+
+/* ---- hero: headline carries its own weight, no kicker ---- */
+.hero{padding-top:var(--space-8)}
+.hero h1{font-size:var(--text-display);line-height:1.02;letter-spacing:-0.03em;
+  font-weight:800;text-wrap:balance;max-width:20ch}
+.hero h1 .go{color:var(--accent)}
+.lede{font-size:var(--text-lede);letter-spacing:-0.01em;line-height:1.45;
+  margin:22px 0 6px;max-width:65ch}
+.lede strong{color:var(--ink)}
+.setup{font-size:var(--text-sub);color:var(--muted);line-height:1.55;
+  max-width:65ch;margin-bottom:var(--space-5)}
+
+/* ---- CTA + adjacent scope fine print ---- */
+.cta-row{display:grid;gap:var(--space-3)}
+.cta{display:block;text-align:center;background:var(--accent);color:var(--paper);
+  text-decoration:none;font-weight:800;font-size:var(--text-cta);line-height:1;
+  padding:19px var(--space-6);border-radius:var(--radius-control);min-height:56px}
+.cta:hover,.cta:active{background:var(--accent-pressed)}
+.fineprint{font-size:var(--text-hint);line-height:1.6;color:var(--muted);max-width:65ch}
+.fineprint code{font-family:var(--font-mono);font-size:var(--text-mono-sm)}
+.fineprint a{color:var(--ink)}
+
+/* ---- transformation story: the one authored loop ---- */
+.story{margin-top:var(--space-10)}
+.story-head{font-size:var(--text-h2);font-weight:700;letter-spacing:-0.01em;
+  margin-bottom:var(--space-1)}
+.story-sub{font-size:var(--text-hint);color:var(--muted);margin-bottom:var(--space-4);
+  max-width:65ch}
+.loop-labels{display:flex;align-items:center;justify-content:center;gap:var(--space-2);
+  margin-bottom:var(--space-3)}
+.pill{font-size:var(--text-hint);font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:5px 14px;border-radius:var(--radius-pill);border:var(--border-line);
+  background:var(--paper);color:var(--muted)}
+.pill-before{animation:pillBefore var(--motion-loop) linear infinite}
+.pill-after{animation:pillAfter var(--motion-loop) linear infinite}
+@keyframes pillBefore{
+  0%,38%{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  46%,92%{background:var(--paper);border-color:var(--line);color:var(--muted)}
+  100%{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+}
+@keyframes pillAfter{
+  0%,38%{background:var(--paper);border-color:var(--line);color:var(--muted)}
+  46%,92%{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  100%{background:var(--paper);border-color:var(--line);color:var(--muted)}
+}
+.story-controls{display:flex;justify-content:center;margin-bottom:var(--space-3)}
+.motion-toggle{font-family:var(--font-sans);font-size:var(--text-hint);font-weight:700;
+  color:var(--ink);background:var(--paper);border:var(--border-line);
+  border-radius:var(--radius-pill);padding:6px 14px;cursor:pointer}
+.motion-toggle:hover{background:var(--soft)}
+.duo{display:grid;grid-template-columns:1fr;gap:var(--space-4);list-style:none}
+@media (min-width:560px){.duo{grid-template-columns:1fr 1fr;gap:var(--space-4)}}
+.card{background:var(--paper);border:var(--border-line);
+  border-radius:var(--radius-card);overflow:hidden}
+.card-after{background:var(--select);box-shadow:var(--select-bar)}
+.route{height:120px;overflow:hidden;border-bottom:var(--border-line);background:var(--paper);margin:0}
+.stats dd{margin:0}
+.route svg{display:block;width:100%;height:100%}
+.route .grid{stroke:var(--line)}
+.route .path-before{stroke:var(--muted)}
+.route .path-after{stroke:var(--accent)}
+.route .dot-start{fill:var(--ink)}
+.route .dot-end{fill:var(--accent)}
+.card-body{padding:var(--space-4)}
+.card-meta{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--soft);
+  border:var(--border-line);flex:none;display:grid;place-items:center;
+  font-size:13px;font-weight:700;color:var(--muted)}
+.who{font-size:var(--text-hint);font-weight:700}
+.when{font-family:var(--font-mono);font-size:var(--text-mono-sm);color:var(--muted)}
+.card-title{font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-bottom:var(--space-2)}
+.card-state{font-family:var(--font-mono);font-size:var(--text-mono-sm);font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  border:var(--border-line);border-radius:var(--radius-xs);padding:2px 8px;margin-left:auto;white-space:nowrap}
+.card-after .card-state{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+/* BEFORE subtitle: intentionally blank dashed box */
+.sub-blank{min-height:96px;border:1px dashed var(--line);border-radius:var(--radius-control)}
+/* AFTER subtitle: countdown carried in the description */
+.subwrap{position:relative;min-height:96px;font-size:var(--text-sub);line-height:1.55}
+.subwrap p{position:absolute;inset:0}
+.sub-before{animation:subBefore var(--motion-loop) linear infinite}
+.sub-after{animation:subAfter var(--motion-loop) linear infinite}
+@keyframes subBefore{0%,38%{opacity:1}46%,92%{opacity:0}100%{opacity:1}}
+@keyframes subAfter{0%,38%{opacity:0}46%,92%{opacity:1}100%{opacity:0}}
+.sub-after .count{font-family:var(--font-mono);font-size:var(--text-status);
+  font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3) var(--space-2);
+  margin-top:var(--space-3);padding-top:var(--space-3);border-top:var(--border-line)}
+.stat .k{font-size:var(--text-hint);color:var(--muted)}
+.stat .v{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.story.is-paused .pill-before,.story.is-paused .pill-after,
+.story.is-paused .sub-before,.story.is-paused .sub-after,
+.story.is-paused .progress i{animation-play-state:paused}
+.progress{height:3px;background:var(--soft);border-radius:2px;margin-top:var(--space-4);
+  overflow:hidden;max-width:360px;margin-left:auto;margin-right:auto}
+.progress i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px;
+  animation:prog var(--motion-loop) linear infinite}
+@keyframes prog{0%{width:0}88%{width:100%}100%{width:100%}}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---- single dark preview panel: the one contrast moment ---- */
+.preview{margin-top:var(--space-6);background:var(--panel);color:var(--on-panel);
+  border-radius:var(--radius-card);box-shadow:var(--shadow-panel);
+  padding:var(--space-5)}
+.preview .p-label{font-family:var(--font-mono);font-size:var(--text-mono-sm);
+  letter-spacing:.06em;text-transform:uppercase;color:var(--on-panel-muted);
+  margin-bottom:var(--space-2)}
+.preview .p-line{font-family:var(--font-mono);font-size:var(--text-status);
+  font-variant-numeric:tabular-nums;line-height:1.5}
+.preview .p-note{font-size:var(--text-hint);color:var(--on-panel-muted);
+  margin-top:var(--space-2)}
+.preview a{color:var(--on-panel)}
+
+footer{border-top:var(--border-line);margin-top:var(--space-10);
+  padding:var(--space-5) 0 var(--space-8);
+  font-size:var(--text-hint);line-height:1.6;color:var(--muted)}
+footer a{color:var(--ink)}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .pill-before,.pill-after,.sub-before,.sub-after,.progress i{animation:none}
+  .pill-before{background:var(--paper);border-color:var(--line);color:var(--muted)}
+  .pill-after{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .sub-before{opacity:0}
+  .sub-after{opacity:1;position:static}
+  .sub-before{position:absolute}
+  .progress{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="wordmark">mynext<span>pr</span></div>
+    <span class="mocktag">MOCK &middot; Compatible with Strava</span>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-head">
+      <h1 id="hero-head">Track your goal and <span class="go">go for your next PR.</span></h1>
+      <p class="lede">Pick your race. Every run you log gets your countdown &mdash;
+        <strong>34 days to go for Tata Mumbai Marathon</strong> &mdash; added to its
+        Strava description.</p>
+      <p class="setup">Three taps: distance, month, race. Then connect Strava and forget about it.</p>
+      <div class="cta-row">
+        <a class="cta" href="picker.html">Pick your race</a>
+        <p class="fineprint">Connect uses the official Strava flow (scopes: <code>read</code> + <code>activity:read</code> + <code>activity:write</code>). Only your own activities are updated, and only with your consent. Your activity titles are never changed &mdash; countdowns go in descriptions only. <a href="https://mynextbib.com">Find more races on MyNextBib</a>.</p>
+      </div>
+    </section>
+
+    <section class="story" id="story" aria-labelledby="story-head" aria-describedby="story-motion">
+      <h2 class="story-head" id="story-head">The same Easy 5k, before and after</h2>
+      <p class="story-sub">Before: nothing in the description. After: the countdown, written automatically.</p>
+      <div class="story-controls">
+        <button class="motion-toggle" id="motion-toggle" type="button" aria-pressed="false" aria-controls="story">Pause animation</button>
+      </div>
+      <div class="loop-labels" aria-hidden="true">
+        <span class="pill pill-before">Before</span>
+        <span class="pill pill-after">After</span>
+      </div>
+      <ul class="duo">
+        <li>
+          <article class="card" aria-labelledby="card-before-title">
+            <figure class="route" aria-hidden="true">
+              <svg viewBox="0 0 360 120" preserveAspectRatio="xMidYMid slice">
+                <path class="grid" d="M0 30 H360 M0 60 H360 M0 90 H360 M60 0 V120 M120 0 V120 M180 0 V120 M240 0 V120 M300 0 V120" stroke-width="1" fill="none"/>
+                <path class="path-before" d="M24 100 C 60 88, 70 66, 104 60 S 150 50, 168 34 S 212 22, 240 30 S 292 20, 336 10"
+                  fill="none" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </figure>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="avatar" aria-hidden="true">S</span>
+                <div>
+                  <div class="who">sameer hoda</div>
+                  <div class="when">October 8, 2026 &middot; Bengaluru</div>
+                </div>
+                <span class="card-state">Before</span>
+              </div>
+              <h3 class="card-title" id="card-before-title">Easy 5k</h3>
+              <div class="sub-blank" role="img" aria-label="Empty activity description. No countdown yet."></div>
+              <dl class="stats">
+                <div class="stat"><dt class="k">Distance</dt><dd class="v">5.00 km</dd></div>
+                <div class="stat"><dt class="k">Avg Pace</dt><dd class="v">6:50 /km</dd></div>
+              </dl>
+            </div>
+          </article>
+        </li>
+        <li>
+          <article class="card card-after" aria-labelledby="card-after-title">
+            <figure class="route" aria-hidden="true">
+              <svg viewBox="0 0 360 120" preserveAspectRatio="xMidYMid slice">
+                <path class="grid" d="M0 30 H360 M0 60 H360 M0 90 H360 M60 0 V120 M120 0 V120 M180 0 V120 M240 0 V120 M300 0 V120" stroke-width="1" fill="none"/>
+                <path class="path-after" d="M24 100 C 60 88, 70 66, 104 60 S 150 50, 168 34 S 212 22, 240 30 S 292 20, 336 10"
+                  fill="none" stroke-width="5" stroke-linecap="round"/>
+                <circle class="dot-start" cx="24" cy="100" r="6"/>
+                <circle class="dot-end" cx="336" cy="10" r="6"/>
+              </svg>
+            </figure>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="avatar" aria-hidden="true">S</span>
+                <div>
+                  <div class="who">sameer hoda</div>
+                  <div class="when">October 8, 2026 &middot; Bengaluru</div>
+                </div>
+                <span class="card-state">After</span>
+              </div>
+              <h3 class="card-title" id="card-after-title">Easy 5k</h3>
+              <div class="subwrap">
+                <p class="sub-before">Overcast, 21&deg;C, Feels like 23&deg;C, Humidity 97%, Wind 2m/s from E &ndash; by KlimatApp</p>
+                <p class="sub-after"><span class="count">34 days to go</span> for Tata Mumbai Marathon &mdash; Target sub-30 &middot; via mynextpr</p>
+              </div>
+              <dl class="stats">
+                <div class="stat"><dt class="k">Distance</dt><dd class="v">5.00 km</dd></div>
+                <div class="stat"><dt class="k">Avg Pace</dt><dd class="v">6:50 /km</dd></div>
+              </dl>
+            </div>
+          </article>
+        </li>
+      </ul>
+      <p class="sr-only" id="story-motion">Decorative loop: the Before and After labels cross-highlight while the description lines in the After card crossfade between the weather note and the countdown text. Pausing keeps both cards fully readable with the countdown resting in place. Motion is off when reduced motion is on.</p>
+      <div class="progress" aria-hidden="true"><i></i></div>
+
+      <div class="preview">
+        <div class="p-label">Strava description preview</div>
+        <p class="p-line">34 days to go for Tata Mumbai Marathon. Easy run. Target sub-30.</p>
+        <p class="p-note">Description only &mdash; your activity titles are never touched.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>mynextpr &middot; writes descriptions, never titles. Not endorsed by Strava.</div>
+    <div>Mock page &middot; no data leaves this page &middot; no keys, no trackers, no external calls.</div>
+    <div><a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <a href="support.html">Support</a></div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var story=document.getElementById('story');
+  var btn=document.getElementById('motion-toggle');
+  if(!story||!btn)return;
+  function setPaused(paused){
+    story.classList.toggle('is-paused',paused);
+    btn.setAttribute('aria-pressed',paused?'true':'false');
+    btn.textContent=paused?'Play animation':'Pause animation';
+  }
+  btn.addEventListener('click',function(){
+    setPaused(!story.classList.contains('is-paused'));
+  });
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){
+    setPaused(true);
+  }
+})();
+</script>
+</body>
+</html>

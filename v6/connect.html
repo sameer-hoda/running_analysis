@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mynextpr — Connect with Strava</title>
+<meta name="description" content="Pick your race. Every run you log gets its countdown written into its Strava description — automatically. Titles are never touched.">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);
+    font-family:var(--font-sans);
+    -webkit-font-smoothing:antialiased;
+    font-size:var(--text-sub);line-height:1.45}
+  ::selection{background:var(--select)}
+  .wrap{max-width:var(--layout-narrow);margin:0 auto;
+    padding:var(--wrap-pad-top) var(--wrap-pad-x) var(--wrap-pad-bottom)}
+  .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;
+    padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* ---- masthead: wordmark + mock tag, ink rule ---- */
+  .mast{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);
+    padding-bottom:var(--space-3);border-bottom:var(--border-ink)}
+  .wordmark{font-size:var(--text-wordmark);font-weight:800;letter-spacing:-0.03em}
+  .wordmark span{color:var(--accent)}
+  .mocktag{font-family:var(--font-mono);font-size:var(--text-mono-sm);font-weight:600;
+    letter-spacing:.04em;color:var(--muted);white-space:nowrap;
+    border:var(--border-line);border-radius:var(--radius-xs);padding:3px 8px}
+
+  /* ---- lede: heading carries its own weight, no kicker ---- */
+  .lede{font-size:var(--text-lede);letter-spacing:-0.01em;line-height:1.45;
+    margin:var(--space-6) 0 var(--space-2);max-width:65ch}
+  .sub{font-size:var(--text-sub);color:var(--muted);line-height:1.55;
+    max-width:65ch;margin-bottom:var(--space-6)}
+
+  /* ---- step chips: ink-selected states, accent stays reserved ---- */
+  .chips{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4)}
+  .chip{font-family:var(--font-sans);font-size:var(--text-chip);font-weight:600;
+    line-height:1;padding:9px 16px;border-radius:var(--radius-pill);
+    background:var(--paper);color:var(--ink);border:var(--border-line);cursor:default}
+  .chip .n{font-family:var(--font-mono);font-size:var(--text-mono-sm);font-weight:700;
+    margin-right:var(--space-2);color:var(--accent)}
+  .chip[aria-current="step"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .chip[aria-current="step"] .n{color:var(--paper)}
+  .chip[aria-current="false"]{opacity:1}
+
+  /* ---- steps: accent numerals, hairline rows ---- */
+  .step{margin-top:var(--space-8)}
+  .stephead{display:flex;gap:var(--space-2);align-items:baseline;margin-bottom:var(--space-1)}
+  .num{font-family:var(--font-mono);font-weight:700;color:var(--accent);
+    font-variant-numeric:tabular-nums;flex:none}
+  .stephead h2{font-size:var(--text-h2);font-weight:700;letter-spacing:-0.01em}
+  .stephead h2 .opt{font-weight:400;color:var(--muted)}
+  .hint{font-size:var(--text-hint);color:var(--muted);margin-bottom:var(--space-3);
+    max-width:65ch;line-height:1.6}
+
+  /* ---- race rows: hairlines, selected tint + inset accent bar ---- */
+  .races{list-style:none;border-top:var(--border-line)}
+  .race{display:flex;gap:var(--space-3);align-items:center;width:100%;text-align:left;
+    background:var(--paper);border:none;border-bottom:var(--border-line);
+    padding:13px var(--space-1);cursor:pointer;font:inherit;color:inherit;
+    transition:background 200ms ease-out}
+  .race:hover{background:var(--soft)}
+  .race .when{font-family:var(--font-mono);font-size:var(--text-mono-sm);
+    font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap;min-width:86px}
+  .race .who{min-width:0;flex:1}
+  .race .name{font-weight:700;font-size:var(--text-race-name);letter-spacing:-0.01em}
+  .race .meta{font-size:var(--text-race-meta);color:var(--muted)}
+  .race .left{margin-left:auto;font-family:var(--font-mono);font-size:var(--text-mono-sm);
+    font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+  .race[aria-pressed="true"]{background:var(--select);box-shadow:var(--select-bar)}
+  .race[aria-pressed="true"]:hover{background:var(--select)}
+
+  /* ---- dashed bib call: the one dashed border on the page ---- */
+  .bibcall{margin-top:var(--space-4);border:1px dashed var(--accent);
+    border-radius:var(--radius-control);padding:10px var(--space-4);
+    font-size:var(--text-sub);line-height:1.55;display:none;max-width:65ch}
+  .bibcall.show{display:block}
+  .bibcall a{color:var(--ink);font-weight:700}
+
+  /* ---- goal input: standard control vocabulary ---- */
+  .goalrow{display:flex;gap:var(--space-2);margin-top:var(--space-3)}
+  input[type="text"]{font:inherit;font-size:var(--text-cta);padding:12px var(--space-4);
+    border:var(--border-ink);border-radius:var(--radius-control);width:220px;max-width:100%;
+    background:var(--paper);color:var(--ink);
+    transition:border-color 200ms ease-out,box-shadow 200ms ease-out}
+  input[type="text"]::placeholder{color:var(--muted)}
+
+  /* ---- single dark preview panel: the one contrast moment ---- */
+  .preview{margin-top:var(--space-10);background:var(--panel);color:var(--on-panel);
+    border-radius:var(--radius-card);box-shadow:var(--shadow-panel);
+    padding:var(--space-5)}
+  .preview .k{font-family:var(--font-mono);font-size:var(--text-mono-sm);
+    letter-spacing:.06em;text-transform:uppercase;color:var(--on-panel-muted);
+    margin-bottom:var(--space-2)}
+  .status{font-family:var(--font-mono);font-size:var(--text-status);
+    font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.5}
+  .count{font-family:var(--font-mono);font-size:var(--text-mono-sm);
+    font-variant-numeric:tabular-nums;color:var(--on-panel-muted);
+    margin:var(--space-2) 0 var(--space-4)}
+  .cta-row{display:grid;gap:var(--space-3)}
+  .strava{display:block;text-align:center;background:var(--accent);color:var(--paper);
+    border:none;border-radius:var(--radius-control);font-weight:800;
+    font-size:var(--text-cta);line-height:1;padding:19px var(--space-6);
+    min-height:56px;cursor:pointer;width:100%;
+    transition:background 200ms ease-out,opacity 200ms ease-out}
+  .strava:hover:not([aria-disabled="true"]),.strava:active:not([aria-disabled="true"]){background:var(--accent-pressed)}
+  .strava[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+  .ghost{display:block;text-align:center;background:none;color:var(--on-panel-muted);
+    border:1px solid var(--on-panel-muted);border-radius:var(--radius-control);
+    font-size:var(--text-hint);font-weight:600;padding:10px var(--space-4);
+    cursor:pointer;transition:color 200ms ease-out,border-color 200ms ease-out}
+  .ghost:hover{color:var(--on-panel);border-color:var(--on-panel)}
+  .ghost[hidden]{display:none}
+  .fine{font-size:var(--text-hint);color:var(--on-panel-muted);line-height:1.6;
+    max-width:65ch;margin:var(--space-3) 0 0}
+  .fine code{font-family:var(--font-mono);font-size:var(--text-mono-sm)}
+  .fine a{color:var(--on-panel)}
+  .consent{list-style:none;margin:var(--space-3) 0 0;padding:0;
+    font-size:var(--text-hint);line-height:1.6;color:var(--on-panel-muted);max-width:65ch}
+  .consent li{margin:var(--space-1) 0;padding-left:var(--space-4);position:relative}
+  .consent li::before{content:"—";position:absolute;left:0;color:var(--on-panel-muted)}
+
+  footer{border-top:var(--border-line);margin-top:var(--space-10);
+    padding:var(--space-5) 0 var(--space-8);
+    font-size:var(--text-hint);line-height:1.6;color:var(--muted)}
+  footer a{color:var(--ink)}
+  footer div{margin-bottom:var(--space-1)}
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <a class="wordmark" href="index.html" aria-label="mynextpr home" style="text-decoration:none;color:inherit">mynext<span>pr</span></a>
+    <span class="mocktag">Compatible with Strava</span>
+  </header>
+
+  <main>
+    <p class="lede">Pick your race. Every run you log gets your countdown written into its Strava description.</p>
+    <p class="sub">Connect uses the official Strava sign-in. Every run you log gets your countdown written into its description.</p>
+
+    <div class="chips" aria-label="Connect progress">
+      <span class="chip" id="chip1"><span class="n" aria-hidden="true">1</span>Race</span>
+      <span class="chip" id="chip2"><span class="n" aria-hidden="true">2</span>Goal</span>
+      <span class="chip" id="chip3"><span class="n" aria-hidden="true">3</span>Connect</span>
+    </div>
+
+    <section class="step" id="s1" aria-labelledby="s1h">
+      <div class="stephead"><span class="num" aria-hidden="true">01</span><h2 id="s1h">Your race</h2></div>
+      <p class="hint" id="s1hint">Connect unlocks only after you pick an upcoming race. Past races stay unconnectable.</p>
+      <ul class="races" id="races" role="radiogroup" aria-labelledby="s1h" aria-describedby="s1hint"></ul>
+      <div class="bibcall" id="bibcall"></div>
+    </section>
+
+    <section class="step" id="s2" aria-labelledby="s2h">
+      <div class="stephead"><span class="num" aria-hidden="true">02</span><h2 id="s2h">Target finish <span class="opt">(optional)</span></h2></div>
+      <p class="hint">e.g. sub-4, 3:59:59. Shown beside the countdown inside the description.</p>
+      <div class="goalrow">
+        <input type="text" id="goal" inputmode="text" autocomplete="off"
+          placeholder="sub-4" aria-label="Target finish time">
+      </div>
+    </section>
+
+    <section class="preview" aria-labelledby="preview-h">
+      <p class="k" id="preview-h">Your Strava description after every run</p>
+      <p class="status" id="status" role="status" aria-live="polite" aria-atomic="true">Select a race above.</p>
+      <p class="count" id="charcount" aria-hidden="true"></p>
+      <div class="cta-row">
+        <button class="strava" id="connect" type="button" aria-disabled="true" aria-describedby="status consent-fine">Pick a race first — then connect</button>
+        <button class="ghost" id="disconnect" type="button" hidden aria-describedby="status">Disconnect</button>
+      </div>
+      <h2 class="visually-hidden" id="consent-h">What connecting allows</h2>
+      <p class="fine" id="consent-fine">Connect uses the official Strava flow (scopes: <code>read</code> + <code>activity:read</code> + <code>activity:write</code>). Only your own activities are updated, and only with your consent. Your activity titles are never changed — countdowns go in descriptions only. See <a href="privacy.html">Privacy</a>, <a href="terms.html">Terms</a>, and <a href="support.html">Support</a>. <a href="https://mynextbib.com">Find more races on MyNextBib</a>.</p>
+      <p class="hint">Monthly/yearly totals in the preview are samples — live numbers appear after you connect Strava.</p>
+      <ul class="consent" id="consent" aria-labelledby="consent-h">
+        <li>Sign-in happens on <span>strava.com</span> — this page never sees your password.</li>
+        <li>Requests <span>read + activity:read + activity:write</span> only — the narrowest scopes for this feature. No broader access.</li>
+        <li>Reads your <span>new runs</span> to stamp them; writes the countdown into the <span>description only</span>. Disconnect or <a href="privacy.html#delete">delete your data</a> at any time.</li>
+        <li>Writes go into the activity <span>description only, never the title</span>, and only on <span>your own activities</span>, only after you approve on strava.com.</li>
+        <li>Your title stays yours. Disconnect stops all future writes; stored tokens are deleted.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer id="foot"><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="support.html">Support</a> · Compatible with Strava (no endorsement claimed).</div><div id="footgen"></div></footer>
+</div>
+<script src="strava-config.js"></script>
+<script src="strava.js"></script>
+<script>
+"use strict";
+var GENERATED = "2026-10-03";
+var BIB = "https://mynextbib.com";
+var EVENTS = [
+["Delhi Half Marathon","2026-10-18","New Delhi","https://vedantadelhihalfmarathon.procam.in",["10K","Half"]],
+["Winter Delhi Half Marathon 2026","2026-11-01","Delhi","https://www.indiarunning.com/event/winter_delhi_half_marathon_2025_25337",["5K","10K","Half"]],
+["Chennai Half Marathon 2026","2026-11-28","Island Grounds, Chennai","https://www.mysamay.in/public/event/info/fea9ecc8-af79-46b4-baa1-0e521341da4b",["5K","10K","Half"]]
+];
+var state = { race: null, connected: false };
+var $ = function(id){ return document.getElementById(id); };
+var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function dayLabel(iso){
+  var d = new Date(iso + "T00:00:00");
+  return d.getDate() + " " + MONTHS[d.getMonth()];
+}
+function daysLeft(iso){
+  var now = new Date(); now.setHours(0, 0, 0, 0);
+  var then = new Date(iso + "T00:00:00");
+  return Math.round((then - now) / 86400000);
+}
+function bibUrl(u){
+  if (!u) return BIB;
+  return u.charAt(0) === "/" ? BIB + u : u;
+}
+function raceKey(r){ return r[0] + "|" + r[1]; }
+
+function renderRaces(){
+  var box = $("races"); box.innerHTML = "";
+  var buttons = [];
+  EVENTS.forEach(function(e){
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "race";
+    b.setAttribute("role", "radio");
+    var sel = state.race && raceKey(state.race) === raceKey(e);
+    b.setAttribute("aria-checked", sel ? "true" : "false");
+    b.setAttribute("data-race", raceKey(e));
+    var dl = daysLeft(e[1]);
+    var left = dl < 0 ? "date passed" : dl === 0 ? "race day" : dl + (dl === 1 ? " day" : " days") + " left";
+    b.innerHTML = '<span class="when" aria-hidden="true"></span>' +
+      '<span class="who"><span class="name"></span><br>' +
+      '<span class="meta"></span></span>' +
+      '<span class="left" aria-hidden="true"></span>';
+    b.querySelector(".when").textContent = dayLabel(e[1]);
+    b.querySelector(".name").textContent = e[0];
+    b.querySelector(".meta").textContent =
+      (e[2] ? e[2].split(",")[0] + " · " : "") + e[4].join(" / ");
+    b.querySelector(".left").textContent = left;
+    b.setAttribute("aria-label", e[0] + ", " + dayLabel(e[1]) +
+      ", " + b.querySelector(".meta").textContent + ", " + left +
+      (sel ? ", selected" : ""));
+    b.onclick = function(){
+      state.race = sel ? null : e;
+      state.connected = false;
+      renderAll();
+      var next = box.querySelector('[data-race="' + raceKey(e) + '"]');
+      if (next) next.focus();
+    };
+    b.onkeydown = function(ev){
+      var idx = buttons.indexOf(b);
+      var next = null;
+      if (ev.key === "ArrowDown" || ev.key === "ArrowRight"){
+        next = buttons[(idx + 1) % buttons.length];
+      } else if (ev.key === "ArrowUp" || ev.key === "ArrowLeft"){
+        next = buttons[(idx - 1 + buttons.length) % buttons.length];
+      } else if (ev.key === "Home"){
+        next = buttons[0];
+      } else if (ev.key === "End"){
+        next = buttons[buttons.length - 1];
+      } else {
+        return;
+      }
+      ev.preventDefault();
+      if (next) next.focus();
+    };
+    buttons.push(b);
+    li.appendChild(b); box.appendChild(li);
+  });
+  var call = $("bibcall");
+  if (state.race){
+    call.className = "bibcall show";
+    call.innerHTML = 'Not signed up yet? <a id="biblink" href="#">' +
+      'Register on MyNextBib</a> for this race.';
+    $("biblink").href = bibUrl(state.race[3]);
+    $("biblink").textContent = "Register for " + state.race[0] + " on MyNextBib";
+  } else {
+    call.className = "bibcall"; call.innerHTML = "";
+  }
+}
+function isPast(iso){ return daysLeft(iso) < 0; }
+function statusText(){
+  if (!state.race) return "Select a race above.";
+  var dl = daysLeft(state.race[1]);
+  if (dl < 0) return state.race[0] + " — race date has passed. Pick an upcoming race.";
+  var head = dl > 1 ? dl + " days to go — " + state.race[0]
+    : dl === 1 ? "1 day to go — " + state.race[0]
+    : "Race day today — " + state.race[0];
+  var goal = $("goal").value.trim();
+  var pace = paceFor(goal, raceKm(state.race[4]));
+  head += goal ? (pace ? ", target " + goal + " at " + pace + "/km." : ", target " + goal + ".") : ".";
+  return head + "\n" + totalsLine(42, 310) + "\n" + PROMO_LINE;
+}
+var PROMO_LINE = "Set up tracking for your goal race at mynextpr.com";
+function raceKm(buckets){
+  var KNOWN = {"5K":5, "10K":10, "Half":21.0975, "Full":42.195};
+  buckets = buckets || [];
+  for(var i = 0; i < buckets.length; i++){
+    if(KNOWN[buckets[i]] != null) return KNOWN[buckets[i]];
+  }
+  return null;
+}
+function paceFor(goalText, distKm){
+  var m = String(goalText == null ? "" : goalText).trim().match(/^(\d{1,2}):([0-5]\d)(?::([0-5]\d))?$/);
+  if(!m || distKm == null) return "";
+  var mins = (+m[1]) * 60 + (+m[2]) + (m[3] ? (+m[3]) / 60 : 0);
+  if(!(mins > 0)) return "";
+  var p = mins / distKm, w = Math.floor(p), s = Math.round((p - w) * 60);
+  if(s === 60){ w++; s = 0; }
+  return w + ":" + (s < 10 ? "0" : "") + s;
+}
+function totalsLine(monthKm, yearKm){
+  var d = new Date();
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return MONTHS[d.getMonth()] + " so far: " + monthKm + " km · " + d.getFullYear() + " so far: " + yearKm + " km.";
+}
+function renderChips(){
+  var goal = $("goal").value.trim();
+  var past = state.race && isPast(state.race[1]);
+  $("chip1").setAttribute("aria-current", state.race && !past ? "step" : "false");
+  $("chip2").setAttribute("aria-current", goal ? "step" : "false");
+  $("chip3").setAttribute("aria-current", state.connected ? "step" : "false");
+}
+function renderPreview(){
+  var t = statusText();
+  var btn = $("connect");
+  var dc = $("disconnect");
+  var past = state.race && isPast(state.race[1]);
+  if (!state.race || past){
+    $("status").textContent = t;
+    btn.setAttribute("aria-disabled", "true");
+    btn.setAttribute("data-gate", state.race ? "past-race" : "no-race");
+    btn.textContent = state.race ? "Connect with Strava" : "Pick a race first — then connect";
+    dc.hidden = true;
+  } else if (state.connected){
+    $("status").textContent = "Connected. " + t;
+    btn.setAttribute("aria-disabled", "true");
+    btn.setAttribute("data-gate", "connected");
+    btn.textContent = "Connect with Strava";
+    dc.hidden = false;
+  } else {
+    $("status").textContent = t;
+    btn.setAttribute("aria-disabled", "false");
+    btn.setAttribute("data-gate", "ready");
+    btn.textContent = "Connect with Strava";
+    dc.hidden = true;
+  }
+  $("charcount").textContent = state.race ? t.length + " characters" : "";
+  $("footgen").textContent = "Race data: MyNextBib feed snapshot · generated " +
+    GENERATED + ". " + EVENTS.length + " races in this snapshot.";
+  renderChips();
+}
+function renderAll(){
+  renderRaces(); renderPreview();
+}
+$("goal").addEventListener("input", renderPreview);
+$("connect").onclick = function(){
+  if (state.connected) return;
+  if (!state.race){ $("status").textContent = "Pick a race first — then connect."; return; }
+  if (isPast(state.race[1])){ $("status").textContent = statusText(); return; }
+  try {
+    window.localStorage.setItem("mynextpr.pending", JSON.stringify(
+      {race: state.race[0], date: state.race[1], city: state.race[2],
+       goal: $("goal").value.trim()}));
+  } catch(e) {}
+  if (window.MyNextPRStrava && window.MyNextPRStrava.ready()){
+    var oauthState = JSON.stringify({race: state.race[0], date: state.race[1],
+      city: state.race[2] || "", dist: (state.race[4] || []).join("/"),
+      goal: $("goal").value.trim()});
+    window.location.href = window.MyNextPRStrava.authorizeUrl(oauthState);
+  } else {
+    $("status").textContent = "Strava sign-in is not configured yet — " +
+      "copy strava-config.example.js to strava-config.js with your client ID.";
+  }
+};
+$("disconnect").onclick = function(){
+  state.connected = false;
+  try { window.localStorage.removeItem("mynextpr.connected"); } catch(e) {}
+  renderPreview();
+  $("connect").focus();
+};
+try { state.connected = window.localStorage.getItem("mynextpr.connected") === "1"; } catch(e) {}
+renderAll();
+</script>
+</body>
+</html>

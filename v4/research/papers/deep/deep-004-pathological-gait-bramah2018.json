@@ -1,0 +1,29 @@
+{
+  "deep_id": "deep-004",
+  "catalog_id": "bramah-2018",
+  "rule_link": {
+    "zone": "trunk_lean",
+    "finding_title": "Trunk Lean",
+    "how_it_backs": "Justifies scoring the trunk_lean zone against the injured-runner pattern: injured runners show more forward trunk lean at midstance (with greater pelvic drop and a more extended knee at contact), so the rule flags excessive lean-plus-drop as the pathological cluster and cues tall, level running."
+  },
+  "summary": "Bramah and colleagues compared 3D running kinematics between runners with common soft-tissue injuries and healthy controls to look for a shared pathological gait. Injured runners showed greater contralateral pelvic drop, more forward trunk lean at midstance, and a more extended knee with more ankle dorsiflexion at initial contact. The authors conclude these patterns together may define a pathological running gait that cuts across specific injury diagnoses.",
+  "methods_signal": "Case-control 3D kinematic comparison of runners with common soft-tissue running injuries versus uninjured controls, testing group differences across stance-phase trunk, pelvis, knee and ankle variables.",
+  "snippet": {
+    "text": "Injured runners share a look: dropped pelvis, extra trunk lean at midstance, straight knee at landing. If your photo shows that cluster, that is the first thing to fix.",
+    "grounds_in": "Paraphrase of Abstract + Results (group kinematic differences, injured vs control)"
+  },
+  "figure": {
+    "file": "figures/deep-004-pathological-gait.svg",
+    "caption": "The pathological cluster: control vs injured-runner posture at midstance and initial contact.",
+    "what_it_shows": "Schematic pair: level-pelvis tall control runner vs injured-pattern runner with contralateral pelvic drop, extra forward trunk lean at midstance, and extended knee at initial contact.",
+    "redrawn": true
+  },
+  "citation": {
+    "authors": "Bramah C, Preece SJ, Gill N, Herrington L",
+    "year": 2018,
+    "title": "Is there a pathological gait associated with common soft tissue running injuries?",
+    "journal": "Am J Sports Med 46(12):3023-3031",
+    "doi_url": "https://doi.org/10.1177/0363546518793657",
+    "pubmed_url": "https://pubmed.ncbi.nlm.nih.gov/30193080/"
+  }
+}

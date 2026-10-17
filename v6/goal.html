@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mynextpr — Your goal (optional)</title>
+<meta name="description" content="Set an optional target finish time for your race countdown. The goal appears in your Strava activity descriptions only — titles are never touched.">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--font-sans);
+    -webkit-font-smoothing:antialiased;
+    font-size:var(--text-sub); line-height:1.45;
+  }
+  ::selection{ background:var(--select); }
+  .wrap{
+    max-width:var(--layout-narrow); margin:0 auto;
+    padding:var(--wrap-pad-top) var(--wrap-pad-x) var(--wrap-pad-bottom);
+  }
+
+  /* Masthead: wordmark + mock tag, ink hairline rule. */
+  .mast{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:var(--space-3); padding-bottom:var(--space-3);
+    border-bottom:var(--border-ink);
+  }
+  .wordmark{
+    font-size:var(--text-wordmark); font-weight:800; letter-spacing:-0.03em;
+  }
+  a.wordmark{ text-decoration:none; color:inherit; }
+  .wordmark span{ color:var(--accent); }
+  .mocktag{
+    font-family:var(--font-mono); font-size:var(--text-mono-sm); font-weight:600;
+    letter-spacing:.04em; color:var(--muted); white-space:nowrap;
+    border:var(--border-line); border-radius:var(--radius-xs); padding:3px 8px;
+  }
+
+  /* Goal card: border only (never border + shadow). One rise-and-settle
+     entrance — the surface's single authored moment; countdown ticks stay
+     plain text updates. */
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(14px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .card{
+    margin-top:var(--space-8); border:var(--border-line);
+    border-radius:var(--radius-card); background:var(--paper);
+    padding:var(--space-5);
+    animation:rise .45s cubic-bezier(.2,.7,.3,1) both;
+  }
+  .step-line{
+    margin:0; font-family:var(--font-mono); font-size:var(--text-mono-sm);
+    font-variant-numeric:tabular-nums; color:var(--muted);
+  }
+  .step-line .num{ color:var(--accent); font-weight:700; }
+  h1{
+    font-size:24px; font-weight:800; letter-spacing:-0.02em;
+    margin:var(--space-2) 0 var(--space-1); text-wrap:balance;
+  }
+  .sub{
+    margin:0 0 var(--space-4); color:var(--muted);
+    font-size:var(--text-sub); line-height:1.55; max-width:65ch;
+  }
+  .race-line{
+    margin:0 0 var(--space-1); padding:13px 4px;
+    border-top:var(--border-line); border-bottom:var(--border-line);
+    font-size:var(--text-race-meta); color:var(--muted);
+    font-variant-numeric:tabular-nums;
+  }
+  .race-line strong{
+    color:var(--ink); font-size:var(--text-race-name); font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  fieldset.time-set{ border:0; margin:0; padding:0; min-width:0; }
+  label.lbl, legend.lbl{
+    display:block; font-size:12px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--muted); margin:var(--space-4) 0 var(--space-2);
+    padding:0;
+  }
+  /* Digit time picker (HH:MM): two labelled groups (Hours, Minutes),
+     each holding two typeable digit boxes flanked by that digit's own
+     up/down arrow buttons. Digits accept typed numbers directly (typing
+     auto-advances), arrows step with wrap, and ArrowUp/ArrowDown on a
+     focused digit steps it too. */
+  .digits{ display:flex; align-items:stretch; gap:var(--space-3); margin-top:2px; }
+  .dig-group{
+    flex:1; min-width:0; border:var(--border-line);
+    border-radius:var(--radius-control); background:var(--paper);
+    padding:var(--space-2) var(--space-2) var(--space-1);
+  }
+  .dig-group[hidden]{ display:none; }
+  .dig-pair{ display:flex; align-items:stretch; gap:6px; }
+  .dig-sep{
+    align-self:center; font-size:32px; font-weight:800; color:var(--ink);
+    padding:0 2px; font-variant-numeric:tabular-nums;
+  }
+  .digit-col{ display:flex; flex-direction:column; flex:1; min-width:0; }
+  .digit-col button{
+    border:0; background:transparent; color:var(--muted);
+    font-size:12px; line-height:1; padding:8px 0; cursor:pointer;
+    font-family:inherit; min-height:28px; border-radius:var(--radius-tag);
+  }
+  .digit-col button:hover{ background:var(--soft); color:var(--ink); }
+  .digit-col button:active{ background:var(--soft); color:var(--accent); }
+  .digit-card{
+    width:100%; border:var(--border-line); border-radius:var(--radius-tag);
+    background:var(--paper); color:var(--ink);
+    font-size:32px; font-weight:800; text-align:center; font-family:inherit;
+    padding:8px 0; font-variant-numeric:tabular-nums; caret-color:var(--accent);
+  }
+  .digit-card:hover{ border-color:var(--muted); }
+  .digit-card:focus-visible{ border-color:var(--ink); }
+  .digit-card::selection{ background:var(--select); }
+  .digit-cap{
+    display:block; font-size:12px; font-weight:700; color:var(--muted);
+    margin:6px 0 2px; text-align:center; text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  .hint{
+    font-size:var(--text-hint); color:var(--muted);
+    margin:var(--space-2) 0 0;
+    font-variant-numeric:tabular-nums;
+  }
+  /* Dynamic form message: success/skipped notes read muted; errors switch
+     to ink semibold with a "!" marker chip. Not a live region — errors are
+     announced once via #goalStatus on Continue so typing never spams. */
+  .msg{ min-height:18px; }
+  .msg[data-state="error"]{ color:var(--ink); font-weight:600; }
+  .msg[data-state="error"]::before{
+    content:"!"; display:inline-block;
+    width:16px; height:16px; line-height:14px; text-align:center;
+    font-size:11px; font-weight:800; color:var(--accent);
+    border:var(--border-line); border-radius:var(--radius-tag);
+    margin-right:6px;
+  }
+  .row{ display:flex; gap:var(--space-2); margin-top:var(--space-4); }
+  .btn{
+    border:0; border-radius:var(--radius-control); padding:13px 20px;
+    font-size:var(--text-cta); font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .btn-acc{ background:var(--accent); color:var(--paper); flex:1.2; }
+  .btn-acc:hover{ background:var(--accent-pressed); }
+  .btn-ghost{
+    background:var(--paper); color:var(--ink);
+    border:var(--border-line); flex:1;
+  }
+  .btn-ghost:hover{ background:var(--soft); }
+  .btn-acc:active{ background:var(--accent-pressed); }
+  /* Skip is a toggle (typing clears it): the pressed state reads selected. */
+  #skipBtn[aria-pressed="true"]{ background:var(--soft); border-color:var(--ink); }
+  /* Screen-reader-only live region: visually hidden, still announced. */
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+  }
+
+  /* The one dark surface: description preview panel. */
+  .preview{
+    margin-top:var(--space-4); background:var(--panel); color:var(--on-panel);
+    border-radius:var(--radius-card); box-shadow:var(--shadow-panel);
+    padding:var(--space-5);
+  }
+  .preview-head{
+    display:flex; justify-content:space-between; align-items:center;
+    gap:var(--space-2);
+    font-size:11px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--on-panel-muted);
+  }
+  /* Section heading styled as the panel eyebrow: keeps h1→h2 order for
+     screen readers without changing the dark-panel look. */
+  .preview-title{ font:inherit; letter-spacing:inherit; text-transform:inherit; margin:0; color:inherit; }
+  .count{
+    font-family:var(--font-mono); font-size:var(--text-mono-sm);
+    letter-spacing:0; text-transform:none;
+    font-variant-numeric:tabular-nums;
+  }
+  .preview-body{
+    font-family:var(--font-mono);
+    font-size:13.5px; line-height:1.6; white-space:pre-wrap; margin:var(--space-2) 0 0;
+    font-variant-numeric:tabular-nums;
+  }
+  .fine{ font-size:12px; color:var(--muted); margin-top:var(--space-3); line-height:1.6; }
+  .fine code{
+    font-family:var(--font-mono); font-size:var(--text-mono-sm);
+    background:var(--soft); border:var(--border-line);
+    border-radius:var(--radius-tag); padding:1px 6px; color:var(--ink);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <a class="wordmark" href="index.html" aria-label="mynextpr home">mynext<span>pr</span></a>
+    <span class="mocktag">Compatible with Strava</span>
+  </header>
+
+  <main>
+  <section class="card" aria-labelledby="goalHeading">
+    <p class="step-line"><span class="num">04</span> / 04 &middot; Goal &mdash; optional</p>
+    <p class="sr-only">Step 4 of 4: Goal (optional)</p>
+    <h1 id="goalHeading">Set a goal, or skip it</h1>
+    <p class="sub">Target finish time — shown in the description exactly as below. Skip and the countdown still works.</p>
+    <p class="race-line" id="raceLine"></p>
+
+    <!-- Time entry (HH:MM only, no seconds): fieldset + legend name the
+         group; two labelled boxes (Hours, Minutes) each hold two typeable
+         digit boxes, every digit with its own up/down arrow buttons.
+         Typing a digit auto-advances; ArrowUp/ArrowDown steps the focused
+         digit; Backspace on an empty box moves back. The static hint plus
+         the dynamic message below are both referenced by aria-describedby.
+         Focus order is DOM order: hours digits → minutes digits → Skip →
+         Continue. -->
+    <fieldset class="time-set" id="timeSet">
+      <legend class="lbl" id="timeLegend">Target time (optional)</legend>
+      <div class="digits" role="group" aria-label="Target time in hours and minutes" aria-describedby="goalHint goalMsg">
+        <div class="dig-group" id="hoursWrap" role="group" aria-label="Hours">
+          <div class="dig-pair">
+            <div class="digit-col">
+              <button type="button" id="hTUp" aria-label="Increase hours tens digit" tabindex="-1">&#9650;</button>
+              <input class="digit-card" id="dHT" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" value="0" role="spinbutton" aria-label="Hours tens digit" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0" aria-describedby="goalHint goalMsg">
+              <button type="button" id="hTDown" aria-label="Decrease hours tens digit" tabindex="-1">&#9660;</button>
+            </div>
+            <div class="digit-col">
+              <button type="button" id="hOUp" aria-label="Increase hours ones digit" tabindex="-1">&#9650;</button>
+              <input class="digit-card" id="dHO" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" value="2" role="spinbutton" aria-label="Hours ones digit" aria-valuemin="0" aria-valuemax="9" aria-valuenow="2" aria-describedby="goalHint goalMsg">
+              <button type="button" id="hODown" aria-label="Decrease hours ones digit" tabindex="-1">&#9660;</button>
+            </div>
+          </div>
+          <span class="digit-cap" id="capH">Hours</span>
+        </div>
+        <span class="dig-sep" aria-hidden="true">:</span>
+        <div class="dig-group" id="minsWrap" role="group" aria-label="Minutes">
+          <div class="dig-pair">
+            <div class="digit-col">
+              <button type="button" id="mTUp" aria-label="Increase minutes tens digit" tabindex="-1">&#9650;</button>
+              <input class="digit-card" id="dMT" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" value="0" role="spinbutton" aria-label="Minutes tens digit" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" aria-describedby="goalHint goalMsg">
+              <button type="button" id="mTDown" aria-label="Decrease minutes tens digit" tabindex="-1">&#9660;</button>
+            </div>
+            <div class="digit-col">
+              <button type="button" id="mOUp" aria-label="Increase minutes ones digit" tabindex="-1">&#9650;</button>
+              <input class="digit-card" id="dMO" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" value="0" role="spinbutton" aria-label="Minutes ones digit" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0" aria-describedby="goalHint goalMsg">
+              <button type="button" id="mODown" aria-label="Decrease minutes ones digit" tabindex="-1">&#9660;</button>
+            </div>
+          </div>
+          <span class="digit-cap" id="capM">Minutes</span>
+        </div>
+      </div>
+    </fieldset>
+    <p class="hint" id="goalHint">Optional — type each digit or use the arrows (HH:MM). Hours 0–99, minutes 0–59.</p>
+    <p class="hint msg" id="goalMsg" data-state="note"></p>
+
+    <!-- Preview is display-only: out of the tab order, labelled by its
+         heading, with the char budget exposed via aria-describedby. It never
+         uses a live region — confirmations are announced via #goalStatus. -->
+    <div class="preview">
+      <div class="preview-head"><h2 class="preview-title" id="previewLabel">Description preview</h2><span class="count" id="charCount"></span></div>
+      <p class="preview-body" id="preview" role="region" aria-labelledby="previewLabel" aria-describedby="charCount"></p>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-ghost" id="skipBtn" type="button" aria-pressed="false">Skip for now</button>
+      <button class="btn btn-acc" id="continueBtn" type="button">Continue</button>
+    </div>
+    <p class="fine funnel" id="funnelNav">
+      <a id="backLink" href="picker.html">&larr; Back to races</a>
+      &nbsp;&middot;&nbsp;
+      <a id="nextLink" href="connect.html">Next: connect &rarr;</a>
+    </p>
+    <p class="sr-only" role="status" id="goalStatus"></p>
+
+    <p class="fine">When you connect, the countdown is written to the activity <code>description</code>; your titles stay yours. Monthly/yearly totals in the preview are samples — live numbers appear after you connect.</p>
+  </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* v6 goal step. Description-only copy: the preview below is written to the
+   Strava activity description, never the title. No credentials, no network. */
+(function(){
+var MAX_DESC = 500;
+var MAX_GOAL = 60;
+var STORE_KEY = "mynextpr.goal.v1";
+
+var hoursWrap = document.getElementById("hoursWrap");
+var minsWrap = document.getElementById("minsWrap");
+var hintEl = document.getElementById("goalHint");
+var msgEl = document.getElementById("goalMsg");
+var previewEl = document.getElementById("preview");
+var countEl = document.getElementById("charCount");
+var raceEl = document.getElementById("raceLine");
+var skipBtn = document.getElementById("skipBtn");
+var continueBtn = document.getElementById("continueBtn");
+var statusEl = document.getElementById("goalStatus");
+var backLink = document.getElementById("backLink");
+var nextLink = document.getElementById("nextLink");
+/* Digit boxes: one typeable box per digit (H T H O : M T M O), each
+   with its own up/down arrow buttons. Typing and arrows both feed the
+   same DIGITS state. */
+var ORDER = ["hT", "hO", "mT", "mO"];
+var CARDS = {
+  hT: document.getElementById("dHT"),
+  hO: document.getElementById("dHO"),
+  mT: document.getElementById("dMT"),
+  mO: document.getElementById("dMO")
+};
+var BTNS = {
+  hTUp: document.getElementById("hTUp"), hTDown: document.getElementById("hTDown"),
+  hOUp: document.getElementById("hOUp"), hODown: document.getElementById("hODown"),
+  mTUp: document.getElementById("mTUp"), mTDown: document.getElementById("mTDown"),
+  mOUp: document.getElementById("mOUp"), mODown: document.getElementById("mODown")
+};
+if(!CARDS.hT || !CARDS.hO || !CARDS.mT || !CARDS.mO || !hintEl || !msgEl || !previewEl || !countEl || !raceEl || !skipBtn || !continueBtn) return;
+
+/* Polite announcements (skip/save confirmations only — never per keystroke,
+   so typing does not spam screen readers). */
+function announce(msg){
+  if(!statusEl) return;
+  try {
+    statusEl.textContent = "";
+    setTimeout(function(){ statusEl.textContent = msg; }, 30);
+  } catch(e){ /* announcement is best-effort only */ }
+}
+
+function raceFromQuery(){
+  var q;
+  try { q = new URLSearchParams(window.location.search); }
+  catch(e){ q = { get:function(){ return null; } }; }
+  /* Cap untrusted query fields so one long param cannot blow the budget. */
+  function cap(v, n, fb){ v = v == null ? "" : String(v); return v ? v.slice(0, n) : fb; }
+  return {
+    name: cap(q.get("race"), 80, "Delhi Half Marathon"),
+    date: cap(q.get("date"), 20, "2026-10-18"),
+    city: cap(q.get("city"), 60, "New Delhi"),
+    dist: cap(q.get("dist"), 20, "Half")
+  };
+}
+var RACE = raceFromQuery();
+
+/* Code-point-safe truncation: String.slice can split a surrogate pair
+   (emoji), leaving a lone surrogate that renders as U+FFFD. */
+function safeSlice(s, n){
+  s = String(s);
+  try { return Array.from(s).slice(0, n).join(""); }
+  catch(e){ return s.slice(0, n); }
+}
+
+/* Picker handoff target: ?next= is host-controlled but URL-borne, so treat
+   it as untrusted. Accept http(s) URLs (absolute, or relative resolved
+   against this page) plus file: only when this page is itself file://.
+   Reject javascript:, data:, and friends by falling back to null. */
+function resolveNext(raw){
+  if(raw == null) return null;
+  var s = String(raw).trim();
+  if(!s || s.length > 2000) return null;
+  var base = null;
+  try { base = window.location.href; } catch(e){}
+  var u;
+  try { u = base ? new URL(s, base) : new URL(s); }
+  catch(e){ return null; }
+  var proto = (u.protocol || "").toLowerCase();
+  if(proto === "http:" || proto === "https:") return u.toString();
+  try {
+    if(proto === "file:" && String(window.location.protocol).toLowerCase() === "file:")
+      return u.toString();
+  } catch(e){}
+  return null;
+}
+
+/* Distance-aware HH:MM entry. 5K keeps a minutes-only emphasis (hours
+   hidden); every other distance shows hours + minutes. Defaults (HH:MM):
+   5K 0:30, 10K 1:00, Half 2:00, Full 4:00, anything else 1:00. */
+function distConfig(dist){
+  var d = String(dist == null ? "" : dist).toLowerCase().replace(/\s+/g, "");
+  if(d === "5k" || d === "5km" || d === "5") return {hours:false, def:[0, 30]};
+  if(d.indexOf("ultra") > -1) return {hours:true, def:[6, 0]};
+  if(d.indexOf("half") > -1 || d.indexOf("21") > -1) return {hours:true, def:[2, 0]};
+  if(d.indexOf("full") > -1 || d.indexOf("marathon") > -1 || d.indexOf("42") > -1)
+    return {hours:true, def:[4, 0]};
+  if(d === "10k" || d === "10km" || d === "10" || d.indexOf("10") > -1) return {hours:true, def:[1, 0]};
+  if(d.indexOf("5k") > -1) return {hours:false, def:[0, 30]};
+  return {hours:true, def:[1, 0]};
+}
+var CFG = distConfig(RACE.dist);
+if(hoursWrap) hoursWrap.hidden = !CFG.hours;
+
+/* Parse a ?goal= round-trip value ("H:MM" HH:MM only, no seconds) back into
+   fields. Anything else (old H:MM:SS free text, garbage) is ignored so
+   defaults stand. */
+function parseGoalString(raw){
+  var s = String(raw == null ? "" : raw).trim();
+  if(!/^[0-9]{1,2}:[0-5][0-9]$/.test(s)) return null;
+  var p = s.split(":");
+  return {h:parseInt(p[0], 10), m:parseInt(p[1], 10)};
+}
+
+/* Digit state: hours 0–99 as (hT, hO), minutes 0–59 as (mT, mO)
+   with minutes-tens capped at 5. Every value the drums can show is valid,
+   so there is no invalid state — arrows only. */
+var RANGES = {hT:9, hO:9, mT:5, mO:9};
+var DIGITS = {hT:0, hO:0, mT:0, mO:0};
+function paintDigits(){
+  for(var i = 0; i < ORDER.length; i++){
+    var k = ORDER[i], card = CARDS[k];
+    if(!card) continue;
+    if(document.activeElement !== card) card.value = String(DIGITS[k]);
+    try { card.setAttribute("aria-valuenow", String(DIGITS[k])); } catch(e){}
+  }
+}
+function focusKey(key, select){
+  var card = CARDS[key];
+  if(!card) return;
+  try { card.focus({preventScroll:true}); } catch(e){ try { card.focus(); } catch(_){} }
+  if(select !== false){
+    try { card.select(); } catch(e){}
+  }
+}
+function setDigits(h, m){
+  h = Math.max(0, Math.min(99, h | 0));
+  m = Math.max(0, Math.min(59, m | 0));
+  DIGITS.hT = Math.floor(h / 10); DIGITS.hO = h % 10;
+  DIGITS.mT = Math.floor(m / 10); DIGITS.mO = m % 10;
+  paintDigits();
+}
+function applyDefaults(){
+  setDigits(CFG.def[0], CFG.def[1]);
+}
+applyDefaults();
+
+/* Prefill from ?goal= / ?skipped= so the picker (or a back-link) round-trips. */
+try {
+  var qs = new URLSearchParams(window.location.search);
+  var pre = qs.get("goal");
+  if(pre){
+    var parsed = parseGoalString(safeSlice(pre, MAX_GOAL));
+    if(parsed) setDigits(parsed.h, parsed.m);
+  }
+} catch(e){ /* standalone file:// without URL support: keep defaults */ }
+
+var skipped = false;
+try {
+  var sk = new URLSearchParams(window.location.search).get("skipped");
+  if(sk === "1" || (sk && sk.toLowerCase() === "true")) skipped = true;
+} catch(e){}
+
+function fmtDate(ds){
+  var d = new Date(ds + "T00:00:00");
+  return isNaN(d) ? ds : d.toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
+}
+function daysTo(ds){
+  var t = new Date(); t.setHours(0,0,0,0);
+  var d = new Date(ds + "T00:00:00");
+  return isNaN(d) ? NaN : Math.round((d - t) / 86400000);
+}
+function whenText(n){
+  if(isNaN(n)) return "countdown armed";
+  if(n > 1) return n + " days to go";
+  if(n === 1) return "tomorrow";
+  if(n === 0) return "race day today";
+  return "race day passed";
+}
+
+/* Drum reading (HH:MM only, no seconds). Drums always hold a valid
+   value, so validation always succeeds; the shape is kept so the preview,
+   handoff, and messages below read exactly as before. 5K hides the hours
+   drums and counts hours as 0. */
+function pad2(n){ return (n < 10 ? "0" : "") + n; }
+function drumHours(){ return DIGITS.hT * 10 + DIGITS.hO; }
+function drumMinutes(){ return DIGITS.mT * 10 + DIGITS.mO; }
+function validateGoal(){
+  var hv = CFG.hours ? drumHours() : 0;
+  var goal = hv + ":" + pad2(drumMinutes());
+  return {goal:goal, ok:true, bad:[], note:"Target time " + goal + " — previewed below exactly as it will appear."};
+}
+
+function descHeadline(){
+  var n = daysTo(RACE.date);
+  if(n > 1) return n + " days to go — " + RACE.name;
+  if(n === 1) return "1 day to go — " + RACE.name;
+  if(n === 0) return "Race day today — " + RACE.name;
+  return RACE.name + " — race day passed";
+}
+function raceKm(dist){
+  var d = String(dist == null ? "" : dist).toLowerCase().replace(/\s+/g, "");
+  if(d === "5k" || d === "5km" || d === "5") return 5;
+  if(d === "10k" || d === "10km" || d === "10" || d.indexOf("10") > -1) return 10;
+  if(d.indexOf("ultra") > -1) return null;
+  if(d.indexOf("half") > -1 || d.indexOf("21") > -1) return 21.0975;
+  if(d.indexOf("full") > -1 || d.indexOf("marathon") > -1 || d.indexOf("42") > -1) return 42.195;
+  if(d.indexOf("5k") > -1) return 5;
+  return null;
+}
+function paceFor(goalText, distKm){
+  var m = String(goalText == null ? "" : goalText).trim().match(/^(\d{1,2}):([0-5]\d)(?::([0-5]\d))?$/);
+  if(!m || distKm == null) return "";
+  var mins = (+m[1]) * 60 + (+m[2]) + (m[3] ? (+m[3]) / 60 : 0);
+  if(!(mins > 0)) return "";
+  var p = mins / distKm, w = Math.floor(p), s = Math.round((p - w) * 60);
+  if(s === 60){ w++; s = 0; }
+  return w + ":" + (s < 10 ? "0" : "") + s;
+}
+function totalsLine(monthKm, yearKm){
+  var d = new Date();
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return MONTHS[d.getMonth()] + " so far: " + monthKm + " km · " + d.getFullYear() + " so far: " + yearKm + " km.";
+}
+var PROMO_LINE = "Set up tracking for your goal race at mynextpr.com";
+function descText(goal){
+  var pace = paceFor(goal, raceKm(RACE.dist));
+  var head = descHeadline() + (goal ? (pace ? ", target " + goal + " at " + pace + "/km." : ", target " + goal + ".") : ".");
+  return [head, totalsLine(42, 310), PROMO_LINE].join("\n");
+}
+
+/* Picker plug-in contract: same countdown + target-pace description shape
+   the picker flow renders, so a goal saved here drops straight into the
+   picker preview. State is published three ways so any host can consume it:
+   window.MyNextPRGoal.getState(), a "mynextpr:goal" CustomEvent, and a
+   localStorage handoff under STORE_KEY (best-effort; private mode safe). */
+function getState(){
+  var v = validateGoal();
+  var goal = (skipped || !v.ok) ? "" : v.goal;
+  return {
+    race: {name:RACE.name, date:RACE.date, city:RACE.city, dist:RACE.dist},
+    goal: goal,
+    skipped: skipped || !goal,
+    description: descText(goal)
+  };
+}
+
+function publish(){
+  var s;
+  try { s = getState(); } catch(e){ return; }
+  try { window.MyNextPRGoal = window.MyNextPRGoal || {}; window.MyNextPRGoal.getState = getState; }
+  catch(e){ /* frozen host object: event + storage still work */ }
+  try {
+    var ev;
+    if(typeof window.CustomEvent === "function") ev = new CustomEvent("mynextpr:goal", {detail:s});
+    else { ev = document.createEvent("CustomEvent"); ev.initCustomEvent("mynextpr:goal", false, false, s); }
+    document.dispatchEvent(ev);
+  } catch(e){ /* no event support: storage still works */ }
+  try { window.localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
+  catch(e){ /* private mode / file:// without storage: page still works */ }
+}
+
+/* Funnel links: Back returns to picker.html with the race carried along;
+   Next goes to connect.html with race + goal/skipped so the funnel needs
+   no storage read. Both are plain anchors (progressive enhancement) kept
+   in sync on every render. */
+function raceParams(){
+  return "race=" + encodeURIComponent(RACE.name) +
+    "&date=" + encodeURIComponent(RACE.date) +
+    "&city=" + encodeURIComponent(RACE.city) +
+    "&dist=" + encodeURIComponent(RACE.dist);
+}
+function syncFunnel(goal){
+  try {
+    if(backLink) backLink.href = "picker.html?" + raceParams();
+    if(nextLink) nextLink.href = "connect.html?" + raceParams() +
+      (goal ? "&goal=" + encodeURIComponent(goal) : "&skipped=1");
+  } catch(e){ /* anchors keep their static hrefs */ }
+}
+function render(){
+  var v = validateGoal();
+  paintDigits();
+  var goal = (skipped || !v.ok) ? "" : v.goal;
+  var body = descText(goal);
+  /* Hard cap: the description budget wins. A structured goal is fixed-format,
+     so when an exotic race name pushes the body over budget the goal line is
+     dropped whole — never trimmed mid-digits, never the countdown. */
+  var trimmed = false;
+  if(body.length > MAX_DESC && goal){
+    goal = "";
+    trimmed = true;
+    body = descText(goal);
+  }
+  if(body.length > MAX_DESC){ body = body.slice(0, MAX_DESC); trimmed = true; }
+  previewEl.textContent = body;
+  countEl.textContent = body.length + " / " + MAX_DESC + " chars";
+  /* Static #goalHint keeps the ranges; this dynamic line carries the
+     result. Errors name the fields and flip data-state so sighted and
+     screen-reader users get the same message via aria-describedby. */
+  var msgState = "note", msgText;
+  if(skipped){ msgText = "Skipped — no goal line will appear."; }
+  else if(!v.ok){ msgState = "error"; msgText = v.note; }
+  else if(trimmed){ msgText = "Goal left out to fit the description budget."; }
+  else { msgText = v.note; }
+  msgEl.textContent = msgText;
+  try { msgEl.setAttribute("data-state", msgState); } catch(e){}
+  try { skipBtn.setAttribute("aria-pressed", skipped ? "true" : "false"); } catch(e){}
+  syncFunnel(goal);
+  publish();
+}
+
+/* Race line uses textContent only — query params are untrusted. */
+(function renderRace(){
+  raceEl.textContent = "";
+  var s = document.createElement("strong"); s.textContent = RACE.name;
+  raceEl.appendChild(s);
+  raceEl.appendChild(document.createTextNode(" · " + fmtDate(RACE.date) +
+    (RACE.city ? " · " + RACE.city : "") + " · " + RACE.dist));
+})();
+
+function flash(btn, label){
+  var orig = btn.textContent;
+  btn.textContent = label;
+  setTimeout(function(){ btn.textContent = orig; }, 1500);
+}
+
+/* Drum stepping: each digit wraps within its own range (hours digits
+   0–9, minutes tens 0–5, minutes ones 0–9). Any arrow press clears skip
+   and re-renders the HH:MM preview. */
+function syncCard(key){
+  var card = CARDS[key];
+  if(!card) return;
+  card.value = String(DIGITS[key]);
+  try { card.setAttribute("aria-valuenow", String(DIGITS[key])); } catch(e){}
+}
+function stepDigit(key, delta){
+  var max = RANGES[key];
+  if(max == null) return;
+  var span = max + 1;
+  DIGITS[key] = (((DIGITS[key] + delta) % span) + span) % span;
+  skipped = false;
+  syncCard(key);
+  render();
+}
+function setKey(key, d){
+  DIGITS[key] = d;
+  skipped = false;
+  syncCard(key);
+  render();
+}
+function wireStep(btnId, key, delta){
+  var btn = BTNS[btnId];
+  var card = CARDS[key];
+  if(!btn || !card) return;
+  btn.addEventListener("click", function(){
+    stepDigit(key, delta);
+    focusKey(key, false);
+  });
+}
+wireStep("hTUp", "hT", 1);   wireStep("hTDown", "hT", -1);
+wireStep("hOUp", "hO", 1);   wireStep("hODown", "hO", -1);
+wireStep("mTUp", "mT", 1);   wireStep("mTDown", "mT", -1);
+wireStep("mOUp", "mO", 1);   wireStep("mODown", "mO", -1);
+/* Direct typing: each box holds a single digit. The newest typed digit
+   wins, is clamped to the digit's range (minutes tens max 5), and focus
+   auto-advances to the next box. Non-digits are ignored. */
+function wireType(key){
+  var card = CARDS[key];
+  if(!card) return;
+  card.addEventListener("focus", function(){
+    try { card.select(); } catch(e){}
+  });
+  /* Mouse clicks place the caret (undoing focus-select), which would leave
+     maxlength=1 blocking new digits — so re-select on click. Typing then
+     always replaces the single digit. */
+  card.addEventListener("click", function(){
+    try { card.select(); } catch(e){}
+  });
+  card.addEventListener("input", function(){
+    var digits = String(card.value).replace(/[^0-9]/g, "");
+    var d = digits ? parseInt(digits.charAt(digits.length - 1), 10) : 0;
+    var max = RANGES[key];
+    if(d > max) d = max;
+    DIGITS[key] = d;
+    card.value = String(d);
+    try { card.setAttribute("aria-valuenow", String(d)); } catch(e){}
+    skipped = false;
+    render();
+    var idx = ORDER.indexOf(key);
+    if(digits && idx > -1 && idx < ORDER.length - 1) focusKey(ORDER[idx + 1]);
+  });
+}
+/* Keyboard support: ArrowUp/ArrowDown step the focused box (plus
+   PageUp/PageDown/Home/End); Backspace on an empty box moves back;
+   Enter confirms via Continue. */
+function wireKeys(key){
+  var card = CARDS[key];
+  if(!card) return;
+  card.addEventListener("keydown", function(ev){
+    if(ev.key === "ArrowUp" || ev.key === "PageUp"){ ev.preventDefault(); stepDigit(key, 1); }
+    else if(ev.key === "ArrowDown" || ev.key === "PageDown"){ ev.preventDefault(); stepDigit(key, -1); }
+    else if(ev.key === "Home"){ ev.preventDefault(); setKey(key, 0); }
+    else if(ev.key === "End"){ ev.preventDefault(); setKey(key, RANGES[key]); }
+    else if(ev.key === "Backspace" && !card.value){
+      ev.preventDefault();
+      var idx = ORDER.indexOf(key);
+      if(idx > 0) focusKey(ORDER[idx - 1]);
+    }
+    else if(ev.key === "Enter"){ ev.preventDefault(); continueBtn.click(); }
+  });
+}
+wireType("hT"); wireType("hO"); wireType("mT"); wireType("mO");
+wireKeys("hT"); wireKeys("hO"); wireKeys("mT"); wireKeys("mO");
+skipBtn.addEventListener("click", function(){
+  skipped = true;
+  render();
+  try { skipBtn.focus({preventScroll:true}); } catch(e){ try { skipBtn.focus(); } catch(_){} }
+  flash(skipBtn, "Skipped ✓");
+  announce("Goal skipped — no goal line will appear in the description.");
+});
+continueBtn.addEventListener("click", function(){
+  render();
+  /* Out-of-range time never hands off: point at the first bad field so it
+     can be fixed (or use Skip for no goal line). */
+  var chk = validateGoal();
+  if(!skipped && !chk.ok){
+    try { if(chk.bad[0]) chk.bad[0].focus(); } catch(e){}
+    flash(continueBtn, "Check the time");
+    announce("The target time is out of range. " + chk.note);
+    return;
+  }
+  /* Hand off to the next step (connect by default): goal + race travel as
+     params so the next step needs no storage read. */
+  var next = null;
+  try { next = resolveNext(new URLSearchParams(window.location.search).get("next")); } catch(e){ next = null; }
+  if(next){
+    var s = getState();
+    var hash = "";
+    var hAt = next.indexOf("#");
+    if(hAt > -1){ hash = next.slice(hAt); next = next.slice(0, hAt); }
+    var join = next.indexOf("?") > -1 ? "&" : "?";
+    var url = next + join + "race=" + encodeURIComponent(s.race.name) +
+      "&date=" + encodeURIComponent(s.race.date) +
+      "&city=" + encodeURIComponent(s.race.city) +
+      "&dist=" + encodeURIComponent(s.race.dist) +
+      (s.goal ? "&goal=" + encodeURIComponent(s.goal) : "&skipped=1") + hash;
+    window.location.href = url;
+    return;
+  }
+  try {
+    window.localStorage.setItem("mynextpr.goal.v1.pending", JSON.stringify(getState()));
+  } catch(e) {}
+  window.location.href = document.getElementById("nextLink").href;
+});
+render();
+})();
+</script>
+</body>
+</html>

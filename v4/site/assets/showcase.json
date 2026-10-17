@@ -1,0 +1,42 @@
+{
+ "mesh": {
+  "job": "aeb979a86e8b",
+  "bytes": 3090304
+ },
+ "voice": "Kabir",
+ "display": "Kabeer",
+ "engine": "inworld",
+ "built_at": "2026-09-20T19:58:43+0530",
+ "source_url": "http://127.0.0.1:8140/report/aeb979a86e8b?showcase=1&story=demo&auto=1",
+ "missing_lines": 0,
+ "lines": [
+  {
+   "text": "Hi, I am the running coach. Let us deep dive into the model. Here is what your running form is hiding.",
+   "gap_ms": 150,
+   "rate": 1.15,
+   "voice": "Kabir",
+   "dur_s": 6.15
+  },
+  {
+   "text": "First, your foot lands a touch ahead of your body, place it under you.",
+   "gap_ms": 150,
+   "rate": 1.15,
+   "voice": "Kabir",
+   "dur_s": 4.65
+  },
+  {
+   "text": "Second, lean from the ankles rather than bending at the waist.",
+   "gap_ms": 150,
+   "rate": 1.15,
+   "voice": "Kabir",
+   "dur_s": 4.37
+  },
+  {
+   "text": "Send your photo, we deep-dive it in seconds.",
+   "gap_ms": 850,
+   "rate": 1.15,
+   "voice": "Kabir",
+   "dur_s": 3.39
+  }
+ ]
+}

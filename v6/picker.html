@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mynextpr — Pick your race (v6)</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-sans);font-size:var(--text-sub);line-height:1.45;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--paper)}
+.wrap{max-width:var(--layout-wide);margin:0 auto;padding-left:var(--wrap-pad-x);padding-right:var(--wrap-pad-x)}
+.mast{border-bottom:var(--border-line)}
+.mast-in{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-top:var(--space-4);padding-bottom:var(--space-4)}
+.wordmark{font-size:var(--text-wordmark);font-weight:800;letter-spacing:-.03em}
+.wordmark .acc{color:var(--accent)}
+.wordmark .v{color:var(--muted);font-weight:600;font-size:var(--text-hint);letter-spacing:0}
+.mocktag{font-family:var(--font-mono);font-size:var(--text-mono-sm);font-weight:700;letter-spacing:.06em;color:var(--muted);border:var(--border-line);border-radius:var(--radius-xs);padding:4px 10px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1fr;gap:var(--space-8);padding-top:var(--wrap-pad-top);padding-bottom:var(--wrap-pad-bottom);max-width:720px}
+.goalopt{display:flex;gap:10px;align-items:flex-start;margin-top:12px;cursor:pointer;font-weight:700;font-size:var(--text-sub);line-height:1.4}
+.goalopt input{width:22px;height:22px;flex:none;margin-top:1px;accent-color:var(--accent);cursor:pointer}
+.goalopt small{display:block;font-weight:400;color:var(--muted);font-size:var(--text-hint)}
+h1{font-size:clamp(28px,3.4vw,36px);line-height:1.05;letter-spacing:-.02em;margin-bottom:var(--space-2)}
+.lede{font-size:var(--text-lede);letter-spacing:-.01em;line-height:1.45;margin-bottom:var(--space-2)}
+.sub{font-size:var(--text-sub);color:var(--muted);line-height:1.6}
+.step{margin-top:30px}
+.step-head{display:flex;align-items:baseline;gap:var(--space-2);margin-bottom:var(--space-2)}
+.num{font-family:var(--font-mono);font-size:var(--text-mono-sm);font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.step-head h2{font-size:var(--text-h2);letter-spacing:-.01em}
+.lbl{display:block;font-size:var(--text-mono-sm);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 var(--space-2)}
+input[type=search],input[type=text]{width:100%;padding:11px 13px;border:var(--border-line);border-radius:var(--radius-control);font-size:var(--text-sub);color:var(--ink);background:var(--paper);font-family:inherit;caret-color:var(--accent)}
+input::placeholder{color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.chips.scroll{max-height:148px;overflow-y:auto;border:var(--border-line);border-radius:var(--radius-card);padding:10px}
+.chip{border:1px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:var(--radius-pill);padding:7px 14px;font-size:var(--text-chip);font-weight:600;cursor:pointer;font-family:inherit;line-height:1.3}
+.chip:hover{background:var(--soft)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.filterbar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-top:30px}
+.filterbar .lbl{margin-bottom:0}
+.clear{border:var(--border-line);background:var(--paper);color:var(--muted);border-radius:var(--radius-pill);padding:7px 14px;font-size:var(--text-hint);font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.clear:hover{color:var(--ink);border-color:var(--ink)}
+.clear[hidden]{display:none}
+.results{list-style:none;margin:var(--space-3) 0 0;padding:0;border:var(--border-line);border-radius:var(--radius-card);overflow:hidden}
+.results li{border-bottom:1px solid var(--line)}
+.results li:last-child{border-bottom:none}
+.ev{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);width:100%;text-align:left;background:var(--paper);border:0;padding:13px 16px;cursor:pointer;font-family:inherit;color:inherit}
+.ev:hover{background:var(--soft)}
+.ev[aria-selected="true"]{background:var(--select);box-shadow:var(--select-bar)}
+.ev-main{min-width:0}
+.ev-name{font-weight:700;font-size:var(--text-race-name);letter-spacing:-.01em}
+.ev-meta{font-size:var(--text-race-meta);color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+.ev-meta .tag{font-size:11px;border:var(--border-line);border-radius:var(--radius-tag);padding:1px 6px;margin-left:6px;white-space:nowrap;color:var(--muted)}
+.ev-days{flex:none;font-family:var(--font-mono);font-size:var(--text-mono-sm);color:var(--muted);font-variant-numeric:tabular-nums;padding-top:3px;white-space:nowrap}
+.ev[aria-selected="true"] .ev-days{color:var(--ink)}
+.ev-days.passed{color:var(--muted)}
+.empty{padding:var(--space-4);color:var(--muted);font-size:var(--text-sub);line-height:1.6}
+.panel{border:var(--border-line);border-radius:var(--radius-card);background:var(--paper);padding:var(--space-5);align-self:start}
+.panel h2{font-size:var(--text-h2);letter-spacing:-.01em;margin-bottom:var(--space-1)}
+.status{font-family:var(--font-mono);font-size:var(--text-status);font-variant-numeric:tabular-nums;margin:var(--space-1) 0 var(--space-2)}
+.status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:8px;vertical-align:1px}
+.status .dot.idle{background:var(--line)}
+.sel{font-size:var(--text-sub);font-weight:700}
+.sel-meta{font-size:var(--text-hint);color:var(--muted);margin:2px 0 6px;font-variant-numeric:tabular-nums}
+/* Goal digits (HH:MM, ported from goal.html): two labelled groups (Hours,
+   Minutes), each holding two typeable digit boxes flanked by that digit's
+   own up/down arrow buttons. Typing auto-advances, arrows step with wrap,
+   ArrowUp/ArrowDown steps the focused digit. */
+.digits{display:flex;align-items:stretch;gap:var(--space-2);margin-top:2px}
+.dig-group{flex:1;min-width:0;border:var(--border-line);border-radius:var(--radius-control);background:var(--paper);padding:8px 8px 4px}
+.dig-group[hidden]{display:none}
+.dig-pair{display:flex;align-items:stretch;gap:6px}
+.dig-sep{align-self:center;font-size:28px;font-weight:800;color:var(--ink);padding:0 2px;font-variant-numeric:tabular-nums}
+.digit-col{display:flex;flex-direction:column;flex:1;min-width:0}
+.digit-col button{border:0;background:transparent;color:var(--muted);font-size:12px;line-height:1;padding:8px 0;cursor:pointer;font-family:inherit;min-height:28px;border-radius:var(--radius-tag)}
+.digit-col button:hover{background:var(--soft);color:var(--ink)}
+.digit-col button:active{background:var(--soft);color:var(--accent)}
+input.digit-card{width:100%;border:var(--border-line);border-radius:var(--radius-tag);background:var(--paper);color:var(--ink);font-size:30px;font-weight:800;text-align:center;font-family:inherit;padding:6px 0;font-variant-numeric:tabular-nums;caret-color:var(--accent)}
+input.digit-card:hover{border-color:var(--muted)}
+.digit-cap{display:block;font-size:11px;font-weight:700;color:var(--muted);margin:6px 0 2px;text-align:center;text-transform:uppercase;letter-spacing:.08em}
+.goal-hint{font-size:var(--text-hint);color:var(--muted);margin:6px 0 0;font-variant-numeric:tabular-nums}
+.preview{margin-top:var(--space-3);border:var(--border-line);border-radius:var(--radius-control);background:var(--soft);padding:12px 14px}
+.preview-head{display:flex;justify-content:space-between;gap:var(--space-2);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.count{font-family:var(--font-mono);font-size:var(--text-mono-sm);font-variant-numeric:tabular-nums}
+.preview-body{font-family:var(--font-mono);font-size:13.5px;line-height:1.6;white-space:pre-wrap;margin-top:8px}
+.btn{display:inline-block;border:0;border-radius:var(--radius-control);padding:13px 20px;font-size:var(--text-cta);font-weight:800;cursor:pointer;width:100%;font-family:inherit}
+.btn-acc{background:var(--accent);color:var(--paper);margin-top:var(--space-3)}
+.btn-acc:hover:not(:disabled){background:var(--accent-pressed)}
+.btn-acc:disabled{background:var(--soft);color:var(--muted);border:var(--border-line);cursor:not-allowed}
+.gate{font-size:var(--text-mono-sm);font-family:var(--font-mono);color:var(--muted);margin-top:var(--space-2);line-height:1.6;font-variant-numeric:tabular-nums}
+.fine{font-size:var(--text-mono-sm);font-family:var(--font-mono);color:var(--muted);margin-top:10px;line-height:1.6;font-variant-numeric:tabular-nums}
+.fine code{font-family:var(--font-mono);font-size:11.5px;background:var(--soft);border:var(--border-line);border-radius:var(--radius-tag);padding:1px 6px;color:var(--ink)}
+.snippet{font-size:var(--text-mono-sm);font-family:var(--font-mono);color:var(--muted);margin-top:10px;font-variant-numeric:tabular-nums;line-height:1.6}
+.snippet a{color:var(--muted)}
+.signup{margin-top:var(--space-3);font-size:var(--text-hint)}
+.signup a{color:var(--accent);font-weight:700}
+.colophon{border-top:var(--border-line);padding-top:var(--space-4);margin-top:var(--space-2)}
+.visually-hidden{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.search-wrap{position:relative}
+.search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:var(--border-line);background:var(--paper);color:var(--muted);border-radius:var(--radius-pill);padding:4px 12px;font-size:var(--text-hint);font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.search-clear:hover{color:var(--ink);border-color:var(--ink)}
+.search-clear[hidden]{display:none}
+.results:focus{outline:none}
+.ev:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.empty h3{font-size:var(--text-race-name);color:var(--ink);letter-spacing:-.01em}
+.empty p{margin:4px 0 var(--space-3)}
+.empty .clear{color:var(--ink);border-color:var(--ink)}
+.gate:empty{display:none}
+@media(max-width:860px){.grid{grid-template-columns:1fr}.panel{position:static}h1{font-size:28px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="mast"><div class="wrap mast-in">
+<p class="wordmark">mynext<span class="acc">pr</span> <span class="v">· v6</span></p>
+<p class="mocktag">Compatible with Strava</p>
+</div></header>
+<main><div class="wrap grid">
+<section aria-label="Find your race">
+<h1>Pick your next start line</h1>
+<p class="lede">Three taps: distance, month, race. Then connect Strava and forget about it.</p>
+<p class="sub" id="feedNote">Loading race feed…</p>
+<div class="step" role="search">
+<label class="lbl" for="q">Search races</label>
+<div class="search-wrap">
+<input type="search" id="q" placeholder="Type a race or city — e.g. delhi, pune, trail, half" autocomplete="off" aria-describedby="feedNote resCount" aria-controls="results" aria-expanded="false">
+<button class="search-clear" id="searchClear" type="button" aria-label="Clear search" hidden>Clear</button>
+</div>
+</div>
+<div class="step">
+<div class="step-head"><span class="num" aria-hidden="true">01</span><h2 id="distLbl">Distance</h2></div>
+<div class="chips" id="distChips" role="group" aria-labelledby="distLbl"></div>
+</div>
+<div class="step">
+<div class="step-head"><span class="num" aria-hidden="true">02</span><h2 id="monthLbl">Month</h2></div>
+<div class="chips" id="monthChips" role="group" aria-labelledby="monthLbl"></div>
+</div>
+<div class="step">
+<div class="step-head"><span class="num" aria-hidden="true">03</span><h2 id="cityLbl">City</h2></div>
+<div class="chips scroll" id="cityChips" role="group" aria-labelledby="cityLbl"></div>
+</div>
+<div class="filterbar">
+<p class="lbl" role="status">Results <span id="resCount"></span></p>
+<button class="clear" id="clearBtn" type="button" hidden>Clear filters</button>
+</div>
+<ul class="results" id="results" role="listbox" aria-label="Matching races" aria-describedby="resCount"></ul>
+<div class="colophon"><p class="snippet" id="provenance"></p></div>
+</section>
+<aside class="panel" aria-label="Configure countdown">
+<h2>Race countdown</h2>
+<p class="status" id="statusLine" aria-live="polite"><span class="dot idle" aria-hidden="true"></span><span id="statusText">No race selected</span></p>
+<p class="sel" id="selName"></p>
+<p class="sel-meta" id="selMeta"></p>
+<label class="goalopt" for="goalOpt"><input type="checkbox" id="goalOpt"><span>Add a target time?<small>Optional — shows as target pace in your descriptions, set for the distance above.</small></span></label>
+<fieldset class="time-set" id="pTimeSet" hidden style="border:0;margin:12px 0 0;padding:0;min-width:0">
+<legend class="lbl" id="pTimeLegend">Goal time (optional)</legend>
+<div class="digits" role="group" aria-label="Goal time in hours and minutes" aria-describedby="pGoalHint">
+<div class="dig-group" id="pHoursWrap" role="group" aria-label="Hours">
+<div class="dig-pair">
+<div class="digit-col">
+<button type="button" id="pHTUp" aria-label="Increase hours tens digit" tabindex="-1">&#9650;</button>
+<input class="digit-card" id="pHT" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" value="2" role="spinbutton" aria-label="Hours tens digit" aria-valuemin="0" aria-valuemax="9" aria-valuenow="2">
+<button type="button" id="pHTDown" aria-label="Decrease hours tens digit" tabindex="-1">&#9660;</button>
+</div>
+<div class="digit-col">
+<button type="button" id="pHOUp" aria-label="Increase hours ones digit" tabindex="-1">&#9650;</button>
+<input class="digit-card" id="pHO" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" value="0" role="spinbutton" aria-label="Hours ones digit" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0">
+<button type="button" id="pHODown" aria-label="Decrease hours ones digit" tabindex="-1">&#9660;</button>
+</div>
+</div>
+<span class="digit-cap">Hours</span>
+</div>
+<span class="dig-sep" aria-hidden="true">:</span>
+<div class="dig-group" id="pMinsWrap" role="group" aria-label="Minutes">
+<div class="dig-pair">
+<div class="digit-col">
+<button type="button" id="pMTUp" aria-label="Increase minutes tens digit" tabindex="-1">&#9650;</button>
+<input class="digit-card" id="pMT" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" value="0" role="spinbutton" aria-label="Minutes tens digit" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+<button type="button" id="pMTDown" aria-label="Decrease minutes tens digit" tabindex="-1">&#9660;</button>
+</div>
+<div class="digit-col">
+<button type="button" id="pMOUp" aria-label="Increase minutes ones digit" tabindex="-1">&#9650;</button>
+<input class="digit-card" id="pMO" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" value="0" role="spinbutton" aria-label="Minutes ones digit" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0">
+<button type="button" id="pMODown" aria-label="Decrease minutes ones digit" tabindex="-1">&#9660;</button>
+</div>
+</div>
+<span class="digit-cap">Minutes</span>
+</div>
+</div>
+</fieldset>
+<p class="goal-hint" id="pGoalHint" hidden>Type each digit or use the arrows (HH:MM).</p>
+<div class="preview" role="region" aria-label="Strava description preview" aria-live="polite">
+<div class="preview-head"><span>Strava description preview</span><span class="count" id="charCount"></span></div>
+<p class="preview-body" id="preview"></p>
+</div>
+<p class="gate">Monthly/yearly totals above are samples — live numbers appear after you connect Strava.</p>
+<button class="btn btn-acc" id="connectBtn" type="button" disabled aria-describedby="gateNote">Pick a race first — then connect</button>
+<p class="gate" id="gateNote" role="status"></p>
+<div class="signup" id="signup"></div>
+<p class="fine">Connect uses the official Strava sign-in (scopes: <code>read</code> + <code>activity:read</code> + <code>activity:write</code>); only your own activities are updated, and only with your consent. Countdowns go in the activity <code>description</code>; your titles stay yours. See <a href="privacy.html">Privacy</a>, <a href="terms.html">Terms</a>, <a href="support.html">Support</a>. Compatible with Strava.</p>
+</aside>
+</div>
+<footer style="margin-top:2rem;border-top:1px solid var(--line,#e7e7e7);padding-top:.8rem;font-size:.85rem;color:var(--muted,#6e6e6e)"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="support.html">Support</a> · Compatible with Strava (no endorsement claimed).</footer>
+</main>
+<script src="strava-config.js"></script>
+<script src="strava.js"></script>
+<script>
+"use strict";
+/* v6 picker. Data: races.snapshot.json (refresh: `python3 v6/sync_races.py`).
+   Search ranking mirrors v6/match.py match_rank(): direct substring =
+   rank 0, subsequence (fuzzy) = rank 1, else no match. Distance filter
+   is SINGLE-select (at most one bucket active; a row survives if it
+   holds that bucket); city and month filters are multi-select unions
+   (a row survives if it holds any selected value). Filter order on the
+   page: distance, month, city; cities arrive event-count descending
+   from races.snapshot.json.
+   Connect gating mirrors v6/PRODUCT.md: the mock Connect stays disabled
+   until an upcoming race is picked; a past race keeps it disabled,
+   race-day itself stays connectable.
+   Only network call on this page: fetch("races.snapshot.json"). */
+var DISTANCES = ["5K", "10K", "Half", "Full", "Ultra"];
+var MAX_DESC = 500;
+var EVENTS = [];
+var META = { generated: null, count: 0 };
+var state = { q: "", city: {}, dist: {}, month: {}, sel: null, connected: false };
+try { state.connected = window.localStorage.getItem("mynextpr.connected") === "1"; } catch(e) {}
+
+function bibUrl(u){
+  if(!u) return "https://mynextbib.com";
+  return u.charAt(0) === "/" ? "https://mynextbib.com" + u : u;
+}
+function hay(e){ return (e.name + " " + e.city + " " + e.buckets.join(" ")).toLowerCase(); }
+function matchRank(h, q){
+  q = q.trim().toLowerCase();
+  if(!q) return 0;
+  if(h.indexOf(q) > -1) return 0;
+  var hi = 0;
+  for(var i = 0; i < q.length; i++){ hi = h.indexOf(q[i], hi); if(hi === -1) return -1; hi++; }
+  return 1;
+}
+function key(e){ return e.name + "|" + e.date; }
+function activeKeys(store){
+  return Object.keys(store).filter(function(k){ return store[k]; });
+}
+function filtered(){
+  var out = [];
+  var dsel = activeKeys(state.dist), csel = activeKeys(state.city), msel = activeKeys(state.month);
+  EVENTS.forEach(function(e){
+    if(dsel.length && dsel.every(function(b){ return e.buckets.indexOf(b) === -1; })) return;
+    if(csel.length && csel.indexOf(e.city) === -1) return;
+    if(msel.length && msel.indexOf(e.date.slice(0, 7)) === -1) return;
+    var r = matchRank(hay(e), state.q);
+    if(r === -1) return;
+    out.push({ e: e, r: r });
+  });
+  out.sort(function(a, b){ return a.r - b.r || (a.e.date < b.e.date ? -1 : 1); });
+  return out.map(function(x){ return x.e; });
+}
+function fmtDate(ds){
+  return new Date(ds + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+function daysTo(ds){
+  var t = new Date(); t.setHours(0, 0, 0, 0);
+  return Math.round((new Date(ds + "T00:00:00") - t) / 86400000);
+}
+function isPast(e){ return daysTo(e.date) < 0; }
+function whenText(n){
+  if(n > 1) return n + " days to go";
+  if(n === 1) return "tomorrow";
+  if(n === 0) return "race day today";
+  return "race day passed";
+}
+function statusText(n){
+  if(n > 1) return n + " days to go";
+  return whenText(n);
+}
+function daysBadge(n){
+  if(n > 1) return n + "d";
+  if(n === 1) return "1d";
+  if(n === 0) return "today";
+  return "passed";
+}
+function selEvent(){
+  var list = filtered();
+  for(var i = 0; i < list.length; i++){ if(key(list[i]) === state.sel) return list[i]; }
+  return null;
+}
+function firstUpcoming(){
+  for(var i = 0; i < EVENTS.length; i++){ if(!isPast(EVENTS[i])) return EVENTS[i]; }
+  return EVENTS[0] || null;
+}
+function anyFilterActive(){
+  return state.q.trim() !== "" || activeKeys(state.dist).length > 0 ||
+    activeKeys(state.city).length > 0 || activeKeys(state.month).length > 0;
+}
+function selectRace(ev, focus){
+  state.sel = key(ev);
+  renderList(); renderPanel();
+  if(focus){
+    var sel = document.querySelector('#results .ev[aria-selected="true"]');
+    if(sel) sel.focus();
+  }
+}
+function renderEmpty(ul){
+  var li = document.createElement("li");
+  li.className = "empty";
+  li.setAttribute("role", "status");
+  var h = document.createElement("h3");
+  h.textContent = "No races match";
+  var p = document.createElement("p");
+  p.textContent = "Clear the search, clear a chip, or widen the filters.";
+  var c = document.createElement("button");
+  c.className = "clear"; c.type = "button";
+  c.textContent = "Clear filters";
+  c.addEventListener("click", function(){
+    clearFilters();
+    document.getElementById("q").focus();
+  });
+  li.appendChild(h); li.appendChild(p); li.appendChild(c);
+  ul.appendChild(li);
+}
+function renderList(){
+  var list = filtered(), ul = document.getElementById("results");
+  ul.innerHTML = "";
+  document.getElementById("resCount").textContent = "— " + list.length + " of " + EVENTS.length;
+  document.getElementById("clearBtn").hidden = !anyFilterActive();
+  var q = document.getElementById("q");
+  q.setAttribute("aria-expanded", list.length > 0 ? "true" : "false");
+  ul.setAttribute("role", list.length > 0 ? "listbox" : "presentation");
+  document.getElementById("searchClear").hidden = q.value === "";
+  if(!list.length){
+    renderEmpty(ul);
+    return;
+  }
+  var selIdx = -1;
+  list.forEach(function(e, i){ if(key(e) === state.sel) selIdx = i; });
+  var tabIdx = selIdx > -1 ? selIdx : 0;
+  list.forEach(function(e, i){
+    var li = document.createElement("li");
+    li.setAttribute("role", "presentation");
+    var b = document.createElement("button");
+    var selected = i === selIdx;
+    b.className = "ev"; b.type = "button";
+    b.id = "race-opt-" + i;
+    b.setAttribute("role", "option");
+    b.setAttribute("aria-selected", selected ? "true" : "false");
+    b.tabIndex = i === tabIdx ? 0 : -1;
+    var tags = e.buckets.map(function(t){ return '<span class="tag">' + t + "</span>"; }).join("");
+    var n = daysTo(e.date);
+    b.innerHTML = '<div class="ev-main"><div class="ev-name"></div><div class="ev-meta"></div></div><span class="ev-days"></span>';
+    b.querySelector(".ev-name").textContent = e.name;
+    var meta = b.querySelector(".ev-meta");
+    meta.textContent = fmtDate(e.date) + (e.city ? " · " + e.city : "") + " · " + whenText(n);
+    var sp = document.createElement("span"); sp.innerHTML = tags; meta.appendChild(sp);
+    var badge = b.querySelector(".ev-days");
+    badge.textContent = daysBadge(n);
+    if(isPast(e)) badge.classList.add("passed");
+    (function(ev){ b.addEventListener("click", function(){ selectRace(ev, false); }); })(e);
+    li.appendChild(b); ul.appendChild(li);
+  });
+}
+document.getElementById("results").addEventListener("keydown", function(ev){
+  var opts = Array.prototype.slice.call(this.querySelectorAll(".ev"));
+  if(!opts.length) return;
+  var i = opts.indexOf(document.activeElement);
+  var j = -1;
+  if(ev.key === "ArrowDown") j = (i + 1) % opts.length;
+  else if(ev.key === "ArrowUp") j = (i - 1 + opts.length) % opts.length;
+  else if(ev.key === "Home") j = 0;
+  else if(ev.key === "End") j = opts.length - 1;
+  if(j > -1){
+    ev.preventDefault();
+    opts[j].click();
+    var fresh = this.querySelectorAll(".ev");
+    if(fresh[j]) fresh[j].focus();
+  }
+});
+function renderPanel(){
+  var e = selEvent();
+  if(e) state.sel = key(e);
+  else state.sel = null;
+  var gd = pGoalDist(e);
+  if(gd !== state.gdist){ state.gdist = gd; pApplyDefaults(gd); }
+  document.getElementById("selName").textContent = e ? e.name : "No race selected";
+  document.getElementById("selMeta").textContent = e
+    ? fmtDate(e.date) + (e.city ? " · " + e.city : "") + " · " + whenText(daysTo(e.date)) : "";
+  var dot = document.querySelector("#statusLine .dot");
+  document.getElementById("statusText").textContent = e ? statusText(daysTo(e.date)) : "No race selected";
+  if(dot) dot.className = e && !isPast(e) ? "dot" : "dot idle";
+  var body = e ? descText(e) : "Pick a race to preview your description line.";
+  document.getElementById("preview").textContent = body;
+  document.getElementById("charCount").textContent = body.length + " / " + MAX_DESC + " chars";
+  var box = document.getElementById("signup");
+  box.innerHTML = "";
+  if(e){
+    var s = document.createElement("span"); s.textContent = "Not signed up yet? Register via MyNextBib: ";
+    var a = document.createElement("a"); a.href = bibUrl(e.url); a.textContent = "Sign up"; a.rel = "noopener";
+    box.appendChild(s); box.appendChild(a);
+  }
+  var btn = document.getElementById("connectBtn");
+  var gate = document.getElementById("gateNote");
+  if(!e){
+    btn.disabled = true;
+    btn.textContent = "Pick a race first — then connect";
+    gate.textContent = "Select an upcoming race to enable connecting.";
+  }else if(isPast(e)){
+    btn.disabled = true;
+    btn.textContent = "Connect with Strava";
+    gate.textContent = "This race date has passed — pick an upcoming race to connect.";
+  }else{
+    btn.disabled = false;
+    if(state.connected){
+      btn.textContent = "Connected ✓ — Manage updates";
+      gate.textContent = "Connected. Future runs for " + e.name + " will carry the countdown in their descriptions.";
+    }else{
+      btn.textContent = "Connect with Strava";
+      gate.textContent = "";
+    }
+  }
+}
+var PROMO_LINE = "Set up tracking for your goal race at mynextpr.com";
+function descHeadline(e){
+  var n = daysTo(e.date);
+  if(n > 1) return n + " days to go — " + e.name;
+  if(n === 1) return "1 day to go — " + e.name;
+  if(n === 0) return "Race day today — " + e.name;
+  return e.name + " — race day passed";
+}
+function goalActive(){
+  var c = document.getElementById("goalOpt");
+  return !!(c && c.checked);
+}
+function descText(e){
+  var goal = goalActive() ? pGoalString() : "";
+  var pace = paceFor(goal, raceKm(e));
+  var head = descHeadline(e) + (goal ? (pace ? ", target " + goal + " at " + pace + "/km." : ", target " + goal + ".") : ".");
+  return [head, totalsLine(42, 310), PROMO_LINE].join("\n");
+}
+/* Nominal race distance (km) from the distance pill or the race buckets,
+   for goal-time → target-pace conversion. */
+function raceKm(e){
+  var KNOWN = {"5K":5, "10K":10, "Half":21.0975, "Full":42.195};
+  var dsel = activeKeys(state.dist);
+  var cands = dsel.length === 1 ? dsel : (e && e.buckets ? e.buckets : []);
+  for(var i = 0; i < cands.length; i++){
+    if(KNOWN[cands[i]] != null) return KNOWN[cands[i]];
+  }
+  return null;
+}
+/* "H:MM" (or "H:MM:SS") goal + race km → "M:SS" pace. "" when either side
+   is missing or unparseable, so callers fall back to the raw goal text. */
+function paceFor(goalText, distKm){
+  var m = String(goalText == null ? "" : goalText).trim().match(/^(\d{1,2}):([0-5]\d)(?::([0-5]\d))?$/);
+  if(!m || distKm == null) return "";
+  var mins = (+m[1]) * 60 + (+m[2]) + (m[3] ? (+m[3]) / 60 : 0);
+  if(!(mins > 0)) return "";
+  var p = mins / distKm, w = Math.floor(p), s = Math.round((p - w) * 60);
+  if(s === 60){ w++; s = 0; }
+  return w + ":" + (s < 10 ? "0" : "") + s;
+}
+/* "Month: N km · YYYY: M km." Month/year always real; totals are passed in
+   (live numbers after connect, samples in previews). */
+function totalsLine(monthKm, yearKm, when){
+  var d = when || new Date();
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return MONTHS[d.getMonth()] + " so far: " + monthKm + " km · " + d.getFullYear() + " so far: " + yearKm + " km.";
+}
+/* Goal digit drums (HH:MM), same interaction contract as goal.html: one
+   typeable box per digit with its own up/down arrows, typing auto-advances,
+   ArrowUp/ArrowDown steps the focused digit, Backspace on empty moves back,
+   minutes tens clamps at 5. Defaults follow the distance in view
+   (5K 0:30 hours-hidden, 10K 1:00, Half 2:00, Full 4:00, Ultra 6:00) and
+   re-apply only when that distance changes, so typing is never clobbered
+   by re-renders. */
+var PORDER = ["hT", "hO", "mT", "mO"];
+var PRANGES = {hT:9, hO:9, mT:5, mO:9};
+var PDIGITS = {hT:2, hO:0, mT:0, mO:0};
+var PCARDS = {
+  hT: document.getElementById("pHT"), hO: document.getElementById("pHO"),
+  mT: document.getElementById("pMT"), mO: document.getElementById("pMO")
+};
+function pPad2(n){ return (n < 10 ? "0" : "") + n; }
+function pGoalString(){
+  return (PDIGITS.hT * 10 + PDIGITS.hO) + ":" + pPad2(PDIGITS.mT * 10 + PDIGITS.mO);
+}
+function pPaint(){
+  for(var i = 0; i < PORDER.length; i++){
+    var k = PORDER[i], card = PCARDS[k];
+    if(!card) continue;
+    if(document.activeElement !== card) card.value = String(PDIGITS[k]);
+    try { card.setAttribute("aria-valuenow", String(PDIGITS[k])); } catch(e){}
+  }
+}
+function pFocus(key, select){
+  var card = PCARDS[key];
+  if(!card) return;
+  try { card.focus({preventScroll:true}); } catch(e){ try { card.focus(); } catch(_){} }
+  if(select !== false){ try { card.select(); } catch(e){} }
+}
+function pSync(key){
+  var card = PCARDS[key];
+  if(!card) return;
+  card.value = String(PDIGITS[key]);
+  try { card.setAttribute("aria-valuenow", String(PDIGITS[key])); } catch(e){}
+}
+function pSet(h, m){
+  h = Math.max(0, Math.min(99, h | 0));
+  m = Math.max(0, Math.min(59, m | 0));
+  PDIGITS.hT = Math.floor(h / 10); PDIGITS.hO = h % 10;
+  PDIGITS.mT = Math.floor(m / 10); PDIGITS.mO = m % 10;
+  pPaint();
+}
+function pStep(key, delta){
+  var max = PRANGES[key];
+  if(max == null) return;
+  var span = max + 1;
+  PDIGITS[key] = (((PDIGITS[key] + delta) % span) + span) % span;
+  pSync(key);
+  renderPanel();
+}
+function pSetKey(key, d){
+  PDIGITS[key] = d;
+  pSync(key);
+  renderPanel();
+}
+function pGoalDist(e){
+  var dsel = activeKeys(state.dist);
+  if(dsel.length === 1) return dsel[0];
+  if(e && e.buckets){
+    if(e.buckets.indexOf("Half") > -1) return "Half";
+    return e.buckets[e.buckets.length - 1];
+  }
+  return "";
+}
+function pApplyDefaults(dist){
+  var d = String(dist || "").toLowerCase();
+  var hw = document.getElementById("pHoursWrap");
+  if(d === "5k"){ if(hw) hw.hidden = true; pSet(0, 30); return; }
+  if(hw) hw.hidden = false;
+  if(d === "10k") pSet(1, 0);
+  else if(d === "full") pSet(4, 0);
+  else if(d === "ultra") pSet(6, 0);
+  else pSet(2, 0);
+}
+function pWireStep(btnId, key, delta){
+  var btn = document.getElementById(btnId), card = PCARDS[key];
+  if(!btn || !card) return;
+  btn.addEventListener("click", function(){ pStep(key, delta); pFocus(key, false); });
+}
+pWireStep("pHTUp", "hT", 1);   pWireStep("pHTDown", "hT", -1);
+pWireStep("pHOUp", "hO", 1);   pWireStep("pHODown", "hO", -1);
+pWireStep("pMTUp", "mT", 1);   pWireStep("pMTDown", "mT", -1);
+pWireStep("pMOUp", "mO", 1);   pWireStep("pMODown", "mO", -1);
+function pWireType(key){
+  var card = PCARDS[key];
+  if(!card) return;
+  card.addEventListener("focus", function(){ try { card.select(); } catch(e){} });
+  card.addEventListener("click", function(){ try { card.select(); } catch(e){} });
+  card.addEventListener("input", function(){
+    var digits = String(card.value).replace(/[^0-9]/g, "");
+    var d = digits ? parseInt(digits.charAt(digits.length - 1), 10) : 0;
+    var max = PRANGES[key];
+    if(d > max) d = max;
+    PDIGITS[key] = d;
+    card.value = String(d);
+    try { card.setAttribute("aria-valuenow", String(d)); } catch(e){}
+    renderPanel();
+    var idx = PORDER.indexOf(key);
+    if(digits && idx > -1 && idx < PORDER.length - 1) pFocus(PORDER[idx + 1]);
+  });
+}
+function pWireKeys(key){
+  var card = PCARDS[key];
+  if(!card) return;
+  card.addEventListener("keydown", function(ev){
+    if(ev.key === "ArrowUp" || ev.key === "PageUp"){ ev.preventDefault(); pStep(key, 1); }
+    else if(ev.key === "ArrowDown" || ev.key === "PageDown"){ ev.preventDefault(); pStep(key, -1); }
+    else if(ev.key === "Home"){ ev.preventDefault(); pSetKey(key, 0); }
+    else if(ev.key === "End"){ ev.preventDefault(); pSetKey(key, PRANGES[key]); }
+    else if(ev.key === "Backspace" && !card.value){
+      ev.preventDefault();
+      var idx = PORDER.indexOf(key);
+      if(idx > 0) pFocus(PORDER[idx - 1]);
+    }
+  });
+}
+pWireType("hT"); pWireType("hO"); pWireType("mT"); pWireType("mO");
+pWireKeys("hT"); pWireKeys("hO"); pWireKeys("mT"); pWireKeys("mO");
+function pillRow(id, values, store, label, single){
+  var box = document.getElementById(id);
+  box.innerHTML = "";
+  var chips = [];
+  values.forEach(function(v){
+    var c = document.createElement("button");
+    c.className = "chip"; c.type = "button";
+    c.setAttribute("aria-pressed", store[v] ? "true" : "false");
+    c.textContent = label ? label(v) : v;
+    c.addEventListener("click", function(){
+      if(single){
+        var was = !!store[v];
+        Object.keys(store).forEach(function(k){ store[k] = false; });
+        store[v] = !was;
+        chips.forEach(function(ch){
+          ch.btn.setAttribute("aria-pressed", store[ch.v] ? "true" : "false");
+        });
+      }else{
+        store[v] = !store[v];
+        c.setAttribute("aria-pressed", store[v] ? "true" : "false");
+      }
+      renderList(); renderPanel();
+    });
+    chips.push({ btn: c, v: v });
+    box.appendChild(c);
+  });
+}
+function monthLabel(ym){
+  var d = new Date(ym + "-01T00:00:00");
+  return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+}
+function clearFilters(){
+  state.q = ""; document.getElementById("q").value = "";
+  [state.dist, state.city, state.month].forEach(function(store){
+    Object.keys(store).forEach(function(k){ store[k] = false; });
+  });
+  document.querySelectorAll("#distChips .chip, #cityChips .chip, #monthChips .chip").forEach(function(c){
+    c.setAttribute("aria-pressed", "false");
+  });
+  renderList(); renderPanel();
+}
+function init(data){
+  EVENTS = data.events || [];
+  META = { generated: data.generated, count: data.count };
+  (data.months || []).forEach(function(m){ state.month[m] = false; });
+  (data.cities || []).forEach(function(c){ state.city[c] = false; });
+  DISTANCES.forEach(function(d){ if(!(d in state.dist)) state.dist[d] = false; });
+  pillRow("distChips", DISTANCES, state.dist, null, true);
+  pillRow("cityChips", data.cities || [], state.city);
+  pillRow("monthChips", data.months || [], state.month, monthLabel);
+  document.getElementById("feedNote").textContent =
+    "Type to filter " + EVENTS.length + " upcoming races. Text, distance, city, and month pills compose.";
+  document.getElementById("provenance").textContent =
+    "Race data: MyNextBib feed snapshot · generated " + data.generated + " · " + data.count + " events · refresh: python3 v6/sync_races.py";
+  var first = firstUpcoming();
+  if(first) state.sel = key(first);
+  renderList(); renderPanel();
+}
+document.getElementById("q").addEventListener("input", function(ev){ state.q = ev.target.value; renderList(); renderPanel(); });
+document.getElementById("q").addEventListener("keydown", function(ev){
+  if(ev.key === "Escape" && ev.target.value !== ""){
+    ev.target.value = ""; state.q = ""; renderList(); renderPanel();
+  }
+});
+document.getElementById("searchClear").addEventListener("click", function(){
+  var q = document.getElementById("q");
+  q.value = ""; state.q = ""; renderList(); renderPanel(); q.focus();
+});
+/* Goal digits wire their own input/arrow/key listeners above; every change
+   calls renderPanel directly, so no extra listener is needed here. */
+document.getElementById("goalOpt").addEventListener("change", function(){
+  document.getElementById("pTimeSet").hidden = !this.checked;
+  document.getElementById("pGoalHint").hidden = !this.checked;
+  renderPanel();
+});
+document.getElementById("clearBtn").addEventListener("click", clearFilters);
+document.getElementById("connectBtn").addEventListener("click", function(){
+  if(this.disabled) return;
+  var e = selEvent();
+  if(!e || isPast(e)){ renderPanel(); return; }
+  if(state.connected){ window.location.href = "manage.html"; return; }
+  var goal = goalActive() ? pGoalString() : "";
+  try {
+    window.localStorage.setItem("mynextpr.pending", JSON.stringify(
+      {race: e.name, date: e.date, city: e.city, goal: goal}));
+  } catch(err) {}
+  if(window.MyNextPRStrava && window.MyNextPRStrava.ready()){
+    var dsel = activeKeys(state.dist);
+    var oauthState = JSON.stringify({race: e.name, date: e.date,
+      city: e.city || "", dist: dsel.length === 1 ? dsel[0] : "",
+      goal: goal});
+    window.location.href = window.MyNextPRStrava.authorizeUrl(oauthState);
+  }else{
+    document.getElementById("gateNote").textContent =
+      "Strava sign-in is not configured yet — copy strava-config.example.js to strava-config.js with your client ID.";
+  }
+});
+fetch("races.snapshot.json").then(function(r){
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}).then(init).catch(function(err){
+  document.getElementById("feedNote").textContent = "Could not load races.snapshot.json (" + err.message + "). Serve this folder over HTTP and run `python3 v6/sync_races.py` to refresh.";
+  document.getElementById("results").innerHTML = "";
+  var errLi = document.createElement("li");
+  errLi.className = "empty";
+  errLi.setAttribute("role", "alert");
+  var errH = document.createElement("h3");
+  errH.textContent = "Feed unavailable";
+  var errP = document.createElement("p");
+  errP.textContent = "See note above.";
+  errLi.appendChild(errH); errLi.appendChild(errP);
+  document.getElementById("results").appendChild(errLi);
+});
+</script>
+</body>
+</html>

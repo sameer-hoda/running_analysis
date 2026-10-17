@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mynextpr.com/research/papers/schema.json",
+  "title": "RunForm research paper catalog",
+  "description": "Every running-gait paper backing the product. Powers the landing-page science section (SEO) and the loading-page paper rail. Site reads catalog.json — never hardcode papers in server.py.",
+  "type": "object",
+  "required": ["version", "updated", "papers"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "updated": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "papers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "authors", "year", "journal", "link", "key_finding", "zones", "thumb"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "URL-safe slug, unique: first-author-year."
+          },
+          "title": { "type": "string", "minLength": 10 },
+          "authors": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "First author 'Surname INITIALS', plus 'et al.' where applicable."
+          },
+          "year": { "type": "integer", "minimum": 1970, "maximum": 2030 },
+          "journal": { "type": "string", "minLength": 2 },
+          "link": {
+            "type": "string",
+            "pattern": "^https://",
+            "description": "Canonical public link: PubMed preferred, DOI fallback."
+          },
+          "pubmed_id": { "type": "string", "pattern": "^[0-9]+$" },
+          "doi": { "type": "string" },
+          "key_finding": {
+            "type": "string",
+            "minLength": 20,
+            "description": "1-2 sentences: what the paper found + which scoring rule it backs."
+          },
+          "zones": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 7,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": ["head_neck", "shoulders", "arms_elbows", "trunk_lean", "hips_pelvis", "knees", "feet_strike"]
+            },
+            "description": "Analysis zones (step1_prompt.txt) this paper backs."
+          },
+          "thumb": {
+            "type": "string",
+            "pattern": "^thumbs/[a-z0-9-]+\\.svg$",
+            "description": "Thumbnail path relative to research/papers/."
+          },
+          "has_deep": {
+            "type": "boolean",
+            "description": "True when research/papers/deep/ holds a deep entry for this paper."
+          },
+          "deep_id": {
+            "type": "string",
+            "pattern": "^deep-[0-9]{3}$",
+            "description": "Pointer to research/papers/deep/<deep_id>-*.json. Set only when has_deep is true."
+          }
+        }
+      }
+    }
+  }
+}

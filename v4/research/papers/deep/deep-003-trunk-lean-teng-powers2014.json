@@ -1,0 +1,29 @@
+{
+  "deep_id": "deep-003",
+  "catalog_id": "teng-powers-2014",
+  "rule_link": {
+    "zone": "trunk_lean",
+    "finding_title": "Trunk Lean",
+    "how_it_backs": "Justifies scoring upright (behind-the-hips) trunk posture as a knee-loading flaw: leaning forward from the ankles by roughly 7 degrees lowers patellofemoral joint stress, so the trunk_lean rule rewards slight forward lean and cues 'lean from the ankles, not the waist'."
+  },
+  "summary": "Teng and Powers tested whether sagittal-plane trunk posture changes patellofemoral joint stress during running. Runners ran with their natural trunk angle and with experimentally increased and decreased trunk flexion. Peak patellofemoral stress was significantly lower in the more flexed (forward-leaning) condition. The authors conclude that a modest forward trunk lean shifts demand off the knee and can reduce runner's-knee loading.",
+  "methods_signal": "Within-subject experiment in healthy runners: self-selected vs increased vs decreased trunk-flexion conditions during instrumented treadmill running, with model-estimated patellofemoral joint stress.",
+  "snippet": {
+    "text": "About 7 degrees more forward lean takes significant stress off the kneecap — lean from the ankles and the knee thanks you; run tall and upright and the knee pays.",
+    "grounds_in": "Paraphrase of Abstract + Conclusion (peak PFJ stress lower in flexed-trunk condition)"
+  },
+  "figure": {
+    "file": "figures/deep-003-trunk-lean-teng.svg",
+    "caption": "Trunk posture steers kneecap load: upright vs ~7° more forward lean and patellofemoral stress.",
+    "what_it_shows": "Side-view schematic: upright runner with high PFJ-stress bar vs forward-leaning runner (ankle-hinge, ~7°) with a lower PFJ-stress bar.",
+    "redrawn": true
+  },
+  "citation": {
+    "authors": "Teng HL, Powers CM",
+    "year": 2014,
+    "title": "Sagittal plane trunk posture influences patellofemoral joint stress during running",
+    "journal": "J Orthop Sports Phys Ther 44(10):785-792",
+    "doi_url": "https://doi.org/10.2519/jospt.2014.5249",
+    "pubmed_url": "https://pubmed.ncbi.nlm.nih.gov/25155651/"
+  }
+}

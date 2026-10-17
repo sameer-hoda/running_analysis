@@ -1,0 +1,12 @@
+[Unit]
+Description=RunForm Telegram hourly usage report
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ec2-user
+WorkingDirectory=/home/ec2-user/v3-tripo-cloud
+Environment=RUNFORM_ROOT=/home/ec2-user/v3-tripo-cloud
+EnvironmentFile=/home/ec2-user/v3-tripo-cloud/.env
+ExecStart=/home/ec2-user/v3-tripo-cloud/venv/bin/python site/tg_report.py --mode hourly

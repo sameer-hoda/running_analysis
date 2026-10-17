@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mynextpr — Strava callback</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);
+    font-size:var(--text-sub);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--layout-narrow);margin:0 auto;padding:var(--wrap-pad-top) var(--wrap-pad-x) var(--wrap-pad-bottom)}
+  .wordmark{font-size:var(--text-wordmark);font-weight:800;letter-spacing:-.03em;
+    text-decoration:none;color:var(--ink)}
+  .wordmark span{color:var(--accent)}
+  .card{margin-top:var(--space-8);border:var(--border-line);border-radius:var(--radius-card);
+    padding:var(--space-5)}
+  code{font-family:var(--font-mono);font-size:var(--text-mono-sm);overflow-wrap:anywhere}
+  .ok{font-weight:800}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="wordmark" href="index.html">mynext<span>pr</span></a>
+  <div class="card">
+    <p class="ok" id="headline">Finishing Strava sign-in…</p>
+    <p class="muted" id="detail">Reading the authorization code Strava sent back.</p>
+    <p><a href="manage.html" id="next" hidden>Continue to manage your updates →</a></p>
+  </div>
+</div>
+<script>
+"use strict";
+(function () {
+  var q = new URLSearchParams(window.location.search);
+  var code = q.get("code");
+  var err = q.get("error");
+  var h = document.getElementById("headline");
+  var d = document.getElementById("detail");
+  if (err) {
+    h.textContent = "Strava sign-in was " + err + ".";
+    d.textContent = "No access was granted. Go back and try connecting again when ready.";
+    return;
+  }
+  if (!code) {
+    h.textContent = "No authorization code arrived.";
+    d.textContent = "This page is only reached right after approving on strava.com. Start again from the race picker.";
+    return;
+  }
+  /* Prototype stops here: exchanging this code for tokens needs the client
+     secret, which must never ship in a page. The backend (see strava-plan.md)
+     performs POST /oauth/token and stores tokens server-side. */
+  try { window.localStorage.setItem("mynextpr.connected", "1"); } catch(e) {}
+  h.textContent = "Strava approved — one step left.";
+  d.innerHTML = "Code received. The backend exchanges it for tokens " +
+    "(client secret stays server-side). Until the backend is live, this device " +
+    "treats you as connected so you can tour the manage page. Code: ";
+  var c = document.createElement("code");
+  c.textContent = code.slice(0, 12) + "…";
+  d.appendChild(c);
+  document.getElementById("next").hidden = false;
+})();
+</script>
+</body>
+</html>

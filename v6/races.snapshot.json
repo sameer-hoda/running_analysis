@@ -1,0 +1,1375 @@
+{
+ "generated": "2026-10-10",
+ "count": 113,
+ "cities": [
+  "Mumbai",
+  "Bengaluru",
+  "Pune",
+  "New Delhi",
+  "Chennai",
+  "Ahmedabad",
+  "Kolkata",
+  "Agartala",
+  "Chandigarh",
+  "Ghaziabad",
+  "Hyderabad",
+  "Kohima",
+  "Lucknow",
+  "Visakhapatnam",
+  "Aurangpur",
+  "Auroville",
+  "Baramati Pune",
+  "Bhopal",
+  "Bhubaneswar",
+  "Bodh Gaya",
+  "Bodhgaya",
+  "Chhatrapati Sambhajinagar",
+  "Coorg",
+  "Dehradun",
+  "Delhi",
+  "Delhi, NCR",
+  "Dharampur",
+  "Dudhsagar",
+  "Durgapur",
+  "Faridabad",
+  "Gachibowli Stadium",
+  "Garhwal",
+  "Goa",
+  "Golaghat",
+  "Gunji",
+  "Guwahati",
+  "Igatpuri",
+  "Indore",
+  "Island Grounds",
+  "JLN Stadium",
+  "Jaipur",
+  "Jaisalmer",
+  "Khajuraho",
+  "Kochi",
+  "Kolhapur",
+  "Lohajung",
+  "Lonavala",
+  "Maharashtra",
+  "Mahatma Gandhi District Stadium",
+  "Mallanduru",
+  "Moldhar",
+  "Mount Abu",
+  "Mussoorie",
+  "Namsai",
+  "Near Ranganthittu Bird Sanctuary",
+  "Noida",
+  "Paderu",
+  "Palanpur",
+  "Panvel",
+  "Police Grounds",
+  "Prayagraj",
+  "Puri",
+  "Rishikesh",
+  "Salt Lake",
+  "Tawang",
+  "UST Campus",
+  "Vijayawada"
+ ],
+ "months": [
+  "2026-10",
+  "2026-11",
+  "2026-12",
+  "2027-01",
+  "2027-02",
+  "2027-03",
+  "2027-04",
+  "2027-08",
+  "2027-10"
+ ],
+ "events": [
+  {
+   "name": "New Balance Run Club Pune- 10th October 2026",
+   "alias": "new balance run club pune october",
+   "date": "2026-10-10",
+   "city": "Pune",
+   "url": "https://www.indiarunning.com/events/newbalancerunclubpune10thoctober2026-27341",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "New Balance Run Club Bengaluru- 10th October 2026",
+   "alias": "new balance run club bengaluru october",
+   "date": "2026-10-10",
+   "city": "Bengaluru",
+   "url": "https://www.indiarunning.com/events/newbalancerunclubbengaluru10thoctober2026-27121",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "New Balance Run Club Mumbai- 10th October 2026",
+   "alias": "new balance run club mumbai october",
+   "date": "2026-10-10",
+   "city": "Mumbai",
+   "url": "https://www.indiarunning.com/events/newbalancerunclubmumbai10thoctober2026-26330",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "SEARATHON - India's First Maritime Awareness & Public Engagement Run",
+   "alias": "searathon india s first maritime awareness public engagement",
+   "date": "2026-10-10",
+   "city": "Mumbai",
+   "url": "https://www.indiarunning.com/event/searathon_2026_28021",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "Chase 10K Noida 2nd Edition",
+   "alias": "chase 10k noida",
+   "date": "2026-10-11",
+   "city": "Noida",
+   "url": "https://www.indiarunning.com/events/chase10knoida2ndedition-24440",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "Green India KIDZ-Athon Oct 2026",
+   "alias": "green india kidz athon oct",
+   "date": "2026-10-11",
+   "city": "Chennai",
+   "url": "https://www.indiarunning.com/events/green_india_kidzathon_oct_2026_22573",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "PaceX x HRX, Run Together. Go Further.",
+   "alias": "pacex x hrx run together go further",
+   "date": "2026-10-11",
+   "city": "Bengaluru",
+   "url": "https://www.indiarunning.com/events/pacex_x_hrx_run_together_go_further_57958",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "Navi Mumbai Vashi 10 KM Run",
+   "alias": "navi mumbai vashi 10 km",
+   "date": "2026-10-11",
+   "city": "Mumbai",
+   "url": "https://www.indiarunning.com/events/navi_mumbai_vashi_10_km_run_79412",
+   "buckets": [
+    "10K"
+   ]
+  },
+  {
+   "name": "Sophia Run - Season 3",
+   "alias": "sophia run season 3",
+   "date": "2026-10-11",
+   "city": "Mumbai",
+   "url": "https://www.indiarunning.com/events/sophia_run__season_3_15111",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "DWARKA FITNESS HALF MARATHON",
+   "alias": "dwarka fitness half marathon",
+   "date": "2026-10-11",
+   "city": "New Delhi",
+   "url": "https://www.indiarunning.com/events/dwarka_fitness_half_marathon_23915",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Mood Of Delhi 10K Run",
+   "alias": "mood of delhi 10k",
+   "date": "2026-10-11",
+   "city": "New Delhi",
+   "url": "https://www.indiarunning.com/events/moodofdelhi10krun-47929",
+   "buckets": [
+    "10K"
+   ]
+  },
+  {
+   "name": "Prayagraj Half Marathon 2026 - 5th Edition",
+   "alias": "prayagraj half marathon",
+   "date": "2026-10-11",
+   "city": "Prayagraj",
+   "url": "https://www.indiarunning.com/events/prayagraj_half_marathon_2026__5th_edition_17786",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Wesness Women's 5k Fun Run, Pune 2026",
+   "alias": "wesness women s 5k fun run pune",
+   "date": "2026-10-11",
+   "city": "Pune",
+   "url": "https://www.indiarunning.com/events/wesnesswomens5kfunrunpune2026-36977",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "Chandigarh Marathon and Wellness 2026 Edition 2",
+   "alias": "chandigarh marathon and wellness 2",
+   "date": "2026-10-11",
+   "city": "Chandigarh",
+   "url": "https://www.indiarunning.com/events/chandigarh_marathon_and_wellness_2026_edition_2_43629",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Runfinity 2.0",
+   "alias": "runfinity 2 0",
+   "date": "2026-10-11",
+   "city": "Indore",
+   "url": "https://www.indiarunning.com/events/runfinity_20_74784",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "RUN FOR OUR HEROES WITH PRIDE 2026",
+   "alias": "run for our heroes with pride",
+   "date": "2026-10-18",
+   "city": "Chennai",
+   "url": "https://www.indiarunning.com/events/soldierathon_2026__run_for_the_soldiers_with_pride_69500",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "Vedanta Delhi Half Marathon",
+   "alias": "vedanta delhi half marathon",
+   "date": "2026-10-18",
+   "city": "New Delhi",
+   "url": "https://vedantadelhihalfmarathon.procam.in",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "Delhi Half Marathon",
+   "alias": "delhi half marathon",
+   "date": "2026-10-18",
+   "city": "New Delhi",
+   "url": "https://vedantadelhihalfmarathon.procam.in",
+   "buckets": [
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "KHARGHAR HALF MARATHON",
+   "alias": "kharghar half marathon",
+   "date": "2026-10-24",
+   "city": "",
+   "url": "https://www.indiarunning.com/event/kharghar_half_marathon_51162",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Pinkstride 2.0 - Breast Cancer Awareness Run",
+   "alias": "pinkstride 2 0 breast cancer awareness",
+   "date": "2026-10-25",
+   "city": "New Delhi",
+   "url": "https://www.indiarunning.com/events/pinkstride_20__breast_cancer_awareness_run_25403",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "HINDUSTAN MARATHON 12th Edition",
+   "alias": "hindustan marathon",
+   "date": "2026-10-25",
+   "city": "New Delhi",
+   "url": "https://www.indiarunning.com/events/hindustan_marathon_12th_edition_24063",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Breakthrough Run",
+   "alias": "breakthrough",
+   "date": "2026-10-25",
+   "city": "Bengaluru",
+   "url": "https://www.indiarunning.com/events/breakthrough_run_33370",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "IPA Neerathon",
+   "alias": "ipa neerathon",
+   "date": "2026-10-25",
+   "city": "Bengaluru",
+   "url": "https://www.indiarunning.com/events/ipa_neerathon_23079",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "KHARGHAR HALF MARATHON",
+   "alias": "kharghar half marathon",
+   "date": "2026-10-25",
+   "city": "Panvel",
+   "url": "https://www.indiarunning.com/events/kharghar_half_marathon_51162",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Mumbai Green Marathon - 25th October 2026",
+   "alias": "mumbai green marathon october",
+   "date": "2026-10-25",
+   "city": "Mumbai",
+   "url": "https://www.indiarunning.com/events/mumbaigreenmarathon25thoctober2026-80115",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "IIT BOMBAY HALF MARATHON 2026 8th Edition",
+   "alias": "iit bombay half marathon",
+   "date": "2026-10-25",
+   "city": "Mumbai",
+   "url": "https://www.townscript.com/e/iit-bombay-half-marathon-2026-8th-edition",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "PUNE YOUTH FEST RUN 2026",
+   "alias": "pune youth fest run",
+   "date": "2026-10-25",
+   "city": "Pune",
+   "url": "https://www.indiarunning.com/events/pune_youth_fest_run_2026_45001",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "Dehradun Half Marathon 2026 - 13th Edition",
+   "alias": "dehradun half marathon",
+   "date": "2026-10-25",
+   "city": "Dehradun",
+   "url": "https://www.indiarunning.com/events/dehradun_half_marathon_2026__13th_edition_20046",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Times Internet Half Marathon - Hyderabad",
+   "alias": "times internet half marathon hyderabad",
+   "date": "2026-10-25",
+   "city": "Hyderabad",
+   "url": "https://www.indiarunning.com/events/times_internet_half_marathon__hyderabad_31437",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "MARATHON 2026",
+   "alias": "marathon",
+   "date": "2026-10-25",
+   "city": "Ghaziabad",
+   "url": "https://www.indiarunning.com/events/marathon_2026_25170",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "ARVIND \"RUN TO INSPIRE\" 10K,AHMEDABAD",
+   "alias": "arvind run to inspire 10k ahmedabad",
+   "date": "2026-10-25",
+   "city": "Ahmedabad",
+   "url": "https://www.townscript.com/e/arvind-run-to-inspire-10kahmedabad-251026",
+   "buckets": [
+    "10K"
+   ]
+  },
+  {
+   "name": "MET City International Half Marathon",
+   "alias": "met city international half marathon",
+   "date": "2026-10-25",
+   "city": "Aurangpur",
+   "url": "https://www.townscript.com/e/met-city-international-half-marathon",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "New Community Runners 5K Marathon 2026",
+   "alias": "new community runners 5k marathon",
+   "date": "2026-10-29",
+   "city": "Pune",
+   "url": "https://www.townscript.com/e/new-community-runners-5k-marathon-2026-214240",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "Hyderabad Hitec Marathon 26",
+   "alias": "hyderabad hitec marathon 26",
+   "date": "2026-10-31",
+   "city": "Gachibowli Stadium",
+   "url": "https://www.mysamay.in/public/event/info/c6acc89a-9536-4a23-bb3f-41edffff79ac",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Bengaluru Kids Marathon",
+   "alias": "bengaluru kids marathon",
+   "date": "2026-11-01",
+   "city": "Bengaluru",
+   "url": "https://www.indiarunning.com/events/namma_run_bengaluru__south_edition_51834",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "Khadakwasla Ultra",
+   "alias": "khadakwasla ultra",
+   "date": "2026-11-01",
+   "city": "Pune",
+   "url": "https://konfhub.com/khadakwasla-ultra-2026",
+   "buckets": [
+    "5K",
+    "Half",
+    "Ultra"
+   ]
+  },
+  {
+   "name": "Lokmat MahaMarathon Kolhapur 2026",
+   "alias": "lokmat mahamarathon kolhapur",
+   "date": "2026-11-01",
+   "city": "Kolhapur",
+   "url": "https://www.racesindia.com/races/lokmat-mahamarathon-kolhapur/2026",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Adi Kailash Parikrama Run",
+   "alias": "adi kailash parikrama",
+   "date": "2026-11-01",
+   "city": "Gunji",
+   "url": "https://www.townscript.com/e/adi-kailash-parikrama-run",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Bhubaneswar-Cuttack Twin City Marathon",
+   "alias": "bhubaneswar cuttack twin city marathon",
+   "date": "2026-11-01",
+   "city": "Bhubaneswar",
+   "url": "https://bbsrctctwincitymarathon.ironmonk.fit/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Lucknow Run (8th Edition)",
+   "alias": "lucknow run",
+   "date": "2026-11-01",
+   "city": "Lucknow",
+   "url": "https://www.racesindia.com/races/lucknow-run-8th-edition",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "The Coffee Trails",
+   "alias": "the coffee trails",
+   "date": "2026-11-01",
+   "city": "Coorg",
+   "url": "https://www.townscript.com/e/the-coffee-trails",
+   "buckets": [
+    "5K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Ahmedabad Marathon (Adani)",
+   "alias": "ahmedabad marathon adani",
+   "date": "2026-11-01",
+   "city": "Ahmedabad",
+   "url": "https://www.racesindia.com/races/adani-ahmedabad-marathon/2025",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Bison Marathon",
+   "alias": "bison marathon",
+   "date": "2026-11-01",
+   "city": "Kohima",
+   "url": "https://fatmarathoner.com/marathons-northeast-india-assam-arunachal-pradesh/",
+   "buckets": [
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Malnad Ultra",
+   "alias": "malnad ultra",
+   "date": "2026-11-01",
+   "city": "Mallanduru",
+   "url": "https://malnadultra.com/",
+   "buckets": [
+    "Full",
+    "Ultra"
+   ]
+  },
+  {
+   "name": "Winter Delhi Half Marathon 2026",
+   "alias": "winter delhi half marathon",
+   "date": "2026-11-01",
+   "city": "Delhi, NCR",
+   "url": "/events/winter-delhi-half-marathon-2026-5730/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "UST Trivandrum Marathon 26",
+   "alias": "ust trivandrum marathon 26",
+   "date": "2026-11-14",
+   "city": "UST Campus",
+   "url": "https://www.mysamay.in/public/event/info/e3e02f08-0651-493f-b7eb-953a359bf17f",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Kaveri Trail Marathon 2026",
+   "alias": "kaveri trail marathon",
+   "date": "2026-11-21",
+   "city": "Near Ranganthittu Bird Sanctuary",
+   "url": "https://www.mysamay.in/public/event/info/425ed83a-c1a7-42af-88a9-40a86791e0e7",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Yashoda Medicity Presents - Yashoda Half Marathon 4.0",
+   "alias": "yashoda medicity presents yashoda half marathon 4 0",
+   "date": "2026-11-22",
+   "city": "Ghaziabad",
+   "url": "https://www.indiarunning.com/events/yashoda_medicity_presents__yashoda_half_marathon_40_45823",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Chennai Half Marathon 2026",
+   "alias": "chennai half marathon",
+   "date": "2026-11-28",
+   "city": "Island Grounds",
+   "url": "https://www.mysamay.in/public/event/info/fea9ecc8-af79-46b4-baa1-0e521341da4b",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Baramati Power Marathon",
+   "alias": "baramati power marathon",
+   "date": "2026-11-28",
+   "city": "Pune",
+   "url": "https://registrations.indiarunning.com/baramatipowermarathon2026-17158",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "Baramati Power Marathon 2026",
+   "alias": "baramati power marathon",
+   "date": "2026-11-28",
+   "city": "Baramati Pune",
+   "url": "https://www.indiarunning.com/event/baramatipowermarathon2026-17158",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Mussoorie Ultra 2nd Edition",
+   "alias": "mussoorie ultra",
+   "date": "2026-11-29",
+   "city": "Mussoorie",
+   "url": "https://www.indiarunning.com/events/mussoorieultra2ndedition-19483",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Adani Ahmedabad Marathon",
+   "alias": "ahmedabad marathon adani",
+   "date": "2026-11-29",
+   "city": "Ahmedabad",
+   "url": "https://aims-worldrunning.org/races/10317.html",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "Bajaj Pune Marathon",
+   "alias": "bajaj pune marathon",
+   "date": "2026-12-01",
+   "city": "Pune",
+   "url": "https://fatmarathoner.com/bajaj-pune-marathon/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Lokmat MahaMarathon Chhatrapati Sambhajinagar 2026",
+   "alias": "lokmat mahamarathon chhatrapati sambhajinagar",
+   "date": "2026-12-01",
+   "city": "Chhatrapati Sambhajinagar",
+   "url": "https://www.racesindia.com/races/lokmat-mahamarathon-chhatrapati-sambhajinagar",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Ultra Trail Kohima",
+   "alias": "ultra trail kohima",
+   "date": "2026-12-01",
+   "city": "Kohima",
+   "url": "https://www.ultratrailkohima.com/",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "Run for Cancer Awareness Hyderabad",
+   "alias": "run for cancer awareness hyderabad",
+   "date": "2026-12-01",
+   "city": "Hyderabad",
+   "url": "https://www.google.com/search?q=Run+for+Cancer+Awareness+Hyderabad+2026+registration+India",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "Lurntsu Circuit Summit Run",
+   "alias": "lurntsu circuit summit",
+   "date": "2026-12-01",
+   "city": "Moldhar",
+   "url": "https://konfhub.com/summit-run-lurntsu-circuit",
+   "buckets": [
+    "5K",
+    "Full"
+   ]
+  },
+  {
+   "name": "Nambor Marathon",
+   "alias": "nambor marathon",
+   "date": "2026-12-01",
+   "city": "Golaghat",
+   "url": "https://www.townscript.com/e/nambor-marathon-2026-234010",
+   "buckets": [
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Ultribe Paderu",
+   "alias": "ultribe paderu",
+   "date": "2026-12-01",
+   "city": "Paderu",
+   "url": "https://www.vtra.run/ultribepaderu2026",
+   "buckets": [
+    "10K",
+    "Half",
+    "Full",
+    "Ultra"
+   ]
+  },
+  {
+   "name": "Vizag Sunrise Half Marathon",
+   "alias": "vizag sunrise half marathon",
+   "date": "2026-12-01",
+   "city": "Visakhapatnam",
+   "url": "https://www.vizagmarathon.run/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Vizag Navy Half Marathon",
+   "alias": "vizag navy half marathon",
+   "date": "2026-12-01",
+   "city": "Visakhapatnam",
+   "url": "https://fatmarathoner.com/vizag-navy-marathon/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Bengaluru Midnight Marathon 5K IT City Run",
+   "alias": "bengaluru midnight marathon 5k it city",
+   "date": "2026-12-01",
+   "city": "Bengaluru",
+   "url": "https://fatmarathoner.com/bengaluru-midnight-marathon/",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "Thump Celebration Bengaluru 2026",
+   "alias": "thump celebration bengaluru",
+   "date": "2026-12-01",
+   "city": "Bengaluru",
+   "url": "https://fatmarathoner.com/thump-celebration-bengaluru-2026/",
+   "buckets": [
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "The Border",
+   "alias": "the border",
+   "date": "2026-12-01",
+   "city": "Jaisalmer",
+   "url": "https://www.townscript.com/e/the-border",
+   "buckets": [
+    "5K",
+    "Full",
+    "Ultra"
+   ]
+  },
+  {
+   "name": "Dudhsagar Ultra Trail",
+   "alias": "dudhsagar ultra trail",
+   "date": "2026-12-01",
+   "city": "Dudhsagar",
+   "url": "https://runnersduniya.com/event/dudhsagar-ultra-trail-goa/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Goa River Marathon (SKF)",
+   "alias": "goa river marathon skf",
+   "date": "2026-12-01",
+   "city": "Goa",
+   "url": "https://www.townscript.com/e/goa-river-marathon-skf",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "OMC Puri Coastal Marathon",
+   "alias": "omc puri coastal marathon",
+   "date": "2026-12-01",
+   "city": "Puri",
+   "url": "https://www.townscript.com/e/omc-puri-coastal-marathon",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Assam Rifles Vijay Diwas Half Marathon",
+   "alias": "assam rifles vijay diwas half marathon",
+   "date": "2026-12-01",
+   "city": "Agartala",
+   "url": "https://tripuratribune.in/tribunenews/assam-rifles-organizes-half-marathon-in-agartala-to-mark-vijay-diwas-1200.html",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "Vijayawada Half Marathon (Dec)",
+   "alias": "vijayawada half marathon dec",
+   "date": "2026-12-01",
+   "city": "Vijayawada",
+   "url": "https://indiacsr.in/swachhathon-2026-vijayawada-brings-together-fitness-message-cleanliness/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Stadium Run Lucknow",
+   "alias": "stadium run lucknow",
+   "date": "2026-12-01",
+   "city": "Lucknow",
+   "url": "https://www.racesindia.com/races/stadium-run-lucknow",
+   "buckets": [
+    "10K",
+    "Full",
+    "Ultra"
+   ]
+  },
+  {
+   "name": "Garhwal Highline",
+   "alias": "garhwal highline",
+   "date": "2026-12-01",
+   "city": "Garhwal",
+   "url": "https://www.racesindia.com/races/garhwal-highline",
+   "buckets": [
+    "5K",
+    "Full",
+    "Ultra"
+   ]
+  },
+  {
+   "name": "Himalayan Adventure Challenge",
+   "alias": "himalayan adventure challenge",
+   "date": "2026-12-01",
+   "city": "Rishikesh",
+   "url": "https://www.racesindia.com/races/himalayan-adventure-challenge",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "Guwahati Kids Marathon",
+   "alias": "guwahati kids marathon",
+   "date": "2026-12-01",
+   "city": "Guwahati",
+   "url": "https://fatmarathoner.com/guwahati-international-marathon/",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "Bharat Midnight Marathon",
+   "alias": "bharat midnight marathon",
+   "date": "2026-12-05",
+   "city": "Bengaluru",
+   "url": "https://aims-worldrunning.org/races/10118.html",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "Pune International Marathon",
+   "alias": "pune international marathon",
+   "date": "2026-12-06",
+   "city": "Pune",
+   "url": "https://aims-worldrunning.org/races/917.html",
+   "buckets": [
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Mysuru Marathon 26",
+   "alias": "mysuru marathon 26",
+   "date": "2026-12-12",
+   "city": "Police Grounds",
+   "url": "https://www.mysamay.in/public/event/info/81ca6197-062c-4f3e-b41d-d21a44fafe21",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Bajaj Pune Marathon 2026",
+   "alias": "bajaj pune marathon",
+   "date": "2026-12-13",
+   "city": "Maharashtra",
+   "url": "https://www.indiarunning.com/event/bajajpunemarathon2026-48091",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Udupi Full Marathon 26",
+   "alias": "udupi full marathon 26",
+   "date": "2026-12-19",
+   "city": "Mahatma Gandhi District Stadium",
+   "url": "https://www.mysamay.in/public/event/info/8879ecfd-812d-4c7b-b8d5-51fdf229b704",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Tata Steel Kolkata 25K",
+   "alias": "tata steel kolkata 25k",
+   "date": "2026-12-20",
+   "city": "Kolkata",
+   "url": "https://tatasteelkolkata25k.procam.in",
+   "buckets": [
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Tata Steel World 25K",
+   "alias": "tata steel world 25k",
+   "date": "2026-12-20",
+   "city": "Kolkata",
+   "url": "https://tatasteelworld25k.procam.in",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "The Jumping Gorilla 2027",
+   "alias": "the jumping gorilla",
+   "date": "2027-01-01",
+   "city": "Pune",
+   "url": "https://www.townscript.com/e/the-jumping-gorilla-2027",
+   "buckets": [
+    "5K",
+    "10K",
+    "Ultra"
+   ]
+  },
+  {
+   "name": "Freshworks Chennai Marathon 2027",
+   "alias": "freshworks chennai marathon",
+   "date": "2027-01-01",
+   "city": "Chennai",
+   "url": "https://fatmarathoner.com/chennai-marathon/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "The Bhopal Marathon 2027 Kids Run",
+   "alias": "the bhopal marathon kids",
+   "date": "2027-01-01",
+   "city": "Bhopal",
+   "url": "https://www.townscript.com/e/the-bhopal-marathon-2027-kids-run",
+   "buckets": [
+    "5K"
+   ]
+  },
+  {
+   "name": "Auroville Marathon 2027",
+   "alias": "auroville marathon",
+   "date": "2027-01-01",
+   "city": "Auroville",
+   "url": "https://fatmarathoner.com/auroville-marathon/",
+   "buckets": [
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "JBG Durgapur Marathon 2027",
+   "alias": "jbg durgapur marathon",
+   "date": "2027-01-01",
+   "city": "Durgapur",
+   "url": "https://www.townscript.com/e/jbg-durgapur-marathon-2027",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Bengaluru Winter Half Marathon",
+   "alias": "bengaluru winter half marathon",
+   "date": "2027-01-01",
+   "city": "Bengaluru",
+   "url": "https://fatmarathoner.com/bengaluru-winter-half-marathon/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Freshworks Chennai Marathon",
+   "alias": "freshworks chennai marathon",
+   "date": "2027-01-03",
+   "city": "Chennai",
+   "url": "https://aims-worldrunning.org/races/20159.html",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "ROTARY & DOKRA PALANPUR HALF MARATHON",
+   "alias": "rotary dokra palanpur half marathon",
+   "date": "2027-01-03",
+   "city": "Palanpur",
+   "url": "https://racemart.in/events/rotary-and-dokra-palanpur-half-marathon-2026",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "Tata Mumbai Marathon",
+   "alias": "tata mumbai marathon",
+   "date": "2027-01-17",
+   "city": "Mumbai",
+   "url": "https://fatmarathoner.com/tata-mumbai-marathon/",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "Tata Ultra Marathon",
+   "alias": "tata ultra marathon",
+   "date": "2027-02-01",
+   "city": "Lonavala",
+   "url": "https://tataultra.com/",
+   "buckets": [
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Bodh Gaya Marathon",
+   "alias": "bodh gaya marathon",
+   "date": "2027-02-01",
+   "city": "Bodh Gaya",
+   "url": "https://bodhgayamarathon.com/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Golden Pagoda Marathon",
+   "alias": "golden pagoda marathon",
+   "date": "2027-02-01",
+   "city": "Namsai",
+   "url": "https://thegoldenpagoda.com/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Agartala Half Marathon",
+   "alias": "agartala half marathon",
+   "date": "2027-02-01",
+   "city": "Agartala",
+   "url": "https://stayhappening.com/agartala--running",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Khajuraho Marathon 2027",
+   "alias": "khajuraho marathon",
+   "date": "2027-02-01",
+   "city": "Khajuraho",
+   "url": "https://fatmarathoner.com/khajuraho-marathon-2027/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Kolkata Full Marathon 2027",
+   "alias": "kolkata full marathon",
+   "date": "2027-02-06",
+   "city": "Salt Lake",
+   "url": "https://www.mysamay.in/public/event/info/71ad5d37-9784-44ea-9cee-11fec0e3260e",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Wilson Ultra Marathon  Edition 4",
+   "alias": "wilson ultra marathon 4",
+   "date": "2027-02-07",
+   "city": "Dharampur",
+   "url": "https://www.indiarunning.com/events/wilson_ultra_marathon__edition_4_35904",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Chandigarh Fast Marathon",
+   "alias": "chandigarh fast marathon",
+   "date": "2027-02-14",
+   "city": "Chandigarh",
+   "url": "https://www.indiarunning.com/events/chandigarhfastmarathon-45849",
+   "buckets": [
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "AU Jaipur Marathon",
+   "alias": "au jaipur marathon",
+   "date": "2027-02-14",
+   "city": "Jaipur",
+   "url": "https://aims-worldrunning.org/races/10175.html",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "Bodhgaya Marathon \u2013 Run For Global Peace",
+   "alias": "bodhgaya marathon run for global peace",
+   "date": "2027-02-14",
+   "city": "Bodhgaya",
+   "url": "https://aims-worldrunning.org/races/10427.html",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "FEDERAL BANK KOCHI MARATHON 2027",
+   "alias": "federal bank kochi marathon",
+   "date": "2027-02-14",
+   "city": "Kochi",
+   "url": "https://www.indiarunning.com/events/federal_bank_kochi_marathon_2027_27115",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "IEM-UEM Kolkata Marathon",
+   "alias": "iem uem kolkata marathon",
+   "date": "2027-02-21",
+   "city": "Kolkata",
+   "url": "https://aims-worldrunning.org/races/10498.html",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "Cognizant New Delhi Marathon 27",
+   "alias": "cognizant new delhi marathon 27",
+   "date": "2027-02-27",
+   "city": "JLN Stadium",
+   "url": "https://www.mysamay.in/public/event/info/0d207954-d5e3-4b52-929f-d2eb0c5a6e02",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Cognizant New Delhi Marathon",
+   "alias": "cognizant new delhi marathon",
+   "date": "2027-02-28",
+   "city": "New Delhi",
+   "url": "https://aims-worldrunning.org/races/10167.html",
+   "buckets": [
+    "Full"
+   ]
+  },
+  {
+   "name": "Deccan Ultra",
+   "alias": "deccan ultra",
+   "date": "2027-03-01",
+   "city": "Igatpuri",
+   "url": "https://www.finishers.com/en/event/deccan-ultra",
+   "buckets": [
+    "5K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Bhatti Lakes Ultra",
+   "alias": "bhatti lakes ultra",
+   "date": "2027-03-01",
+   "city": "Faridabad",
+   "url": "https://www.racesindia.com/races/bhatti-lakes-ultra",
+   "buckets": [
+    "5K",
+    "Full",
+    "Ultra"
+   ]
+  },
+  {
+   "name": "Times Internet Half Marathon - Delhi",
+   "alias": "times internet half marathon delhi",
+   "date": "2027-03-28",
+   "city": "Delhi",
+   "url": "https://www.indiarunning.com/events/times_internet_half_marathon__delhi_30817",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "DHARAK Nanda Sacred Trails",
+   "alias": "dharak nanda sacred trails",
+   "date": "2027-04-01",
+   "city": "Lohajung",
+   "url": "https://dharak.sarmang.com/chapters/nanda/",
+   "buckets": [
+    "5K",
+    "Half",
+    "Full"
+   ]
+  },
+  {
+   "name": "Ageas Federal Mumbai Half Marathon 2026",
+   "alias": "ageas federal mumbai half marathon",
+   "date": "2027-08-01",
+   "city": "Mumbai",
+   "url": "https://fatmarathoner.com/mumbai-half-marathon/",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "WNC Navy Half Marathon Mumbai 2026",
+   "alias": "wnc navy half marathon mumbai",
+   "date": "2027-08-01",
+   "city": "Mumbai",
+   "url": "https://www.townscript.com/e/wnc-navy-half-marathon-mumbai-2026",
+   "buckets": [
+    "5K",
+    "10K",
+    "Half"
+   ]
+  },
+  {
+   "name": "Pinkathon Mumbai Women\u2019s Run 2026",
+   "alias": "pinkathon mumbai women s run",
+   "date": "2027-08-01",
+   "city": "Mumbai",
+   "url": "https://pinkathon.life/",
+   "buckets": [
+    "5K",
+    "10K"
+   ]
+  },
+  {
+   "name": "Dadi Prakashmani Abu Half Marathon",
+   "alias": "dadi prakashmani abu half marathon",
+   "date": "2027-08-10",
+   "city": "Mount Abu",
+   "url": "https://aims-worldrunning.org/races/10306.html",
+   "buckets": [
+    "Half"
+   ]
+  },
+  {
+   "name": "Tawang Marathon",
+   "alias": "tawang marathon",
+   "date": "2027-10-01",
+   "city": "Tawang",
+   "url": "https://fatmarathoner.com/tawang-marathon/",
+   "buckets": [
+    "10K",
+    "Half",
+    "Full"
+   ]
+  }
+ ]
+}

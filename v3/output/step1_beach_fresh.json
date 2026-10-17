@@ -1,0 +1,108 @@
+{
+  "is_running": true,
+  "reject_reason": null,
+  "camera_angle": "side",
+  "gait_phase": "swing",
+  "foot_contact": "no",
+  "overall_score": 63,
+  "overall_label": "Fair \u2014 moderate mechanics",
+  "one_line_summary": "Upright recreational running posture captured during mid-flight phase.",
+  "findings": [
+    {
+      "zone": "head_neck",
+      "title": "Head & Neck Alignment",
+      "status": "optimal",
+      "zone_score": 68,
+      "observation": "Gaze is directed forward with neutral cervical spine alignment.",
+      "signs": [
+        "Horizontal eye gaze",
+        "Minimal forward head tilt"
+      ],
+      "tldr": "Head position is stable and aligned with torso.",
+      "eli5": "You are looking straight ahead like scanning the horizon. This keeps your posture balanced.",
+      "action": [
+        "Maintain forward visual focus"
+      ],
+      "evidence": "Neutral head carriage preserves kinetic chain alignment and reduces cervical extensor load."
+    },
+    {
+      "zone": "shoulders",
+      "title": "Shoulder Position",
+      "status": "fair",
+      "zone_score": 62,
+      "observation": "Shoulders are slightly elevated with minor tension apparent.",
+      "signs": [
+        "Slight shoulder elevation"
+      ],
+      "tldr": "Shoulders carry slight muscular tension.",
+      "eli5": "Your shoulders are slightly shrugged. Dropping them saves energy.",
+      "action": [
+        "Drop shoulders away from ears"
+      ],
+      "evidence": "Excessive shoulder girdle elevation increases unnecessary upper-body metabolic expenditure."
+    },
+    {
+      "zone": "arms_elbows",
+      "title": "Arm Carriage & Drive",
+      "status": "fair",
+      "zone_score": 64,
+      "observation": "Arm swing is sagittal, though elbow flexion opens slightly on the rearward drive.",
+      "signs": [
+        "Elbow angle opening past 90 degrees"
+      ],
+      "tldr": "Functional arm swing with minor excess forearm extension.",
+      "eli5": "Your arms pump well, but the elbow opens up a bit too wide in back. Keep elbows bent near a right angle.",
+      "action": [
+        "Maintain compact 90-degree elbow bend"
+      ],
+      "evidence": "Compact arm levers optimize rotational counterbalancing of torso inertia."
+    },
+    {
+      "zone": "trunk_lean",
+      "title": "Trunk & Posture",
+      "status": "fair",
+      "zone_score": 60,
+      "observation": "Trunk is relatively vertical with minimal whole-body forward lean.",
+      "signs": [
+        "Upright torso angle"
+      ],
+      "tldr": "Torso is upright with limited forward propulsion lean.",
+      "eli5": "You are standing quite tall while moving forward. Leaning slightly forward helps momentum.",
+      "action": [
+        "Cue a slight forward lean from ankles"
+      ],
+      "evidence": "A subtle full-body lean facilitates forward center-of-mass propulsion and gluteal recruitment."
+    },
+    {
+      "zone": "knees",
+      "title": "Knee Drive & Swing",
+      "status": "fair",
+      "zone_score": 62,
+      "observation": "Moderate swing-phase knee flexion and controlled anterior drive.",
+      "signs": [
+        "Adequate swing flexion",
+        "Moderate knee lift"
+      ],
+      "tldr": "Swing mechanics show adequate forward knee carriage.",
+      "eli5": "Your knees drive forward adequately for this speed. It produces smooth forward motion.",
+      "action": [
+        "Focus on relaxed swing-leg recovery"
+      ],
+      "evidence": "Adequate swing-leg flexion shortens pendulum length, optimizing recovery cadence."
+    }
+  ],
+  "insufficient": [
+    {
+      "zone": "hips_pelvis",
+      "title": "Pelvic Drop & Stability",
+      "why": "Frontal plane pelvic stability cannot be assessed from a profile perspective.",
+      "needed_view": "front-on photo at midstance"
+    },
+    {
+      "zone": "feet_strike",
+      "title": "Foot Strike & Overstride",
+      "why": "Runner is in flight phase without ground contact; impact mechanics cannot be evaluated.",
+      "needed_view": "side-view photo at initial ground contact"
+    }
+  ]
+}

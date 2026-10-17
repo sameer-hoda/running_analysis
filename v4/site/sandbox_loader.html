@@ -1,0 +1,328 @@
+<!doctype html>
+<!--
+  SERIAL PIPELINE (pipeline-auth documented; mirrors site/server.py JOB_PAGE).
+  Upload -> sanitize (PIL verify/EXIF/downscale/JPEG) -> jobs/<jid>/input.jpg ->
+  serial queue (one ACTIVE_JOB, extras stage=queued, 600s worker timeout) ->
+  run_pipeline: audit lane (Gemini, step1_prompt.txt) + Tripo lane (cloud gen)
+  CONCURRENT, download gated on is_running -> serial tail (download 3x retry ->
+  normalize_glb -> compute_anchors -> done). Loader polls GET /api/jobs/<jid>:
+  queued(4%) -> analyzing(30%) -> meshing(30+progress*0.65) -> done/failed(100%).
+  Below: TL[] timeline maps sim seconds to those stages; FAILS{} covers the
+  fail-loud paths (no-runner / mesh 503 / timeout). Side rail previews the
+  PARALLEL PLAN targets (voice pre-warm, Gemini partials, per-zone anchors).
+  Guest-auth bridge: the live page now carries a login-while-waiting link
+  (/login?next=/job/<jid>); this sandbox keeps a static link (no session here).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RunForm — Loader Sandbox v3 (live job-page loader)</title>
+<script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+<style>
+*{box-sizing:border-box}:root{--lime:#c8f04a;--bg:#0a0c11;--panel:#12161d;--panel2:#171d26;--ink:#f4f7f2;--dim:#8b938a;--faint:#5b635c;--line:#1c232d;--line2:#2a3441;--err:#ff7a7a}
+html{background:radial-gradient(120% 80% at 70% -10%,#141b26 0,transparent 55%),var(--bg)}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--ink);margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 64px}
+h1{font-size:clamp(24px,4vw,38px);margin:0 0 6px;letter-spacing:-.03em}h1 .lime{color:var(--lime)}
+.sub{color:var(--dim);font-size:14.5px;line-height:1.55;max-width:76ch;margin:0 0 4px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+.meta{color:var(--dim);font-size:12.5px;margin:8px 0 0;line-height:1.6}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.tag{display:inline-block;font-size:11px;border:1px solid var(--line2);border-radius:999px;padding:3px 10px;color:var(--dim);margin:2px 4px 2px 0}
+/* ===== verbatim live job-page loader CSS (site/server.py JOB_PAGE) ===== */
+#loadwrap{position:relative;width:min(320px,72vw);aspect-ratio:1/1;margin:10px auto}
+#loadwrap canvas{position:absolute;inset:0;width:100%;height:100%}
+#pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:var(--ink)}
+#pct small{font-size:15px;color:var(--dim);font-weight:400;margin-left:3px}
+.stages{list-style:none;margin:18px 0 0;padding:0;font-size:14px}
+.stages li{padding:7px 0;color:var(--dim);display:flex;gap:10px;align-items:center}
+.stages li.on{color:var(--ink)}.stages li.done{color:var(--lime)}
+.stages li .mk{width:18px;text-align:center}
+.kabir{display:flex;gap:12px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:14px 0 0;text-align:left}
+.kabir img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid var(--line2);flex:0 0 44px}
+.kabir .who{font-size:12px;color:var(--lime);font-weight:700;letter-spacing:.06em}
+.kabir .line{font-size:14.5px;line-height:1.5;margin:2px 0 0}
+.tcards{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.tcard{background:#0f141b;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tcard>button{all:unset;display:flex;gap:12px;align-items:center;width:100%;padding:6px 12px;min-height:52px;cursor:pointer;color:var(--dim);font-size:14px}
+.tcard>button:focus-visible{outline:3px solid var(--lime);outline-offset:-3px}
+.tcard .mk{width:26px;height:26px;flex:0 0 26px;border-radius:50%;border:1.5px solid var(--line2);display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.tcard .tx{flex:1;min-width:0}.tcard .tx b{display:block;font-size:14px;color:var(--ink)}
+.tcard .tx span{font-size:12px;color:var(--dim)}
+.tcard .chev{color:var(--faint);font-size:12px}
+.tcard .tbody{display:none;padding:0 14px 12px 50px;font-size:13px;color:var(--dim);line-height:1.55}
+.tcard.open .tbody{display:block}.tcard.open .chev{transform:rotate(180deg);display:inline-block}
+.tcard.on{border-color:#3a4a2e;background:#121a0e}.tcard.on>button{color:var(--ink)}.tcard.on .mk{border-color:var(--lime);color:var(--lime)}
+.tcard.done .mk{border-color:var(--lime);background:var(--lime);color:#0e1206}
+.tcard.done .tx span{color:var(--lime)}
+.rail{margin:14px 0 0;background:#0f141b;border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left}
+.rail .rhead{font-size:12px;color:var(--faint);margin-bottom:8px}
+.rail a{display:flex;gap:12px;align-items:center;text-decoration:none;color:var(--ink)}
+.rail img{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--line2);background:#10151c;flex:0 0 64px}
+.rail b{display:block;font-size:13.5px;line-height:1.4}.rail span{display:block;font-size:12px;color:var(--dim);margin-top:3px}
+@media(prefers-reduced-motion:reduce){.tcard .tbody{transition:none}}
+/* ===== sandbox chrome (controls + side rail) ===== */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#dcff72,#a9e33c);color:#0e1206;font-weight:800;border:0;border-radius:12px;padding:12px 20px;font-size:14px;cursor:pointer;min-height:48px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+select{background:var(--panel2);color:var(--ink);border:1px solid var(--line2);border-radius:10px;padding:12px;font-size:13px;min-height:48px;max-width:100%}
+.scrub{display:flex;gap:12px;align-items:center;margin-top:12px;font-size:13px;color:var(--dim)}
+.scrub input{flex:1;min-height:44px;accent-color:var(--lime)}
+.layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.85fr);gap:16px;margin-top:14px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.wrap{padding:14px 12px 56px}.btn{flex:1 1 100%}.controls select{flex:1 1 100%}}
+.thinkbar{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line2);border-radius:999px;padding:8px 8px 8px 16px}
+.thinkbar .pulse{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px 1px var(--lime);animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.shimmer{background:linear-gradient(90deg,var(--dim) 30%,#fff 50%,var(--dim) 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 2.2s linear infinite;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes shim{to{background-position:-200% 0}}
+.thinkbar button{margin-left:auto;flex-shrink:0;background:transparent;border:1px solid var(--line2);color:var(--ink);border-radius:999px;padding:10px 16px;font-size:13px;cursor:pointer;min-height:44px}
+.steps2{list-style:none;margin:12px 0 0;padding:0;font-size:13.5px}
+.steps2 li{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:12px;margin-bottom:7px;color:var(--dim);background:#0f141b}
+.steps2 li .mk{width:24px;height:24px;flex:0 0 24px;border-radius:50%;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:12px}
+.steps2 li .tx b{display:block;font-size:13px}.steps2 li .tx span{font-size:11.5px;color:var(--faint)}
+.steps2 li.on{color:var(--ink);border-color:#3a4a2e;background:#121a0e}.steps2 li.on .mk{border-color:var(--lime);color:var(--lime)}
+.steps2 li.done{color:var(--ink)}.steps2 li.done .mk{border-color:var(--lime);background:var(--lime);color:#0e1206}
+.steps2 li.err{color:var(--err);border-color:#5a2b2b;background:#1c1113}.steps2 li.err .mk{border-color:var(--err);color:var(--err)}
+.cot{margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.cot>button{width:100%;background:var(--panel2);color:var(--ink);border:0;padding:13px 14px;font-size:13.5px;cursor:pointer;display:flex;gap:8px;align-items:center;min-height:48px}
+.cot .body{display:none;padding:4px 14px 12px;font-size:12.5px;color:var(--dim);line-height:1.6}
+.cot.open .body{display:block}.cot .chev{margin-left:auto}.cot.open .chev{transform:rotate(180deg);display:inline-block}
+.zone{border-left:2px solid var(--line2);padding:5px 0 5px 10px;margin:7px 0}
+.zone b{color:var(--ink)}.zone.arrived{border-color:var(--lime)}
+.banner{display:none;margin-top:12px;border-radius:12px;padding:13px 14px;font-size:13.5px;line-height:1.5}
+.banner.err{display:block;background:#221114;border:1px solid #5a2b2b;color:#ffc9c9}
+.banner.ok{display:block;background:#141d0c;border:1px solid #3a4a2e;color:#dff5a8}
+.log{background:#0b0e13;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:12px;max-height:190px;overflow:auto;margin-top:12px}
+.log div{padding:2px 0;color:var(--dim)}.log .e-err{color:var(--err)}.log .e-ok{color:var(--lime)}
+.rail-sec{font-size:12px;color:var(--faint);margin:14px 0 0}
+:focus-visible{outline:3px solid var(--lime);outline-offset:2px;border-radius:8px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:900px){.thinkbar{border-radius:16px}.shimmer{white-space:normal}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Loader sandbox <span class="lime">· v3 live loader</span></h1>
+<p class="sub">The centre stage below is the <b>actual job-page loader</b> copied verbatim from <span class="mono">site/server.py JOB_PAGE</span> — same canvas, same Three.js wireframe mesh + lime core, same rotation speeds, same <span class="mono">#pct</span> number inside, same check-off stage cards + Kabeer line + paper rail. Only the poll loop is simulated (compressed clock + scenarios) so you can walk the whole 0→100 without uploading. Side rail holds the prompt-kit pieces.</p>
+<p><span class="tag">centre: verbatim live loader</span><span class="tag">rail: thinking-bar · steps · reasoning</span></p>
+
+<div class="card">
+<div class="controls">
+<button class="btn" id="play">▶ Play full run</button>
+<button class="btn ghost" id="pause" disabled>Pause</button>
+<button class="btn ghost" id="reset">Reset</button>
+<select id="scenario"><option value="happy">Scenario: happy path</option><option value="no-runner">Scenario: no runner (fail-loud)</option><option value="mesh-fail">Scenario: mesh / cloud 503</option><option value="timeout">Scenario: worker timeout</option></select>
+<select id="speed"><option value="1">Speed 1× (~120s)</option><option value="2" selected>Speed 2× (review)</option><option value="4">Speed 4× (skim)</option></select>
+</div>
+<div class="scrub"><span>Scrub</span><input type="range" id="scrub" min="0" max="1000" value="0"><span id="telapsed" class="mono">0:00 / 2:00</span></div>
+</div>
+
+<div class="layout">
+<!-- CENTRE: verbatim live loader block -->
+<div class="card" style="margin-top:0;text-align:center">
+<h1 style="font-size:26px">Building <span class="lime">your runner…</span></h1>
+<p class="sub" style="margin:0 auto">Gemini audits your form while TripoSR rebuilds your body in 3D.</p>
+<div class="card" style="text-align:left;background:#0f141b">
+<div id="thumbrow" style="display:flex;gap:12px;align-items:center;margin-bottom:6px">
+<img id="thumb" alt="your upload" src="reference/input/images-3.jpeg" style="width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid #1e2630;background:#10151c" onerror="this.style.display='none'">
+<div><div id="fname" style="font-size:14px;font-weight:700">preparing…</div>
+<div id="timer" class="meta" style="margin-top:2px">elapsed 0:00</div></div></div>
+<div id="loadwrap"><canvas id="lc" width="560" height="560"></canvas><div id="pct">0<small>%</small></div></div>
+<div class="kabir"><img src="assets/coach-kabeer.jpg" alt="Coach Kabeer" onerror="this.style.display='none'"><div><div class="who">Kabeer · your running coach</div><p class="line" id="kabirline">Getting your run ready…</p></div></div>
+<ul class="tcards" id="stages">
+<li class="tcard" data-s="queued"><button aria-expanded="false"><span class="mk">·</span><span class="tx"><b>Queued</b><span class="st">Waiting for a worker</span></span><span class="chev">▾</span></button><div class="tbody">Your photo is uploaded and sanitized. One job runs at a time — yours starts the moment the worker is free.</div></li>
+<li class="tcard" data-s="analyzing"><button aria-expanded="false"><span class="mk">·</span><span class="tx"><b>Form audit</b><span class="st">Scoring zones</span></span><span class="chev">▾</span></button><div class="tbody">Each visible zone is scored against published gait research. Anything the photo cannot show is marked needs-view — never guessed.</div></li>
+<li class="tcard" data-s="meshing"><button aria-expanded="false"><span class="mk">·</span><span class="tx"><b>3D rebuild</b><span class="st">Growing the mesh</span></span><span class="chev">▾</span></button><div class="tbody">The cloud grows your textured mesh while the audit seals. The percent in the globe is the live cloud build.</div></li>
+<li class="tcard" data-s="done"><button aria-expanded="false"><span class="mk">·</span><span class="tx"><b>Bake</b><span class="st">Score + report ready</span></span><span class="chev">▾</span></button><div class="tbody">Score sealed — baking your studio with markers, tour and voice walkthrough.</div></li></ul>
+<div class="rail" id="rail" style="display:none"><div class="rhead">Research cross-check — the papers scoring you</div><div id="paperrail"></div></div>
+<p class="meta" id="detail"></p><p class="meta">job <span id="jid" class="mono">sandbox-demo</span></p>
+<p class="meta" id="ncdn" style="display:none">3D preview offline (CDN blocked) — progress continues below.</p>
+<p><button class="btn ghost" id="cancel" style="margin:6px 0 0">Cancel watch</button>
+<button class="btn ghost" id="retry" style="display:none;margin:6px 0 0 8px">Retry</button></p>
+<div class="banner" id="banner"></div>
+</div>
+</div>
+<!-- SIDE RAIL -->
+<div class="card" style="margin-top:0">
+<div class="thinkbar"><span class="pulse"></span><span class="shimmer" id="thinktext">Queued — waiting for worker…</span><button id="skip">Skip</button></div>
+<p class="rail-sec">Parallel tasks — steps</p>
+<ul class="steps2" id="steps2">
+<li data-s="voice"><span class="mk">·</span><div class="tx"><b>Voice pre-warm</b><span>TTS lines cached during mesh</span></div></li>
+<li data-s="anchors"><span class="mk">·</span><div class="tx"><b>Anchors per-zone</b><span>parallel ray hits</span></div></li>
+<li data-s="partials"><span class="mk">·</span><div class="tx"><b>Gemini partials</b><span>score first, zones stream</span></div></li>
+</ul>
+<div class="cot open" id="cot"><button id="cotbtn">Audit reasoning <span class="chev">▾</span></button><div class="body"><div id="zones"></div></div></div>
+<div class="log" id="log"></div>
+</div>
+</div>
+
+<div class="card"><p class="meta" style="margin-top:0">Fidelity notes — mesh, lights, camera, rotation speeds and stage copy are byte-identical to JOB_PAGE; only <span class="mono">#loadwrap</span> width is responsive. Difference from live: the <span class="mono">#pct</span> number eases 0→1→2…→100 instead of snapping 4→30→93, so you can see it count. Needs network for the Three.js CDN (same as live); offline it shows the same fallback note as the real page. Open via <span class="mono">open sandbox_loader.html</span>.</p></div>
+</div>
+<script>
+/* ===== verbatim live loader logic (JOB_PAGE) + simulated poll ===== */
+var JID="sandbox-demo";
+document.getElementById('jid').textContent=JID;
+var T={queued:4,analyzing:30,meshing:93,done:100,failed:100};
+var shown=0,target=4,term=false;   /* shown eases 0..100 so the number counts */
+var t0=Date.now();
+var simT=0, playing=false, simTimer=null, scenario='happy', speed=2, lastLogged=-1;
+/* simulated /api/jobs responses over a 120s compressed run */
+var TL=[
+[0,"queued","","job accepted · input.jpg sanitized",0,"Queued — waiting for worker…"],
+[6,"queued","","worker claimed job",0,"Worker picked up job"],
+[12,"analyzing","","Gemini audit · step1_prompt.txt",1,"Deep reasoning in progress"],
+[20,"analyzing","","overall_score partial first…",2,"Scoring overall form"],
+[30,"analyzing","","trunk_lean 72 · feet_strike 58",3,"Auditing zones as they arrive"],
+[40,"meshing","","analysis.json sealed · is_running=true",5,"Audit sealed — growing the mesh"],
+[52,"meshing","","TripoSR CPU · mc-resolution 200",5,"3D rebuild — growing the mesh"],
+[70,"meshing","","mesh 55% · voice 2/5 cached",5,"3D rebuild — growing the mesh"],
+[90,"meshing","","mesh 82% · voice 4/5 cached",5,"3D rebuild — densifying"],
+[100,"meshing","","mesh.obj → upright_bake → mesh.glb",5,"Mesh done — baking upright"],
+[110,"meshing","","anchors 3/5 zones",5,"Anchors — ray hits per zone"],
+[120,"done","","report ready → /report/sandbox-demo",5,"Score 63 — opening your report…"]];
+var FAILS={
+"no-runner":{at:38,err:"No runner detected in photo"},
+"mesh-fail":{at:78,err:"mesh failed: TripoSR cloud error (HTTP 503)"},
+"timeout":{at:112,err:"pipeline timed out — please re-upload"}};
+function simJob(){
+var row=TL[0];for(var i=0;i<TL.length;i++){if(TL[i][0]<=simT)row=TL[i]}
+var f=FAILS[scenario],j={stage:row[1],detail:row[3],filename:"beach-run.jpg",score:63,row:row};
+if(scenario!=='happy'&&simT>=f.at){j.stage="failed";j.error=f.err}
+return j}
+function fmt(s){return Math.floor(s/60)+":"+(('0'+Math.floor(s%60)).slice(-2))}
+setInterval(function(){document.getElementById('timer').textContent='elapsed '+fmt(Math.floor((Date.now()-t0)/1000));},1000);
+var cv=document.getElementById('lc');var has3d=(typeof THREE!=='undefined');
+if(!has3d){cv.style.display='none';document.getElementById('ncdn').style.display='block';}
+var rn=null,sc=null,ca=null,mesh=null,core=null;
+if(has3d){try{
+rn=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true});
+rn.setSize(560,560,false);
+sc=new THREE.Scene();
+ca=new THREE.PerspectiveCamera(40,1,0.1,50);ca.position.set(0,0,4.2);
+sc.add(new THREE.HemisphereLight(0xffffff,0x3a4350,1.2));
+var kl=new THREE.DirectionalLight(0xffffff,1.4);kl.position.set(2,3,2.5);sc.add(kl);
+mesh=new THREE.Mesh(new THREE.IcosahedronGeometry(1.25,2),
+new THREE.MeshStandardMaterial({color:0x4F7CFF,wireframe:true,transparent:true,opacity:0.9}));
+sc.add(mesh);
+core=new THREE.Mesh(new THREE.IcosahedronGeometry(0.5,1),
+new THREE.MeshBasicMaterial({color:0xc8f04a,wireframe:true,transparent:true,opacity:0.55}));
+sc.add(core);}catch(e){has3d=false;cv.style.display='none';document.getElementById('ncdn').style.display='block';}}
+function tick(){requestAnimationFrame(tick);
+if(Math.abs(target-shown)>0.05){shown+=(target-shown)*0.045;}
+else if(shown!==target){shown=target;}
+document.getElementById('pct').innerHTML=Math.floor(shown)+'<small>%</small>';
+if(!has3d||!rn)return;
+mesh.rotation.y+=0.008;mesh.rotation.x+=0.003;core.rotation.y-=0.012;
+var s=1+Math.sin(Date.now()/600)*0.03;mesh.scale.set(s,s,s);
+rn.render(sc,ca);}
+tick();
+var KL={queued:'You are in the queue — I will get your run file ready.',
+analyzing:'I am reviewing your stride, zone by zone, against published gait research.',
+meshing:'Rebuilding you in 3D while I double-check the tricky zones.',
+done:'Your studio is ready — let us walk through it together.',
+failed:'This run hit a snag. The note below says what — retry when ready.'};
+var lastStage='';
+function setKabir(stage){var l=document.getElementById('kabirline');if(l&&KL[stage])l.textContent=KL[stage];}
+function mark(stage){if(stage==='failed'){if(stage!==lastStage){lastStage=stage;setKabir(stage);}return;}
+var L=document.querySelectorAll('#stages li');
+var order=['queued','analyzing','meshing','done'];
+for(var i=0;i<L.length;i++){var s=L[i].getAttribute('data-s');
+var mk=L[i].querySelector('.mk');var btn=L[i].querySelector('button');
+if(s===stage){L[i].className='tcard on';mk.textContent='◌';}
+else if(order.indexOf(s)<order.indexOf(stage)||stage==='done'){L[i].className='tcard done';mk.textContent='✓';}
+else{L[i].className='tcard';mk.textContent='·';}
+if(stage!==lastStage){var open=s===stage;L[i].classList.toggle('open',open);if(btn)btn.setAttribute('aria-expanded',open?'true':'false');}}
+if(stage!==lastStage){lastStage=stage;setKabir(stage);}}
+document.querySelectorAll('#stages .tcard>button').forEach(function(b){b.addEventListener('click',function(){
+var li=b.parentNode;var open=li.classList.toggle('open');b.setAttribute('aria-expanded',open?'true':'false');});});
+/* live paper rail: same fetch as JOB_PAGE (hidden on file:// where fetch fails) */
+try{(function(){var rail=document.getElementById('rail'),pr=document.getElementById('paperrail');
+if(!(rail&&pr&&window.fetch))return;fetch('/research/papers/catalog.json').then(function(r){return r.ok?r.json():null;}).then(function(c){
+if(!c||!c.papers)return;var ps=c.papers.filter(function(p){return p&&p.id&&p.title&&p.thumb;});if(!ps.length)return;
+var i=0;function show(){var p=ps[i%ps.length];pr.innerHTML='';
+var a=document.createElement('a');a.href='/research/'+encodeURIComponent(p.id);
+var img=document.createElement('img');img.alt='';img.src='/research/papers/thumbs/'+String(p.thumb).split('/').pop();
+img.onerror=function(){this.style.display='none';};
+var d=document.createElement('div');var b=document.createElement('b');b.textContent=p.title;
+var s=document.createElement('span');s.textContent=((p.authors||[]).join(', ')||p.journal||'')+(p.year?' · '+p.year:'');
+d.appendChild(b);d.appendChild(s);a.appendChild(img);a.appendChild(d);pr.appendChild(a);
+rail.style.display='block';i++;}
+show();var rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!rm&&ps.length>1)setInterval(show,7000);}).catch(function(){});})();}catch(e){}
+/* ===== side rail: thinking-bar / parallel steps / reasoning / log ===== */
+function $(id){return document.getElementById(id)}
+var railEl=[].slice.call(document.querySelectorAll('#steps2 li'));
+var ZONES=[["Trunk lean","72 · tall chest"],["Foot strike","58 · land under hip"],["Knee drive","64 · low swing-knee"],["Arms / elbows","69 · no cross-body"],["Head / neck","78 · steady gaze"]];
+function log(h,c){var d=document.createElement('div');if(c)d.className=c;d.textContent=h;$('log').appendChild(d);$('log').scrollTop=1e6}
+function zones(n){var h='';for(var i=0;i<ZONES.length;i++){var a=i<n;
+h+='<div class="zone'+(a?' arrived':'')+'"><b>'+(a?'✓ ':'○ ')+ZONES[i][0]+'</b> — '+(a?ZONES[i][1]:'waiting…')+'</div>'}$('zones').innerHTML=h}
+function rail(j){var r=j.row,n=r[4];
+var st={voice:n>=5?'done':(n>=3?'on':''),anchors:n>=5&&(simT>=100)?'on':(n>=5?'':''),partials:n>=3?'done':(n>=1?'on':'')};
+if(j.stage==='done')st={voice:'done',anchors:'done',partials:'done'};
+railEl.forEach(function(li){var k=li.getAttribute('data-s'),s=st[k]||'';
+li.className=s;li.querySelector('.mk').textContent=s==='done'?'✓':(s==='on'?'◌':'·');});
+if(j.stage==='failed'&&j.error&&j.error.indexOf('mesh')===0){railEl[0].className='';}
+$('thinktext').textContent=r[5];zones(n);
+var b=$('banner');
+if(j.stage==='failed'){b.className='banner err';b.textContent='✕ Failed: '+(j.error||'unknown');}
+else if(j.stage==='done'){b.className='banner ok';b.textContent='✓ Score 63 — the real page redirects to /report/<id> after 1.2s.';}
+else{b.className='banner';b.textContent='';}}
+var fails=0,cancelled=false;
+function poll(){
+if(term||cancelled)return;
+try{
+var j=simJob();
+fails=0;
+target=T[j.stage]||4;mark(j.stage);rail(j);
+$('fname').textContent=j.filename?j.filename:'run '+JID;
+if(j.detail)$('detail').textContent=j.detail;
+$('telapsed').textContent=fmt(Math.floor(simT))+' / 2:00';
+$('scrub').value=Math.round(simT/120*1000);
+if(j.stage==='done'){term=true;target=100;
+$('detail').textContent='Score '+j.score+' — opening your report…';
+log('done · score=63 · redirect → /report/sandbox-demo','e-ok');
+setTimeout(function(){$('detail').textContent+=' (sandbox: stays here)';},1500);
+pause();return;}
+if(j.stage==='failed'){term=true;
+$('detail').textContent='Failed: '+(j.error||'unknown');
+log('failed: '+(j.error||'unknown'),'e-err');
+$('retry').style.display='inline-block';pause();return;}
+}catch(e){fails++;}
+setTimeout(poll,500);}
+function stepSim(dt){simT=Math.min(120,simT+dt);
+var idx=TL.reduce(function(a,r,i){return r[0]<=simT?i:a},0);
+if(idx>lastLogged){lastLogged=idx;log(TL[idx][3]||TL[idx][5],'');}}
+function play(){if(term){reset(false)}$('fname').textContent='beach-run.jpg';
+playing=true;$('play').disabled=true;$('pause').disabled=false;
+simTimer=setInterval(function(){stepSim(0.5*speed);},500);poll();}
+function pause(){playing=false;cancelled=true;$('play').disabled=false;$('pause').disabled=true;
+$('play').textContent=simT>0&&simT<120?'▶ Resume':'▶ Play full run';if(simTimer)clearInterval(simTimer);}
+function reset(clear){pause();cancelled=false;term=false;simT=0;shown=0;target=4;lastLogged=-1;t0=Date.now();
+$('retry').style.display='none';$('cancel').style.display='inline-block';
+$('play').textContent='▶ Play full run';if(clear!==false)$('log').innerHTML='';
+mark('queued');rail({stage:'queued',row:TL[0]});zones(0);
+$('detail').textContent='';$('fname').textContent='preparing…';$('banner').className='banner';$('banner').textContent='';}
+$('play').onclick=function(){cancelled=false;if(!playing)play();};
+$('pause').onclick=pause;$('reset').onclick=function(){reset(true)};
+$('scrub').oninput=function(){var wasPlaying=playing;pause();cancelled=false;term=false;
+simT=this.value/1000*120;shown=target=(T[simJob().stage]||4);
+lastLogged=TL.reduce(function(a,r,i){return r[0]<=simT?i:a},-1);pollOnce();};
+function pollOnce(){var j=simJob();target=T[j.stage]||4;shown=target;mark(j.stage);rail(j);
+if(j.detail)$('detail').textContent=j.detail;
+$('telapsed').textContent=fmt(Math.floor(simT))+' / 2:00';}
+$('scenario').onchange=function(){scenario=this.value;reset(true);log('scenario: '+scenario,'');};
+$('speed').onchange=function(){speed=+this.value;};
+$('cancel').onclick=function(){cancelled=true;pause();
+$('detail').textContent='Watch cancelled — your run continues in background. Re-open this page to keep watching.';
+$('retry').style.display='inline-block';this.style.display='none';};
+$('skip').onclick=function(){$('cancel').onclick.call($('cancel'));};
+
+$('retry').onclick=function(){cancelled=false;fails=0;term=false;
+this.style.display='none';$('cancel').style.display='inline-block';
+$('detail').textContent='Reconnecting…';if(!playing)play();};
+$('cotbtn').onclick=function(){$('cot').classList.toggle('open')};
+zones(0);mark('queued');rail({stage:'queued',row:TL[0]});
+</script>
+</body></html>
+</style>

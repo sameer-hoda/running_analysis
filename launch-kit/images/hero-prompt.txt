@@ -1,0 +1,17 @@
+PROMPT (for Gemini 2.5 Flash Image / nano banana) — hero, wide:
+
+Photorealistic wide shot of an amateur runner tying shoes on a quiet residential street at dawn, race bib with Strava-orange (#FC5200) border pinned to shirt, soft morning haze, light airy exposure, white sky, calm minimal mood, generous negative space on the left third for headline placement. No purple gradients, no dramatic cinematic color grade, no crowd, no stadium. Absolutely no readable text, no words, no letters, no numbers, no logos, no watermarks.
+
+Negative: purple, gradient background, text, typography, collage grid, watermark, logo, dark moody filter, stadium crowd.
+
+STATUS: RENDERED as hero.png (Gemini 2.5 Flash Image, 16:9, visually checked).
+
+RUNNABLE COMMAND (pick one):
+
+belt:
+belt app run google/gemini-2-5-flash-image --input '{"prompt": "Photorealistic wide shot of an amateur runner tying shoes on a quiet residential street at dawn, race bib with Strava-orange (#FC5200) border pinned to shirt, soft morning haze, light airy exposure, calm minimal mood, generous negative space on the left third. No purple gradients, no cinematic color grade, no crowd. Absolutely no readable text, words, letters, numbers, logos, or watermarks.", "aspect_ratio": "16:9"}'
+
+curl:
+curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=$GEMINI_API_KEY" -H 'Content-Type: application/json' -d '{"contents":[{"parts":[{"text":"Photorealistic wide shot of an amateur runner tying shoes on a quiet residential street at dawn, race bib with Strava-orange (#FC5200) border pinned to shirt, soft morning haze, light airy exposure, calm minimal mood, generous negative space on the left third. No purple gradients, no cinematic color grade, no crowd. Absolutely no readable text, words, letters, numbers, logos, or watermarks."}]}]}' -o launch-kit/images/hero-raw.json
+
+Save output as launch-kit/images/hero.png

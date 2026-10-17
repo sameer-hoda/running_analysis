@@ -1,0 +1,36 @@
+<!-- Gait-science library section (research-deep). Status: NOT yet wired into
+     site/server.py landing (verified 2026-09-20: no gait-library/catalog ref
+     in server.py). Exact drop-in spec for core-loop lives in
+     .agents/handoffs/research-catalog-research-deep.md ("Site wiring" section).
+     Each card carries data-catalog-id (canonical catalog.json ID) so the
+     static cards can later be replaced by fetch() over catalog.json + deep/. -->
+<section id="gait-library" style="background:#0a0c11;color:#e8ecf4;padding:48px 24px;font-family:sans-serif">
+  <h2 style="color:#c8f04a;margin:0 0 8px">Gait-science library</h2>
+  <p style="color:#8b93a7;max-width:640px">Every score we give is backed by published running research — not vibes. Start with these four.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:24px;max-width:1000px">
+    <article data-catalog-id="lieberman-2010" style="border:1px solid #3a4152;border-radius:12px;padding:20px">
+      <img src="/research/papers/deep/figures/deep-001-foot-strike.svg" alt="Rearfoot vs forefoot landing schematic" style="width:100%;border-radius:8px"/>
+      <h3 style="color:#c8f04a">Land softer: stop overstriding</h3>
+      <p>Landing on the forefoot with a compliant ankle avoids the sharp impact transient of a heel-first landing.</p>
+      <p style="color:#8b93a7;font-size:13px">Backs rule: <strong>feet_strike — Foot Strike &amp; Overstride</strong><br/>Lieberman et al. 2010, Nature. <a style="color:#c8f04a" href="https://doi.org/10.1038/nature08723">doi:10.1038/nature08723</a></p>
+    </article>
+    <article data-catalog-id="heiderscheit-2011" style="border:1px solid #3a4152;border-radius:12px;padding:20px">
+      <img src="/research/papers/deep/figures/deep-002-step-rate.svg" alt="Step rate versus joint loading schematic" style="width:100%;border-radius:8px"/>
+      <h3 style="color:#c8f04a">Nudge cadence, spare your knees</h3>
+      <p>Nudge cadence up ~5–10% at the same pace and the hips and knees carry meaningfully less load.</p>
+      <p style="color:#8b93a7;font-size:13px">Backs rule: <strong>knees — Knee drive / stance loading</strong><br/>Heiderscheit et al. 2011, MSSE. <a style="color:#c8f04a" href="https://doi.org/10.1249/MSS.0b013e3181ebedf4">doi:10.1249/MSS.0b013e3181ebedf4</a></p>
+    </article>
+    <article data-catalog-id="teng-powers-2014" style="border:1px solid #3a4152;border-radius:12px;padding:20px">
+      <img src="/research/papers/deep/figures/deep-003-trunk-lean-teng.svg" alt="Trunk lean versus kneecap stress schematic" style="width:100%;border-radius:8px"/>
+      <h3 style="color:#c8f04a">Lean from the ankles</h3>
+      <p>About 7° more forward lean takes significant stress off the kneecap.</p>
+      <p style="color:#8b93a7;font-size:13px">Backs rule: <strong>trunk_lean — Trunk Lean</strong><br/>Teng &amp; Powers 2014, JOSPT. <a style="color:#c8f04a" href="https://doi.org/10.2519/jospt.2014.5249">doi:10.2519/jospt.2014.5249</a></p>
+    </article>
+    <article data-catalog-id="bramah-2018" style="border:1px solid #3a4152;border-radius:12px;padding:20px">
+      <img src="/research/papers/deep/figures/deep-003-trunk-lean.svg" alt="Control versus injured-runner posture schematic" style="width:100%;border-radius:8px"/>
+      <h3 style="color:#c8f04a">Spot the pathological cluster</h3>
+      <p>Injured runners share a look: dropped pelvis, extra trunk lean at midstance, straight knee at landing.</p>
+      <p style="color:#8b93a7;font-size:13px">Backs rule: <strong>trunk_lean — Trunk Lean</strong><br/>Bramah et al. 2018, Am J Sports Med. <a style="color:#c8f04a" href="https://doi.org/10.1177/0363546518793657">doi:10.1177/0363546518793657</a></p>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang=en>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content='width=device-width,initial-scale=1'>
+<meta name=robots content='noindex,nofollow'>
+<title>Home sandbox — RunForm treatment explorations</title>
+<style>
+*{box-sizing:border-box}:root{--lime:#c8f04a;--bg:#0a0c11;--panel:#12161d;--ink:#f4f7f2;--dim:#8b938a;--faint:#5b635c;--line:#1c232d;--line2:#2a3441}
+html{background:var(--bg)}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--ink);margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:26px 22px 64px}
+.sandbox-tag{border:1px dashed var(--line2);border-radius:8px;color:var(--dim);font-size:12.5px;padding:10px 14px;margin:0 0 8px}
+.sandbox-tag b{color:var(--lime)}
+h1{font-size:clamp(34px,5.4vw,64px);letter-spacing:-.03em;line-height:1.04;margin:0 0 14px}
+h1 .lime{color:var(--lime)}
+h2{font-size:clamp(22px,3vw,32px);letter-spacing:-.02em;margin:0 0 6px}
+.sub{color:var(--dim);font-size:15px;line-height:1.6;max-width:60ch;margin:0 0 20px}
+a{color:var(--lime)}
+.btn{display:inline-block;background:var(--lime);color:#0e1206;font-weight:800;border-radius:12px;padding:15px 26px;font-size:16px;text-decoration:none;min-height:52px}
+.ghostlink{color:var(--dim);font-size:14px;text-decoration:none;margin-left:16px}
+.nav{display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);max-width:1080px;margin:0 auto}
+.brand{font-weight:800;letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:var(--lime)}
+.navlink{margin-left:auto;color:var(--dim);font-size:13px;text-decoration:none}
+/* 1 · hero proof ticker */
+.tick{list-style:none;display:flex;gap:0;margin:26px 0 0;padding:0;border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;flex-wrap:wrap}
+.tick li{flex:1 1 160px;padding:16px 18px}
+.tick li+li{border-left:1px solid var(--line)}
+.tick b{display:block;font-size:24px;letter-spacing:-.02em}
+.tick b .lime{color:var(--lime)}
+.tick span{color:var(--dim);font-size:13px;line-height:1.5}
+/* 2 · steps timeline */
+.tline{list-style:none;margin:8px 0 0;padding:0}
+.tline li{position:relative;padding:0 0 26px 44px}
+.tline li:last-child{padding-bottom:0}
+.tline li:before{content:'';position:absolute;left:13px;top:30px;bottom:-2px;width:2px;background:var(--line2)}
+.tline li:last-child:before{display:none}
+.tnode{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;border:2px solid var(--lime);color:var(--lime);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.tline b{display:block;font-size:16px;margin:2px 0 4px}
+.tline p{color:var(--dim);font-size:14px;line-height:1.6;margin:0;max-width:58ch}
+/* 3 · studies snap rail */
+.rail{display:flex;gap:16px;overflow-x:auto;padding:4px 2px 16px;scroll-snap-type:x mandatory}
+.rcard{flex:0 0 240px;scroll-snap-align:start;background:var(--panel);border:1px solid var(--line);border-radius:10px 22px 10px 22px;padding:14px}
+.rcard img{width:100%;aspect-ratio:1/1;object-fit:cover;object-position:top;border-radius:6px 14px 6px 14px;border:1px solid var(--line2);background:#000}
+.rcard b{display:block;font-size:14px;line-height:1.4;margin:10px 0 0}
+.rcard span{display:block;color:var(--dim);font-size:12.5px;line-height:1.55;margin-top:6px}
+.rcard a{font-size:13px}
+/* 4 · Q&A accordion groups */
+.qgroup{margin:0 0 22px}
+.qgroup>h3{font-size:13px;letter-spacing:.14em;color:var(--lime);margin:0 0 8px;font-weight:700}
+details{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:0 0 8px}
+details+details{margin-top:8px}
+summary{cursor:pointer;padding:14px 16px;font-size:14.5px;font-weight:700;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:before{content:'+ ';color:var(--lime)}
+details[open] summary:before{content:'\2212  '}
+details p{color:var(--dim);font-size:13.5px;line-height:1.6;margin:0;padding:0 16px 14px 30px}
+/* 5 · privacy checklist */
+.plist{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.plist>div{padding:16px 18px 16px 46px;position:relative}
+.plist>div+div{border-top:1px solid var(--line)}
+.plist>div:before{content:'\2713';position:absolute;left:18px;top:17px;color:var(--lime);font-weight:800}
+.plist b{display:block;font-size:15px;margin-bottom:4px}
+.plist p{color:var(--dim);font-size:13.5px;line-height:1.6;margin:0}
+/* 6 · footer */
+footer{border-top:1px solid var(--line);margin-top:8px}
+footer .wrap{padding-bottom:40px}
+.flink{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;margin:14px 0 0;padding:0;list-style:none}
+.fine{color:var(--faint);font-size:12.5px;margin:14px 0 0}
+:focus-visible{outline:3px solid var(--lime);outline-offset:2px;border-radius:8px}
+#dots-bg{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+.stage{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:#0c1016;aspect-ratio:1/1}
+.stage canvas{width:100%;height:100%;display:block;touch-action:none}
+.stagestatus{color:var(--dim);font-size:13px;margin:10px 0 0}
+.upform{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:6px 0 0}
+.upform input[type=file]{color:var(--dim);font-size:13.5px;max-width:100%}
+.upstatus{color:var(--dim);font-size:13.5px;margin:12px 0 0;line-height:1.7}
+.upstatus b{color:var(--ink)}
+@media(max-width:820px){.wrap{padding:16px 16px 48px}.btn{width:100%;text-align:center}.ghostlink{display:block;margin:14px 0 0;text-align:center}.tick li{flex-basis:45%}.tick li+li{border-left:0}.tick li:nth-child(even){border-left:1px solid var(--line)}.tick li:nth-child(n+3){border-top:1px solid var(--line)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<canvas id=dots-bg></canvas>
+<div class=nav><span class=brand>RunForm</span><a class=navlink href='/'>Live homepage &rarr;</a></div>
+<main>
+<section class=wrap id=hero>
+<p class=sandbox-tag><b>SANDBOX</b> — treatment explorations only. The upload below posts to the real endpoint on the $0 test lane (stub mesh, demo path); nothing spends and no live page is affected. <a href='/'>Back to live</a>.</p>
+<h1>Your <span class=lime>running form,</span> exposed &mdash; every flaw, every fix, in 3D.</h1>
+<p class=sub>One side-profile photo of your stride becomes a 3D breakdown &mdash; AI form score, zone-by-zone flaws, cues and drills. Free, about two minutes, no account needed.</p>
+<p><a class=btn href='/#analyse'>Analyze my run &rarr;</a><a class=ghostlink href='/report/02652674ecda'>or see the sample report</a></p>
+<ul class=tick>
+<li><b><span class=lime id=tScore>72</span>/100</b><span>sample report score, real runner, rebuild in textured 3D</span></li>
+<li><b id=tPapers>&ndash;</b><span>peer-reviewed gait studies backing every zone, counted live</span></li>
+<li><b>15 <span class=lime>free</span></b><span>analyses per guest, then paywall &mdash; history stays deletable</span></li>
+<li><b>~2 <span class=lime>min</span></b><span>one photo in, score + studio + voice walkthrough out</span></li>
+</ul>
+</section>
+<section class=wrap id=try>
+<h2>Try the real upload</h2>
+<p class=sub>Same endpoint and contract as the live page (<span class=mono>POST /api/jobs</span>, multipart <span class=mono>photo</span> field) &mdash; pinned to the <span class=mono>?test=1</span> stub lane: $0, sealed in seconds, demo score path. Watch + report links appear here; the pages themselves are live.</p>
+<form class=upform id=upSandbox><input id=upFile type=file name=photo accept='image/jpeg,image/png,image/webp' required><button class=btn type=submit>Upload (test lane, $0) &rarr;</button></form>
+<p class=upstatus id=upStatus>JPEG/PNG/WebP up to 8 MB. Nothing spends.</p>
+</section>
+<section class=wrap id=model>
+<h2>Orbit the demo runner</h2>
+<p class=sub>The live report&rsquo;s own stage &mdash; same renderer, camera, controls and lights &mdash; loading <span class=mono>/jobs/demo/mesh.glb</span>. Drag to orbit, scroll to zoom. Zone overlays stay on the live report; this is the raw mesh.</p>
+<div class=stage><canvas id=stage></canvas></div>
+<p class=stagestatus id=stageStatus>Loading demo mesh&hellip;</p>
+</section>
+<section class=wrap id=steps>
+<h2>How it works</h2>
+<p class=sub>Three steps, about two minutes, no account needed. The upload itself happens on the <a href='/#analyse'>live page</a> &mdash; this rail is only a treatment sketch.</p>
+<ol class=tline>
+<li><span class=tnode>1</span><b>Upload</b><p>One side-profile running photo. Nothing to install.</p></li>
+<li><span class=tnode>2</span><b>Analyse + build</b><p>Gemini scores your form; the cloud rebuilds you in textured 3D with every zone marked.</p></li>
+<li><span class=tnode>3</span><b>Explore</b><p>A coach walkthrough with captions, then spin the model and tap any zone.</p></li>
+</ol>
+</section>
+<section class=wrap id=studies>
+<h2>Backed by published research</h2>
+<p class=sub>Every zone we score traces to at least one of these studies. Cards render live from the research catalog &mdash; same data as the homepage rail, different treatment.</p>
+<div class=rail id=rail><p class=sub>Loading studies&hellip;</p></div>
+<p class=sub><a href='/#science'>See the live studies section &rarr;</a></p>
+</section>
+<section class=wrap id=qa>
+<h2>Running form questions, answered</h2>
+<p class=sub>Grouped accordion treatment of the live FAQ. Full answers live on the <a href='/#faq'>homepage FAQ</a>.</p>
+<div class=qgroup><h3>THE BASICS</h3>
+<details open><summary>What is running form?</summary><p>How your body moves when you run &mdash; posture, foot strike, knee drive, arm swing and lean. Small flaws raise injury risk and waste energy.</p></details>
+<details><summary>Can it really be analyzed from a single photo?</summary><p>Yes for visible mechanics &mdash; foot strike, overstride, lean, knee drive, arm swing, head and hip alignment. What a photo cannot show is never guessed.</p></details>
+</div>
+<div class=qgroup><h3>FIX YOUR ZONES</h3>
+<details><summary>How do I stop overstriding?</summary><p>Land with the foot under the hips instead of reaching ahead: lift cadence slightly, run quieter, stop reaching.</p></details>
+<details><summary>Is heel striking bad?</summary><p>Not by itself. The red flag is heel strike <i>plus</i> overstride, a locked knee and low cadence, which together create braking force.</p></details>
+</div>
+<div class=qgroup><h3>SCORES</h3>
+<details><summary>What is a good running form score?</summary><p>Most recreational runners score 55&ndash;75 out of 100. Anything under 60 usually means two or more zones need drills.</p></details>
+<details><summary>How is my score calculated?</summary><p>Each visible zone scores 0&ndash;100 and the overall is the rounded average. Any critical zone caps the total at 70, two or more cap it at 60.</p></details>
+</div>
+<div class=qgroup><h3>THE SCIENCE</h3>
+<details><summary>What research is this based on?</summary><p>Systematic reviews on running-injury biomechanics, the evidence-based video-analysis framework, cadence-loading studies, and foot-strike work. All linked below.</p></details>
+<details><summary>What can&rsquo;t a photo measure?</summary><p>Cadence, ground-contact time, vertical bounce, loading rate, leg stiffness and pronation speed &mdash; so they are never guessed from your photo.</p></details>
+</div>
+</section>
+<section class=wrap id=privacy>
+<h2>Private by design</h2>
+<p class=sub>The same contract as the upload screen, as a checklist treatment.</p>
+<div class=plist>
+<div><b>Your photo works, then rests</b><p>Scored by Gemini and rebuilt in textured 3D in the cloud. Runs stay private to your session &mdash; no public gallery, no feed.</p></div>
+<div><b>You hold the keys</b><p>No account needed: one guest cookie covers 15 free analyses. Your history never leaks.</p></div>
+<div><b>Delete anything, any time</b><p>Every run lives in <a href='/history'>your history</a>, where any run can be deleted.</p></div>
+</div>
+</section>
+</main>
+<footer><div class=wrap>
+<span class=brand>RunForm</span>
+<ul class=flink>
+<li><a href='/#analyse'>Analyze my run</a></li>
+<li><a href='/report/02652674ecda'>Sample report</a></li>
+<li><a href='/#science'>Studies</a></li>
+<li><a href='/#faq'>FAQ</a></li>
+<li><a href='/history'>History</a></li>
+<li><a href='/guides/'>Zone guides</a></li>
+</ul>
+<p class=fine>Sandbox treatment explorations &mdash; unlinked from live pages, excluded from search and sitemap. Judge the treatments, not the copy.</p>
+</div></footer>
+<script>
+(function(){
+try{
+fetch('/research/papers/catalog.json').then(function(r){return r.ok?r.json():null;}).then(function(c){
+if(!c||!c.papers)return;
+var ps=c.papers.filter(function(p){return p&&p.id&&p.title;});
+var n=document.getElementById('tPapers');
+if(n)n.textContent=ps.length;
+var rail=document.getElementById('rail');
+if(!rail)return;
+rail.innerHTML='';
+ps.forEach(function(p){
+var d=document.createElement('div');d.className='rcard';
+var img=document.createElement('img');img.alt='';img.loading='lazy';
+img.src='/research/papers/covers/'+encodeURIComponent(p.id)+'.jpg';
+img.onerror=function(){this.style.display='none';};
+var b=document.createElement('b');b.textContent=p.title;
+var s=document.createElement('span');s.textContent=p.key_finding||'';
+var a=document.createElement('a');a.href='/research/'+encodeURIComponent(p.id);a.textContent='Read more \u2192';
+d.appendChild(img);d.appendChild(b);d.appendChild(s);d.appendChild(a);
+rail.appendChild(d);
+});
+}).catch(function(){});
+}catch(e){}
+})();
+</script>
+<script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://unpkg.com/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+(function(){
+var cv=document.getElementById('stage');
+function status(t){var s=document.getElementById('stageStatus');if(s)s.textContent=t;}
+if(!cv||typeof THREE==='undefined'){status('3D offline (CDN blocked) — nothing else breaks.');window.__stage={meshes:0,status:'nothree'};return;}
+var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+try{
+var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.0;
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(38,1,0.01,100);
+camera.position.set(0,1,3);
+var controls=new THREE.OrbitControls(camera,cv);
+controls.enableDamping=true;controls.dampingFactor=0.07;
+controls.rotateSpeed=0.85;controls.zoomSpeed=1.1;controls.enablePan=false;
+controls.minPolarAngle=0.18;controls.maxPolarAngle=Math.PI*0.52;
+controls.target.set(0,0.8,0);
+controls.autoRotate=!reduced;controls.autoRotateSpeed=0.5;
+scene.add(new THREE.HemisphereLight(0xffffff,0x2a3340,0.65));
+scene.add(new THREE.AmbientLight(0xffffff,0.12));
+var key=new THREE.DirectionalLight(0xffffff,0.9);key.position.set(2.2,3.6,2.4);scene.add(key);
+var fill=new THREE.DirectionalLight(0xdfe9ff,0.32);fill.position.set(-2.6,1.4,2.2);scene.add(fill);
+var rim=new THREE.DirectionalLight(0xfff2df,0.5);rim.position.set(-1.2,2.6,-2.8);scene.add(rim);
+function size(){var w=cv.clientWidth||300;var h=cv.clientHeight||w;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+function render(){controls.update();renderer.render(scene,camera);}
+window.addEventListener('resize',function(){size();render();});
+size();render();
+new THREE.GLTFLoader().load('/jobs/demo/mesh.glb',function(gltf){
+var model=gltf.scene,n=0;
+model.traverse(function(o){if(o.isMesh)n++;});
+var b=new THREE.Box3().setFromObject(model);
+model.position.x-=(b.min.x+b.max.x)/2;model.position.z-=(b.min.z+b.max.z)/2;model.position.y-=b.min.y;
+model.updateMatrixWorld(true);
+scene.add(model);
+var bb=new THREE.Box3().setFromObject(model);
+var size=bb.getSize(new THREE.Vector3()),c=bb.getCenter(new THREE.Vector3());
+controls.target.copy(c);
+camera.position.set(c.x,c.y+size.y*0.12,c.z+Math.max(size.x,size.y,size.z)*2.1);
+render();
+status('Demo mesh live — drag to orbit, scroll to zoom ('+n+' meshes).');
+window.__stage={meshes:n,status:'ready'};
+if(!reduced)(function loop(){requestAnimationFrame(loop);render();})();
+else controls.addEventListener('change',render);
+},undefined,function(){
+status('Demo mesh failed to load.');
+window.__stage={meshes:0,status:'error'};
+});
+}catch(e){
+status('3D unavailable here.');
+window.__stage={meshes:0,status:'error'};
+}
+})();
+</script>
+<script>
+(function(){
+var f=document.getElementById('upSandbox');if(!f)return;
+var st=document.getElementById('upStatus');
+f.addEventListener('submit',function(e){
+e.preventDefault();
+var file=document.getElementById('upFile').files[0];
+if(!file){st.textContent='Choose a photo first.';return;}
+st.textContent='Uploading to the real endpoint (test lane)…';
+var fd=new FormData();fd.append('photo',file);
+fetch('/api/jobs?test=1',{method:'POST',body:fd,headers:{'Accept':'application/json'}}).then(function(r){
+return r.json().then(function(j){return {ok:r.ok,j:j};});
+}).then(function(o){
+if(!o.ok||!o.j||!o.j.job_id){st.textContent='Upload rejected: '+((o.j&&o.j.error)||'unknown');return;}
+var id=String(o.j.job_id);
+st.innerHTML='Job accepted — <a href="/job/'+encodeURIComponent(id)+'">watch it live</a> · <span id=upPoll>sealing…</span>';
+var n=0;var t=setInterval(function(){
+fetch('/api/jobs/'+encodeURIComponent(id)).then(function(r){return r.json();}).then(function(s){
+var stage=s.stage||'?',p=document.getElementById('upPoll');
+if(p)p.textContent=String(stage)+'…';
+if(stage==='done'){clearInterval(t);st.innerHTML='Job done (score '+(s.score==null?'?':s.score)+') — <a href="/job/'+encodeURIComponent(id)+'">watch</a> · <a href="/report/'+encodeURIComponent(id)+'">open report</a>';}
+else if(stage==='failed'){clearInterval(t);st.textContent='Job failed: '+(s.error||'unknown');}
+if(++n>60)clearInterval(t);
+}).catch(function(){clearInterval(t);});
+},2000);
+}).catch(function(err){st.textContent='Upload failed: '+err;});
+});
+})();
+</script>
+<script src=/assets/dots.js defer></script>
+</body></html>

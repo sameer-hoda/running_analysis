@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TripoSR local mesh — beach runner (zero cost)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #111; color: #eee; margin: 0; padding: 24px; }
+  model-viewer { width: 100%; height: 60vh; background: #1c1c1c; border-radius: 12px; }
+  .meta { margin-top: 12px; font-size: 14px; color: #bbb; }
+</style>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+<h1>TripoSR local mesh (zero cost)</h1>
+<p>Source: <code>output/assets/original.jpg</code> → <code>triposr_beach.glb</code> (0.5 MB, 13k verts / 26.8k faces, vertex colors, converted from <code>output/triposr/0/mesh.obj</code>). Run on Apple M1 CPU, mc-resolution 200.</p>
+<model-viewer id="m" src="triposr_beach.glb" camera-controls auto-rotate
+  alt="TripoSR local runner mesh"></model-viewer>
+<div class="meta" id="timing">Measured on this machine: init 6.9s → image processing 48.5s → model 22.1s → mesh extract 6.6s = 88.0s wall total. Cost: 0 credits.</div>
+<script>
+  const m = document.getElementById('m');
+  m.addEventListener('error', () => {
+    document.getElementById('timing').textContent =
+      'Mesh failed to load. If you opened this as file://, that is the cause — browsers block model fetches from file://. Serve with: cd output && python3 -m http.server 8137, then open http://localhost:8137/triposr_beach.html';
+  });
+</script>
+</body>
+</html>

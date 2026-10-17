@@ -1,0 +1,9 @@
+# Local-only secrets and artifacts. Never commit.
+.env
+v6/strava-config.js
+v6/.tokens.json
+v6/.athletes/
+*.pem
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,146 @@
+/* mynextpr v6 canonical design tokens — FINAL.
+   Source of truth for values: v5/worker-contracts.md §2 (wins every conflict).
+   Spec: v6/design-tokens.md. Light theme only — no dark-mode inversion.
+   Import first, then component CSS; do not redefine these per-lane. */
+
+:root {
+  /* ---- color ---- */
+  --paper: #ffffff;          /* page background */
+  --ink: #191412;            /* body text, selected chips, mast rule */
+  --muted: #6f645c;          /* hints, meta, placeholders */
+  --line: #e7e0d8;           /* hairlines, card borders */
+  --soft: #f6f3f0;           /* hover wash, light preview bg */
+  --accent: #fc5200;         /* Strava orange: CTA + countdown highlight only */
+  --accent-pressed: #d94800; /* CTA hover / active */
+  --select: #fff4ee;         /* selected-race tint (pairs with accent inset bar) */
+  --panel: #201a16;          /* dark preview panel only */
+  --on-panel: #f5efe8;       /* light text on panel */
+  --on-panel-muted: #b9a99c; /* secondary text on panel */
+  --ok: #22a35c;             /* sync-status dot only */
+
+  /* ---- type ---- */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --text-wordmark: 22px;
+  --text-lede: 19px;
+  --text-sub: 14px;
+  --text-h2: 15px;
+  --text-hint: 13px;
+  --text-chip: 14px;
+  --text-race-name: 15px;
+  --text-race-meta: 13px;
+  --text-mono-sm: 12px;      /* when / days-left / counts / fine print */
+  --text-status: 16px;       /* countdown status line */
+  --text-cta: 15px;
+  --text-display: clamp(32px, 4.6vw, 52px); /* hero h1 (topfold scale) */
+
+  /* ---- layout / spacing (4pt base) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-16: 64px;
+
+  --layout-narrow: 680px;    /* single-column flow (mock canonical) */
+  --layout-wide: 1080px;     /* picker / setup two-column grid */
+  --wrap-pad-x: 20px;
+  --wrap-pad-top: 32px;
+  --wrap-pad-bottom: 64px;
+
+  /* ---- radii ---- */
+  --radius-xs: 4px;          /* mocktag, mono labels */
+  --radius-tag: 6px;         /* distance tags, fine-print code */
+  --radius-control: 10px;    /* buttons, inputs, preview boxes */
+  --radius-card: 16px;       /* cards, panels, result lists */
+  --radius-pill: 999px;      /* chips, pills, eyebrow */
+
+  /* ---- borders / shadows ---- */
+  --border-ink: 1px solid var(--ink);
+  --border-line: 1px solid var(--line);
+  --select-bar: inset 3px 0 0 var(--accent); /* selected-race inset marker */
+  --shadow-card: 0 12px 32px rgba(25, 20, 18, 0.08);
+  --shadow-panel: 0 24px 60px -30px rgba(25, 20, 18, 0.28);
+
+  /* ---- motion ---- */
+  --motion-fade: 0.6s ease;  /* topfold card-desc crossfade */
+  --motion-loop: 4s;         /* before/after story toggle interval (JS) */
+  --motion-tick: 1s;         /* countdown text refresh (JS interval, not CSS) */
+  --motion-typing: 5s steps(46, end); /* hero typing reveal */
+  --motion-caret: 0.8s step-end infinite;
+  --motion-refill: 2.4s ease-in-out infinite;
+}
+
+/* Focus: visible ring on interactive elements (light + dark panel).
+   Light surfaces: 2px accent outline with 2px offset so the ring clears
+   card borders and radius clipping. Dark .preview panel: light outline +
+   accent halo so the ring stays visible on --panel. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.preview :focus-visible {
+  outline-color: var(--on-panel);
+  box-shadow: 0 0 0 4px var(--accent);
+}
+
+/* Reduced motion: content must never depend on animation.
+   - CSS transitions/animations collapse to instant.
+   - The 1s countdown *text* tick is a JS text update, not motion: keep it live.
+   - Gate the 4s before/after fade loop in JS via
+     matchMedia('(prefers-reduced-motion: reduce)') and leave the
+     countdown line static-visible (adopts v5 QA fix #2).
+   - --motion-loop / --motion-tick are JS intervals, so they are intentionally
+     NOT zeroed here; the blanket duration guard below covers all CSS. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fade: 0s;
+    --motion-typing: 0s;
+    --motion-caret: 0s;
+    --motion-refill: 0s;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Token freeze (FROZEN — approved 2026-10-10, Lane 01-design) ----
+   Every value above is frozen exactly as written. Frozen set:
+   color: --paper #ffffff; --ink #191412; --muted #6f645c; --line #e7e0d8;
+     --soft #f6f3f0; --accent #fc5200; --accent-pressed #d94800;
+     --select #fff4ee; --panel #201a16; --on-panel #f5efe8;
+     --on-panel-muted #b9a99c; --ok #22a35c.
+   type: both font stacks + all 12 --text-* sizes named above
+     (--text-wordmark 22px through --text-display clamp(32px, 4.6vw, 52px)).
+   spacing: --space-1..16 (4/8/12/16/20/24/32/40/64px), --layout-narrow 680px,
+     --layout-wide 1080px, wrap pads 32px/20px/64px.
+   radii: --radius-xs 4px, --radius-tag 6px, --radius-control 10px,
+     --radius-card 16px, --radius-pill 999px.
+   borders/shadows: --border-ink, --border-line, --select-bar
+     (inset 3px 0 0 var(--accent)), --shadow-card, --shadow-panel as above.
+   motion: --motion-fade 0.6s ease; --motion-loop 4s; --motion-tick 1s;
+     --motion-typing 5s steps(46, end); --motion-caret 0.8s step-end infinite;
+     --motion-refill 2.4s ease-in-out infinite; plus the focus-visible and
+     reduced-motion rules as written.
+   What stays OPEN (not frozen by this proposal): new component-level tokens
+   lanes may need (none proposed yet — add via amendment, never silent
+   redefinition); per-page application/composition choices in watchboard.html
+   and lane CSS; any future dark-mode inversion (currently out of scope —
+   light only); product rules in v5/worker-contracts.md §§3–4 (binding but
+   versioned separately). Post-freeze rule (proposed): changes to frozen
+   values require an explicit amendment note here + in design-tokens.md §7;
+   lanes must consume tokens via var(), never hard-code hex.
+   World authority: v6/DESIGN.md (start-line minimalism); product truth:
+   v6/PRODUCT.md. */

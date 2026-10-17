@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tripo cheap mesh — beach runner (no texture)</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #111; color: #eee; margin: 0; padding: 24px; }
+  model-viewer { width: 100%; height: 60vh; background: #1c1c1c; border-radius: 12px; }
+  .meta { margin-top: 12px; font-size: 14px; color: #bbb; }
+</style>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+<h1>Tripo cheap mesh (no texture)</h1>
+<p>Source: <code>output/assets/original.jpg</code> (57 KB) → <code>tripo_cheap_beach.glb</code> (42.5 MB, 768k verts / 1.50M faces, bare geometry). Task <code>7ea3eafe-…</code>, model v3.1-20260211, texture=false/pbr=false.</p>
+<model-viewer id="m" src="tripo_cheap_beach.glb" camera-controls auto-rotate
+  alt="Tripo-generated runner mesh, no texture"></model-viewer>
+<div class="meta" id="timing">Measured end to end: upload 1.8s → create 2.1s → generate 76.0s → download 6.2s = 86.1s total. Cost: 20 credits ($0.20).</div>
+<script>
+  const m = document.getElementById('m');
+  m.addEventListener('error', () => {
+    document.getElementById('timing').textContent =
+      'Mesh failed to load. If you opened this as file://, that is the cause — browsers block model fetches from file://. Serve with: cd output && python3 -m http.server 8137, then open http://localhost:8137/tripo_cheap_beach.html';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="150">
+<title>mynextpr — lane watchboard</title>
+<style>
+  :root{ --ink:#191412; --muted:#6f645c; --line:#e7e0d8; --paper:#ffffff;
+    --accent:#fc5200; --panel:#201a16; --ok:#1c7a3d; --gate:#8a5a00; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.45}
+  .wrap{max-width:1060px;margin:0 auto;padding:28px 20px 64px}
+  .mast{border-bottom:2px solid var(--ink);padding-bottom:10px;display:flex;gap:10px;align-items:baseline}
+  .wordmark{font-weight:800;font-size:20px;letter-spacing:-.03em}
+  .wordmark span{color:var(--accent)}
+  .updated{margin-left:auto;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--muted)}
+  .site{margin:18px 0 6px;font-size:15px}
+  .site b{font-weight:800}
+  .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+  .col{background:#faf8f5;border:1px solid var(--line);border-radius:8px;padding:10px;min-height:120px}
+  .col h2{font-size:12px;margin:0 0 2px;letter-spacing:.02em}
+  .col .lim{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--muted);margin:0 0 8px}
+  .card{background:#fff;border:1px solid var(--ink);border-radius:6px;padding:8px 10px;margin:0 0 8px}
+  .card.done{border-color:var(--line);background:#f4f1ec}
+  .card.gate{border:1px dashed var(--accent)}
+  .card h3{font-size:13px;margin:0 0 2px}
+  .card p{font-size:12px;color:var(--muted);margin:2px 0}
+  .card .st{font-family:ui-monospace,Menlo,monospace;font-size:10px}
+  .st.ok{color:var(--ok)} .st.gate{color:var(--accent)} .st.work{color:var(--ink)} .st.todo{color:var(--muted)}
+  .q{border:1px dashed var(--accent);border-radius:8px;padding:10px 14px;margin-top:14px;font-size:13px}
+  footer{margin-top:24px;border-top:1px solid var(--line);padding-top:10px;font-size:12px;color:var(--muted)}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mast">
+    <div class="wordmark">mynextpr <span>watchboard</span></div>
+    <div class="updated">updated <!-- UPDATED -->2026-10-17 19:28 · auto</div>
+  </div>
+
+  <p class="site"><b>Site status:</b> <!-- SITE -->assembled v6/ in main checkout (homepage, picker, goal, connect, engine, hero + video, tokens, acceptance). Uncommitted, not merged, no backend. Cross-page links resolve locally; QA conditional notes open.</p>
+
+  <div class="q"><b>Strava connection: BLOCKED on Strava side</b> <!-- STRAVA -->.env fixed (spacing) and tokens rotated successfully, but every API call returns Application/Status/Inactive: the Strava app itself is deactivated. Owner must reactivate it in Strava settings or contact developers@strava.com. No code or token change can fix this.</div>
+
+  <div class="q"><b>Review tour (open in order):</b>
+    1 <a href="index.html">homepage</a> ·
+    2 <a href="picker.html">race picker</a> ·
+    3 <a href="goal.html">goal step</a> ·
+    4 <a href="connect.html">Strava connect</a> ·
+    5 <a href="manage.html">manage page</a> ·
+    6 <a href="hero.html">hero animation</a> ·
+    docs: <a href="hero-copy.md">copy</a> · <a href="strava-plan.md">compliance</a> · <a href="backend-options.md">backend memo</a> · <a href="webhook-design.md">webhook memo</a> · <a href="refresh-runbook.md">runbook</a> · <a href="acceptance.md">acceptance</a> · <a href="audit-report.md">audit report</a> · <a href="bugs.md">bug list</a>
+  </div>
+
+  <div class="q"><b>How to give feedback (pick one):</b>
+    A — reply in chat (“landing: make the CTA bigger”) and the coordinator steers that lane. ·
+    B — open the lane terminal in Orca (01-design … 09-copy under “running_analysis · lane team”) and type to the agent directly. ·
+    C — approve a gate (“approve 05 backend start”) and the lane proceeds.
+    What to check per lane: 01 tokens render · 02 links + video fallback · 03 search + filters + counts · 04 goal + skip · 05 consent + race gate · 06 styles + pause/stop · 07 checklist verdicts · 08 loop + poster · 09 template slots.
+  </div>
+
+  <div class="cols">
+    <section class="col" aria-label="To do">
+      <h2>To do</h2><p class="lim">queue · n</p>
+      <!-- COL-TODO -->
+      <div class="card"><h3>Wave-4 backlog</h3><p>post-gate follow-ups · unshaped</p><p class="st todo">QUEUED</p></div>
+      <!-- /COL-TODO -->
+    </section>
+    <section class="col" aria-label="Doing">
+      <h2>Doing</h2><p class="lim">wip · n/3</p>
+      <!-- COL-DOING -->
+      
+      <!-- /COL-DOING -->
+    </section>
+    <section class="col" aria-label="Gate">
+      <h2>Gate · needs approval</h2><p class="lim">waiting · n</p>
+      <!-- COL-GATE -->
+      <div class="card gate"><h3>V6 goal page digit-selector rebuild. Target: v6/goal.html in /Users/sameerhod...</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>V6 landing rebuild from user-approved reference. Target: v6/index.html in /Us...</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>07-qa - feedback repass</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>04-goal - HHMM entry</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>03-catalog - data and order</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>02-landing - minimal hero</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>08-hero - component pass</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>06-engine - component pass</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>05-strava - component pass</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>09-copy - world alignment</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div><div class="card gate"><h3>01-design - impeccable world</h3><p>reported · live · settled</p><p class="st gate">GATE</p></div>
+      <!-- /COL-GATE -->
+    </section>
+    <section class="col" aria-label="Done">
+      <h2>Done</h2><p class="lim">n verified</p>
+      <!-- COL-DONE -->
+      <div class="card done"><h3>Settled lanes (0)</h3><p>none yet</p><p class="st ok">DONE</p></div>
+      <!-- /COL-DONE -->
+    </section>
+  </div>
+
+  <div class="q"><b>Open gates</b> <!-- GATES -->V6 goal page digit-selector rebuild. Target: v6/goal.html in /Users/sameerhod...; V6 landing rebuild from user-approved reference. Target: v6/index.html in /Us...; 07-qa - feedback repass; 04-goal - HHMM entry; 03-catalog - data and order; 02-landing - minimal hero; 08-hero - component pass; 06-engine - component pass; 05-strava - component pass; 09-copy - world alignment; 01-design - impeccable world.</div>
+
+  <footer>Coordinator-owned. Lanes: 01-design tokens · 02-landing homepage · 03-catalog races · 04-goal step · 05-strava connect · 06-engine updates · 07-qa acceptance · 08-hero animation · 09-copy. Rule: description-only, never the Strava title.</footer>
+</div>
+</body>
+</html>

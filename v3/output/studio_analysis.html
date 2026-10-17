@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RunForm report — TripoSR $0 mesh + Gemini analysis</title>
+<style>
+  :root { --lime: #c8f04a; --bg: #0d1117; --panel: #151b23; --ink: #eef2e9; --dim: #9aa39b; }
+  body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--ink); margin: 0; padding: 20px 24px 32px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--dim); font-size: 13px; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+  .row .lbl { font-size: 12px; color: var(--dim); margin-right: 2px; }
+  button { background: #1c232d; color: var(--ink); border: 1px solid #2e3945; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
+  button.active { border-color: var(--lime); color: var(--lime); }
+  #main { display: flex; gap: 16px; align-items: stretch; }
+  #viewport { flex: 3; border-radius: 14px; background: #11151b; position: relative; overflow: hidden; border: 1px solid #1e2630; min-width: 0; }
+  #stage { width: 100%; height: 66vh; display: block; }
+  #badge { position: absolute; top: 12px; left: 14px; font-size: 12px; color: #cfd6dd; background: rgba(13,17,23,.6); border: 1px solid #2e3945; border-radius: 6px; padding: 3px 8px; pointer-events: none; }
+  #report { flex: 1; min-width: 290px; max-width: 380px; background: var(--panel); border: 1px solid #1e2630; border-radius: 14px; padding: 16px; overflow-y: auto; max-height: 66vh; }
+  #score { font-size: 44px; font-weight: 700; color: var(--lime); line-height: 1; }
+  #scoreLbl { font-size: 14px; margin: 2px 0 8px; }
+  #summary { font-size: 13px; color: var(--dim); margin-bottom: 4px; }
+  #meta { font-size: 12px; color: var(--dim); margin-bottom: 12px; }
+  .card { border: 1px solid #2e3945; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; cursor: pointer; }
+  .card.sel { border-color: var(--lime); }
+  .card h3 { margin: 0 0 4px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .pill { font-size: 12px; font-weight: 700; border-radius: 20px; padding: 1px 9px; margin-left: auto; }
+  .card p { margin: 4px 0; font-size: 13px; }
+  .card .tldr { color: var(--ink); }
+  .card .obs { color: var(--dim); }
+  .card ul { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--dim); }
+  .card.insuf { opacity: 0.75; cursor: default; }
+  .legend { display: flex; gap: 12px; font-size: 12px; color: var(--dim); }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .meta { margin-top: 10px; font-size: 13px; color: var(--dim); }
+  #status { color: var(--lime); }
+  @media (max-width: 900px) { #main { flex-direction: column; } #report { max-width: none; max-height: none; } }
+</style>
+<script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://unpkg.com/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+<div style="margin-bottom:8px"><a href="/" style="font-size:12px;color:var(--dim);text-decoration:none">← mynextbib.com</a></div>
+<h1>RunForm report <span style="color:var(--lime)">· score 63 Fair</span></h1>
+<div class="sub">TripoSR $0 mesh (13k verts, 0.5 MB, 88s) + live Gemini 3.8 Flash zone audit (9s). Click a marker or a card.</div>
+<div class="row">
+  <span class="lbl">View:</span>
+  <button data-view="hero" class="active">¾</button>
+  <button data-view="front">Front</button>
+  <button data-view="side">Side</button>
+  <button data-view="back">Back</button>
+  <button data-view="top">Top</button>
+</div>
+<div class="row">
+  <span class="lbl">Display:</span>
+  <button id="spinBtn" class="active">Spin: on</button>
+  <button id="wireBtn" class="active">Wireframe: on</button>
+  <button id="wallBtn">Measure wall: off</button>
+  <button id="origBtn">Original colours</button>
+</div>
+<div id="main">
+  <div id="viewport"><canvas id="stage"></canvas><div id="badge">drag to orbit · scroll to zoom · click a dot</div></div>
+<div class="legend" style="margin-top:8px"><span><i style="background:#2FBF71"></i>optimal</span><span><i style="background:#E5A23B"></i>fair</span><span><i style="background:#E0533D"></i>poor</span></div>
+  <aside id="report">
+    <div id="score">–</div>
+    <div id="scoreLbl">–</div>
+    <div id="summary">–</div>
+    <div id="meta">–</div>
+    <div id="cards"></div>
+  </aside>
+</div>
+<div class="meta" id="status">Loading mesh…</div>
+<div class="meta">Serve over HTTP or the model will not load (browsers block model fetches from file://): <code>cd output &amp;&amp; python3 -m http.server 8137</code> → <code>http://localhost:8137/studio_analysis.html</code></div>
+<script>
+var ANALYSIS = {"is_running": true, "reject_reason": null, "camera_angle": "side", "gait_phase": "swing", "foot_contact": "no", "overall_score": 63, "overall_label": "Fair \u2014 moderate mechanics", "one_line_summary": "Upright recreational running posture captured during mid-flight phase.", "findings": [{"zone": "head_neck", "title": "Head & Neck Alignment", "status": "optimal", "zone_score": 68, "observation": "Gaze is directed forward with neutral cervical spine alignment.", "signs": ["Horizontal eye gaze", "Minimal forward head tilt"], "tldr": "Head position is stable and aligned with torso.", "eli5": "You are looking straight ahead like scanning the horizon. This keeps your posture balanced.", "action": ["Maintain forward visual focus"], "evidence": "Neutral head carriage preserves kinetic chain alignment and reduces cervical extensor load."}, {"zone": "shoulders", "title": "Shoulder Position", "status": "fair", "zone_score": 62, "observation": "Shoulders are slightly elevated with minor tension apparent.", "signs": ["Slight shoulder elevation"], "tldr": "Shoulders carry slight muscular tension.", "eli5": "Your shoulders are slightly shrugged. Dropping them saves energy.", "action": ["Drop shoulders away from ears"], "evidence": "Excessive shoulder girdle elevation increases unnecessary upper-body metabolic expenditure."}, {"zone": "arms_elbows", "title": "Arm Carriage & Drive", "status": "fair", "zone_score": 64, "observation": "Arm swing is sagittal, though elbow flexion opens slightly on the rearward drive.", "signs": ["Elbow angle opening past 90 degrees"], "tldr": "Functional arm swing with minor excess forearm extension.", "eli5": "Your arms pump well, but the elbow opens up a bit too wide in back. Keep elbows bent near a right angle.", "action": ["Maintain compact 90-degree elbow bend"], "evidence": "Compact arm levers optimize rotational counterbalancing of torso inertia."}, {"zone": "trunk_lean", "title": "Trunk & Posture", "status": "fair", "zone_score": 60, "observation": "Trunk is relatively vertical with minimal whole-body forward lean.", "signs": ["Upright torso angle"], "tldr": "Torso is upright with limited forward propulsion lean.", "eli5": "You are standing quite tall while moving forward. Leaning slightly forward helps momentum.", "action": ["Cue a slight forward lean from ankles"], "evidence": "A subtle full-body lean facilitates forward center-of-mass propulsion and gluteal recruitment."}, {"zone": "knees", "title": "Knee Drive & Swing", "status": "fair", "zone_score": 62, "observation": "Moderate swing-phase knee flexion and controlled anterior drive.", "signs": ["Adequate swing flexion", "Moderate knee lift"], "tldr": "Swing mechanics show adequate forward knee carriage.", "eli5": "Your knees drive forward adequately for this speed. It produces smooth forward motion.", "action": ["Focus on relaxed swing-leg recovery"], "evidence": "Adequate swing-leg flexion shortens pendulum length, optimizing recovery cadence."}], "insufficient": [{"zone": "hips_pelvis", "title": "Pelvic Drop & Stability", "why": "Frontal plane pelvic stability cannot be assessed from a profile perspective.", "needed_view": "front-on photo at midstance"}, {"zone": "feet_strike", "title": "Foot Strike & Overstride", "why": "Runner is in flight phase without ground contact; impact mechanics cannot be evaluated.", "needed_view": "side-view photo at initial ground contact"}]};
+var ANCHORS = {"head_neck": [-0.0764, 0.9935, 0.0504], "shoulders": [-0.0965, 0.7966, 0.0531], "arms_elbows": [-0.0591, 0.6496, 0.0785], "trunk_lean": [-0.233, 0.6813, 0.0097], "knees": [0.0405, 0.306, -0.0226]};
+(function () {
+  var MESH = "triposr_beach_stage.glb";
+  var COBALT = "#4F7CFF";
+  var STATUS = { optimal: "#2FBF71", fair: "#E5A23B", poor: "#E0533D", insufficient: "#8E9BB0" };
+  var canvas = document.getElementById("stage");
+  var viewport = document.getElementById("viewport");
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x11151b);
+  scene.fog = new THREE.Fog(0x11151b, 9, 20);
+  var camera = new THREE.PerspectiveCamera(40, 1, 0.01, 100);
+  var controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.maxPolarAngle = Math.PI * 0.495;
+  controls.autoRotate = true; // default: spin on (locked)
+  controls.autoRotateSpeed = 0.9;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x3a4350, 1.15));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+  var key = new THREE.DirectionalLight(0xffffff, 1.5);
+  key.position.set(2.2, 3.6, 2.4);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -2; key.shadow.camera.right = 2;
+  key.shadow.camera.top = 3; key.shadow.camera.bottom = -1;
+  key.shadow.bias = -0.0005;
+  scene.add(key);
+  var fill = new THREE.DirectionalLight(0xe8f0ff, 0.55);
+  fill.position.set(-2.6, 1.4, 2.2);
+  scene.add(fill);
+  var rim = new THREE.DirectionalLight(0xfff2df, 0.8);
+  rim.position.set(-1.2, 2.6, -2.8);
+  scene.add(rim);
+
+  var wall = new THREE.Mesh(
+    new THREE.PlaneGeometry(5, 2.5),
+    new THREE.MeshStandardMaterial({ color: 0x232b36, roughness: 0.95 })
+  );
+  wall.position.set(0, 1.25, -1.4);
+  wall.receiveShadow = true;
+  wall.visible = false; // default off (locked)
+  scene.add(wall);
+  var shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), new THREE.ShadowMaterial({ opacity: 0.35 }));
+  shadowCatcher.rotation.x = -Math.PI / 2;
+  shadowCatcher.position.y = -0.001;
+  shadowCatcher.receiveShadow = true;
+  scene.add(shadowCatcher);
+  var grid = new THREE.GridHelper(10, 20, 0x445060, 0x232b36);
+  grid.material.transparent = true;
+  grid.material.opacity = 0.55;
+  scene.add(grid);
+  var ring = new THREE.Mesh(
+    new THREE.RingGeometry(0.62, 0.65, 64),
+    new THREE.MeshBasicMaterial({ color: 0xc8f04a, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+  );
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.002;
+  scene.add(ring);
+
+  var solidMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(COBALT), roughness: 0.5, metalness: 0.08 });
+  var wireMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(COBALT), roughness: 0.5, metalness: 0.08, wireframe: true });
+  var useOriginal = false, wire = true, spinning = true; // locked defaults: cobalt wireframe, spin on
+  var group = null, markers = [];
+  var statusEl = document.getElementById("status");
+  var center = new THREE.Vector3(), sizeLen = 1;
+
+  // Report pane.
+  document.getElementById("score").textContent = ANALYSIS.overall_score;
+  document.getElementById("scoreLbl").textContent = ANALYSIS.overall_label;
+  document.getElementById("summary").textContent = ANALYSIS.one_line_summary;
+  document.getElementById("meta").textContent =
+    "Side view · " + ANALYSIS.gait_phase + " phase · Gemini 3.8 Flash audit · " + ANALYSIS.findings.length + " zones scored";
+  var cardsEl = document.getElementById("cards");
+  ANALYSIS.findings.forEach(function (f) {
+    var d = document.createElement("div");
+    d.className = "card"; d.id = "card-" + f.zone;
+    d.innerHTML = "<h3><span class='dot' style='width:10px;height:10px;border-radius:50%;background:" +
+      STATUS[f.status] + "'></span>" + f.title +
+      "<span class='pill' style='background:" + STATUS[f.status] + "22;color:" + STATUS[f.status] + "'>" + f.zone_score + "</span></h3>" +
+      "<p class='tldr'>" + f.tldr + "</p><p class='obs'>" + f.observation + "</p><ul>" +
+      f.action.map(function (a) { return "<li>" + a + "</li>"; }).join("") + "</ul>";
+    d.addEventListener("click", function () { select(f.zone, true); });
+    cardsEl.appendChild(d);
+  });
+  ANALYSIS.insufficient.forEach(function (f) {
+    var d = document.createElement("div");
+    d.className = "card insuf";
+    d.innerHTML = "<h3>" + f.title + "<span class='pill' style='background:#8E9BB022;color:#8E9BB0'>needs view</span></h3>" +
+      "<p class='obs'>" + f.why + "</p><p class='obs'>Needs: " + f.needed_view + "</p>";
+    cardsEl.appendChild(d);
+  });
+
+  function select(zone, focus) {
+    if (spinning) setSpin(false); // hold still while the user reads a zone
+    markers.forEach(function (m) { m.dot.scale.setScalar(m.zone === zone ? 1.8 : 1); });
+    ANALYSIS.findings.forEach(function (f) {
+      var c = document.getElementById("card-" + f.zone);
+      if (c) c.classList.toggle("sel", f.zone === zone);
+    });
+    var card = document.getElementById("card-" + zone);
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (focus) {
+      var m = null;
+      markers.forEach(function (k) { if (k.zone === zone) m = k; });
+      if (m) {
+        var dir = camera.position.clone().sub(controls.target).normalize();
+        controls.target.copy(m.pos);
+        camera.position.copy(m.pos).add(dir.multiplyScalar(sizeLen * 1.6));
+        controls.update();
+      }
+    }
+  }
+
+  function applyMode() {
+    if (!group) return;
+    group.traverse(function (o) {
+      if (!o.isMesh) return;
+      if (!o.userData.orig) o.userData.orig = o.material;
+      o.material = useOriginal ? o.userData.orig : (wire ? wireMat : solidMat);
+      o.castShadow = true;
+    });
+  }
+  function frame() {
+    var b = new THREE.Box3().setFromObject(group);
+    center = b.getCenter(new THREE.Vector3());
+    sizeLen = b.getSize(new THREE.Vector3()).length();
+    controls.target.copy(center);
+    controls.minDistance = sizeLen * 0.5;
+    controls.maxDistance = sizeLen * 6;
+    goView("hero");
+  }
+  function goView(v) {
+    var s = sizeLen, c = center;
+    if (v === "front") camera.position.set(c.x - s * 1.9, c.y + s * 0.08, c.z);
+    else if (v === "back") camera.position.set(c.x + s * 1.9, c.y + s * 0.08, c.z);
+    else if (v === "side") camera.position.set(c.x, c.y + s * 0.08, c.z + s * 1.9);
+    else if (v === "top") camera.position.set(c.x, c.y + s * 2.2, c.z + 0.01);
+    else camera.position.set(c.x + s * 0.95, c.y + s * 0.5, c.z + s * 1.35);
+    controls.update();
+  }
+  var viewBtns = document.querySelectorAll("button[data-view]");
+  function markView(v) {
+    for (var i = 0; i < viewBtns.length; i++)
+      viewBtns[i].classList.toggle("active", viewBtns[i].getAttribute("data-view") === v);
+  }
+  for (var i = 0; i < viewBtns.length; i++) (function (b) {
+    b.addEventListener("click", function () { markView(b.getAttribute("data-view")); goView(b.getAttribute("data-view")); });
+  })(viewBtns[i]);
+
+  var spinBtn = document.getElementById("spinBtn");
+  function setSpin(on) {
+    spinning = on; controls.autoRotate = on;
+    spinBtn.textContent = "Spin: " + (on ? "on" : "off");
+    spinBtn.classList.toggle("active", on);
+  }
+  spinBtn.addEventListener("click", function () { setSpin(!spinning); });
+  controls.addEventListener("start", function () { if (spinning) setSpin(false); });
+  var wireBtn = document.getElementById("wireBtn");
+  wireBtn.addEventListener("click", function () {
+    wire = !wire; if (wire) useOriginal = false;
+    wireBtn.textContent = "Wireframe: " + (wire ? "on" : "off");
+    wireBtn.classList.toggle("active", wire);
+    origBtn.classList.remove("active");
+    applyMode();
+  });
+  var wallBtn = document.getElementById("wallBtn");
+  wallBtn.addEventListener("click", function () {
+    wall.visible = !wall.visible;
+    wallBtn.textContent = "Measure wall: " + (wall.visible ? "on" : "off");
+    wallBtn.classList.toggle("active", wall.visible);
+  });
+  var origBtn = document.getElementById("origBtn");
+  origBtn.addEventListener("click", function () {
+    useOriginal = !useOriginal; if (useOriginal) wire = false;
+    wireBtn.textContent = "Wireframe: off"; wireBtn.classList.remove("active");
+    origBtn.classList.toggle("active", useOriginal);
+    applyMode();
+  });
+
+  var ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), dots = [];
+  canvas.addEventListener("pointerdown", function (e) {
+    var r = canvas.getBoundingClientRect();
+    ptr.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    ptr.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(ptr, camera);
+    var hit = ray.intersectObjects(dots);
+    if (hit.length) select(hit[0].object.userData.zone, true);
+  });
+
+  function resize() {
+    var w = canvas.clientWidth || canvas.parentElement.clientWidth;
+    var h = canvas.clientHeight || Math.round(window.innerHeight * 0.66);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+  resize();
+  (function anim() {
+    requestAnimationFrame(anim);
+    controls.update();
+    renderer.render(scene, camera);
+  })();
+
+  new THREE.GLTFLoader().load(MESH, function (gltf) {
+    group = gltf.scene;
+    scene.add(group);
+    var b = new THREE.Box3().setFromObject(group);
+    group.position.x -= (b.min.x + b.max.x) / 2;
+    group.position.z -= (b.min.z + b.max.z) / 2;
+    group.position.y -= b.min.y;
+    applyMode();
+    frame();
+    ANALYSIS.findings.forEach(function (f) {
+      var a = ANCHORS[f.zone];
+      if (!a) return;
+      var pos = new THREE.Vector3(a[0] + group.position.x, a[1] + group.position.y, a[2] + group.position.z);
+      var dotMat = new THREE.MeshBasicMaterial({ color: STATUS[f.status] });
+      dotMat.toneMapped = false; // keep RAG colors exact, never washed out
+      var dot = new THREE.Mesh(new THREE.SphereGeometry(0.01, 16, 16), dotMat);
+      dot.position.copy(pos);
+      dot.userData.zone = f.zone;
+      scene.add(dot);
+      dots.push(dot);
+      markers.push({ zone: f.zone, dot: dot, pos: pos });
+    });
+    statusEl.textContent = "Mesh + " + ANALYSIS.findings.length + " zone markers loaded. Click a marker or a card.";
+  }, undefined, function () {
+    statusEl.textContent = "Failed to load " + MESH + ". Serve over HTTP (see note below), not file://.";
+  });
+})();
+</script>
+</body>
+</html>

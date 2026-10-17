@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Script lab (sandbox, unlinked)</title>
+<style>
+:root{ --bg:#0e1219; --panel:#151b25; --line:#26303d; --ink:#eef2ea; --dim:#9aa7ba;
+  --lime:#c8f04a; --amber:#e6a63a; --red:#ee5a44; }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  margin:0;padding:22px 26px;max-width:1180px}
+h1{font-size:19px;margin:0 0 4px}
+h1 .tag{display:inline-block;font-size:11px;border:1px solid var(--amber);color:var(--amber);
+  border-radius:20px;padding:2px 9px;margin-left:9px;vertical-align:2px}
+.sub{color:var(--dim);font-size:13px;margin:0 0 16px;max-width:70ch;line-height:1.5}
+.bar{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.bar label{font-size:12.5px;color:var(--dim)}
+.bar input[type=text]{background:#0b0f15;border:1px solid var(--line);color:var(--ink);
+  border-radius:8px;padding:7px 10px;font-size:13px;width:150px}
+.bar input[type=number]{background:#0b0f15;border:1px solid var(--line);color:var(--ink);
+  border-radius:8px;padding:6px 8px;font-size:13px;width:64px}
+button{background:var(--lime);border:0;border-radius:9px;padding:8px 14px;font-size:13px;
+  font-weight:650;color:#10140a;cursor:pointer}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:500}
+button.ghost.on{border-color:var(--lime);color:var(--lime)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.panel h2{font-size:14px;margin:0 0 2px}
+.panel h2 .rw{color:var(--lime)}
+.meter{height:8px;background:#0b0f15;border-radius:6px;margin:10px 0 4px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--lime)}
+.meter.over i{background:var(--red)}
+.total{font-size:13px;color:var(--dim)}
+.total b{color:var(--ink)}
+.beat{border-top:1px solid var(--line);padding:9px 0;font-size:13.5px;line-height:1.55}
+.beat .meta{font-size:11.5px;color:var(--dim);margin-bottom:2px}
+.beat .meta .z{color:var(--lime)}
+.chips{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--dim)}
+.chip.flaw{border-color:var(--amber);color:var(--amber)}
+.chip.fix{border-color:var(--lime);color:var(--lime)}
+.chip.retake{border-color:var(--red);color:var(--red)}
+.take{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;font-size:13px}
+.take b{color:var(--lime)}
+.take li{margin:3px 0}
+.rules{font-size:12.5px;color:var(--dim);line-height:1.6;margin:14px 0 0;max-width:90ch}
+.rules b{color:var(--ink)}
+#err{color:var(--red);font-size:13px;margin:8px 0;display:none}
+</style>
+</head>
+<body>
+<h1>Script lab <span class="tag">sandbox · unlinked · no 3D regen</span></h1>
+<p class="sub">Loads any job&rsquo;s <code>analysis.json</code> and renders the spoken
+15&ndash;18s tour two ways, side by side: <b>current</b> (snapshot of the live
+generator) vs <b>rewritten</b> (every beat carries one specific observed flaw +
+its fix). Tune the rewrite budgets and re-render until the take-home list holds
+2+ specific fixes. Serve from the site root (<code>/script-lab.html</code>).</p>
+
+<div class="bar">
+  <label>job <input type="text" id="jid" value="961e6b5de398" spellcheck="false"></label>
+  <button id="load">Load</button>
+  <button class="ghost" data-job="961e6b5de398">961e (side/swing)</button>
+  <button class="ghost" data-job="demo">demo</button>
+  <button class="ghost" data-job="aeb979a86e8b">aeb9 (side/stance)</button>
+  <button class="ghost" data-job="419d46c0abbf">419d (flight)</button>
+  <label>budget s <input type="number" id="budget" value="18" min="12" max="24" step="0.5"></label>
+  <label>flaw chars <input type="number" id="flawmax" value="52" min="30" max="90"></label>
+  <label>fix chars <input type="number" id="fixmax" value="56" min="20" max="80"></label>
+</div>
+<div id="err"></div>
+
+<div class="cols">
+  <div class="panel" id="curPanel"><h2>Current (live snapshot)</h2><div class="total" id="curTotal"></div>
+    <div class="meter" id="curMeter"><i></i></div><div id="curBeats"></div></div>
+  <div class="panel" id="labPanel"><h2><span class="rw">Rewritten (flaw + fix)</span>
+    <button class="ghost" id="labReset" style="float:right">Reset edits</button></h2>
+    <div class="total">Click any rewritten beat to tighten it — est, budget and quote badges update live.</div>
+    <div class="total" id="labTotal"></div>
+    <div class="meter" id="labMeter"><i></i></div><div id="labBeats"></div>
+    <div class="take"><b>Listener takes home:</b><ol id="labTake"></ol></div></div>
+</div>
+
+<p class="rules"><b>Rewrite rule.</b> Every spoken beat = one <b>specific</b> observed
+flaw quoted from this photo&rsquo;s analysis (tldr / observation / signs) + its fix
+(first non-drill action), joined &ldquo;flaw &mdash; fix&rdquo;. Beats run worst-score
+first (the flaw that costs most, said first). Praise-only zones (score &ge; 85)
+are skipped. A retake ask appears <b>at most once</b> per script, only when a
+zone is truly unscorable, and <b>never as the lead beat</b>. Intro + budget
+model unchanged (canonical opener stays).</p>
+
+<script>
+var ANALYSIS = null;
+
+/* ============ CURRENT snapshot (verbatim from site/report_template.html, 2026-09-20) ============
+   Sync: copy estSecs, clause, zoneEntry, zoneSuitable, suitableFindings,
+   footRetakeText, coachStyleForZone, demoBeatText, footBeatText,
+   buildCappedStory + DEMO_*/INTRO_*/CTA_*/COACH_* consts. Do NOT edit to improve;
+   improvements go in the rewrite below. */
+var DEMO_BUDGET_S=18;
+var DEMO_START_S=1.0;
+var DEMO_GAP_MS=150;
+function curEstSecs(text){ return 2.2 + 0.04*String(text||"").length; }
+var CUR_INTRO_TEXT="Hi, I am the running coach. Let us deep dive into the model. Here is what your running form is hiding.";
+var CUR_CTA_TEXT="Feel free to play with the model in 3D. Spin it, tap a spot.";
+var CUR_DEMO_PACE="Move fast: brisk punchy delivery, very short pauses between phrases, energetic and tight, never lingering.";
+var CUR_COACH_STYLE="Speak like an upbeat, encouraging running coach: bright, warm, playful energy, crisp and punchy, natural pauses, never robotic.";
+var CUR_COACH_INTRO_STYLE="Speak like an upbeat running coach welcoming a runner: warm, excited and fun, setting a light tone.";
+function curZoneEntry(zone){
+  var f = (ANALYSIS.findings||[]).filter(function(x){return x.zone===zone;})[0];
+  if (f) return { kind:"finding", data:f };
+  var i = (ANALYSIS.insufficient||[]).filter(function(x){return x.zone===zone;})[0];
+  if (i) return { kind:"insufficient", data:i };
+  return null;
+}
+function curZoneSuitable(zone){
+  var e=curZoneEntry(zone);
+  if(!e || e.kind!=="finding") return false;
+  if(zone==="hips_pelvis"){
+    if(ANALYSIS.gait_phase==="swing") return false;
+    if((ANALYSIS.foot_contact||"")==="no") return false;
+    var cam=ANALYSIS.camera_angle||"";
+    if(cam==="side"||cam==="oblique") return false;
+  }
+  if(zone==="feet_strike"){
+    if((ANALYSIS.foot_contact||"")==="no") return false;
+  }
+  return true;
+}
+function curSuitableFindings(){
+  return (ANALYSIS.findings||[]).filter(function(f){ return curZoneSuitable(f.zone); });
+}
+function curCoachStyleForZone(z){
+  var e=curZoneEntry(z); if(!e) return CUR_COACH_STYLE;
+  if (e.kind==="insufficient") return "Speak like a calm, reassuring running coach: gentle, clear and supportive.";
+  if (e.data.status==="critical") return "Speak like a motivating running coach delivering focused feedback: honest, encouraging and energetic.";
+  if (e.data.status==="optimal") return "Speak like a proud running coach celebrating a win: bright and cheerful.";
+  return CUR_COACH_STYLE;
+}
+function curClause(t, n){
+  var text=String(t||"");
+  var parts=text.split(/[;:.]/);
+  for(var i=0;i<parts.length;i++){
+    var c=parts[i].replace(/\s+/g," ").trim();
+    if(c.length>10 && c.length<=n) return c;
+  }
+  parts=text.split(/[,;:.]/);
+  for(var k=0;k<parts.length;k++){
+    var d=parts[k].replace(/\s+/g," ").trim();
+    if(d.length>10 && d.length<=n) return d;
+  }
+  return "";
+}
+function curDemoBeatText(f){
+  var a=curClause(f.tldr, 80), b=curClause((f.action||[])[0], 64);
+  var obs=(a&&b)?(a.length<=b.length?a:b):(a||b);
+  if(!obs) obs=String(f.title||f.zone);
+  return obs.charAt(0).toLowerCase()+obs.slice(1);
+}
+function curFootBeatText(){
+  var fs=ANALYSIS.findings||[], fe=null;
+  for(var i=0;i<fs.length;i++) if(fs[i].zone==="feet_strike") fe=fs[i];
+  if(fe && curZoneSuitable("feet_strike")){
+    var t=((fe.tldr||"")+" "+((fe.action||[]).join(" ")||"")).toLowerCase();
+    if(/overstrid|well ahead|heel strik|heel first/.test(t))
+      return "your foot lands way ahead of your body, pull it back";
+    if(/anterior|slightly ahead|slight/.test(t))
+      return "your foot lands a touch ahead of your body, place it under you";
+    return curClause(fe.tldr,80)||curClause((fe.action||[])[0],64)||"your foot strike";
+  }
+  return "the foot needs a side view, send one";
+}
+function buildCappedStory(){
+  var pool=curSuitableFindings().slice().sort(function(a,b){ return (a.zone_score||0)-(b.zone_score||0); });
+  var hip=null, third=null, i;
+  for(i=0;i<pool.length;i++){
+    if(pool[i].zone==="hips_pelvis" && !hip) hip=pool[i];
+    else if(pool[i].zone!=="feet_strike" && !third) third=pool[i];
+  }
+  var steps=[{kind:"overview", zone:null, style:CUR_COACH_INTRO_STYLE+" "+CUR_DEMO_PACE, view:"hero", label:"Intro", gap:DEMO_GAP_MS, rate:1.15, text:CUR_INTRO_TEXT}];
+  var total=DEMO_START_S+curEstSecs(CUR_INTRO_TEXT);
+  function fits(text){ return total+curEstSecs(text)+DEMO_GAP_MS/1000<=DEMO_BUDGET_S; }
+  function pushFocus(zone, title, text){
+    steps.push({kind:"focus", zone:zone, style:curCoachStyleForZone(zone)+" "+CUR_DEMO_PACE, view:"zone", label:title, gap:DEMO_GAP_MS, rate:1.15, text:text});
+    total+=curEstSecs(text)+DEMO_GAP_MS/1000;
+  }
+  var ORD=["First","Second","Third"], nOrd=0;
+  function pushBeat(zone, title, body){
+    nOrd++;
+    var text=ORD[nOrd-1]+", "+body+".";
+    pushFocus(zone, title, text);
+  }
+  pushBeat("feet_strike", "Foot strike", curFootBeatText());
+  if(hip){
+    if(fits(ORD[nOrd]+", "+curDemoBeatText(hip)+".")) pushBeat(hip.zone, hip.title, curDemoBeatText(hip));
+  }
+  if(third){
+    if(fits(ORD[nOrd]+", "+curDemoBeatText(third)+".")) pushBeat(third.zone, third.title, curDemoBeatText(third));
+  }
+  if(fits(CUR_CTA_TEXT)){
+    steps.push({kind:"free", zone:null, style:CUR_COACH_INTRO_STYLE+" "+CUR_DEMO_PACE, view:"hero", label:"Your turn", rate:1.15, text:CUR_CTA_TEXT});
+  }
+  return steps;
+}
+/* ============ end current snapshot ============ */
+
+/* ============ REWRITE (sandbox only — merge to report_template.html needs watcher sign-off) ============ */
+var LAB_BUDGET_S=18;
+var LAB_FLAW_MAX=52;
+var LAB_FIX_MAX=56;
+var LAB_START_S=1.0;
+var LAB_GAP_MS=150;
+var LAB_INTRO_TEXT="Hi, I am the running coach. Let us deep dive into the model. Here is what your running form is hiding.";
+var LAB_CTA_TEXT="Feel free to play with the model in 3D. Spin it, tap a spot.";
+function labLower(s){ s=String(s||"").replace(/\s+/g," ").trim().replace(/[.]+$/,""); return s.charAt(0).toLowerCase()+s.slice(1); }
+function labZoneEntry(zone){ return curZoneEntry(zone); }
+function labZoneSuitable(zone){ return curZoneSuitable(zone); }
+function labFlaw(f){
+  /* Flaw ranking: tldr whole-clause first (usually flaw-forward), then the
+     longest short sign (analyst-flagged salient phrase, e.g. "foot touchdown
+     slightly ahead of hips"), then observation, then any first sign. */
+  var c = curClause(f.tldr, LAB_FLAW_MAX);
+  if(!c){
+    var best="";
+    (f.signs||[]).forEach(function(s){
+      s=String(s||"").replace(/\s+/g," ").trim();
+      if(s.length>10 && s.length<=LAB_FLAW_MAX && s.length>best.length) best=s;
+    });
+    c = best || curClause(f.observation, LAB_FLAW_MAX) || String((f.signs||[])[0]||"");
+  }
+  return labLower(c);
+}
+function labFixSecond(f){
+  /* Analyses without action arrays pack the fix as the second half of the
+     tldr ("...; shorten stride a touch."). Second whole sentence-part wins. */
+  var parts=String(f.tldr||"").split(/[;:.]/);
+  for(var i=1;i<parts.length;i++){
+    var c=parts[i].replace(/\s+/g," ").trim();
+    if(c.length>8 && c.length<=LAB_FIX_MAX+12) return labLower(c);
+  }
+  return "";
+}
+function labFix(f){
+  /* Whole thoughts only: first non-drill action whose first whole clause fits.
+     Never slice mid-word — a fix that fits nowhere falls back to the tldr's
+     second half, then to the full shortest cue (the budget gate drops it). */
+  var acts=f.action||[];
+  for(var i=0;i<acts.length;i++){
+    if(/drill/i.test(acts[i])) continue;
+    var c=curClause(acts[i], LAB_FIX_MAX);
+    if(c) return labLower(c);
+  }
+  var fb=labFixSecond(f);
+  if(fb) return fb;
+  var short="";
+  for(var k=0;k<acts.length;k++){
+    if(/drill/i.test(acts[k])) continue;
+    var s=String(acts[k]).split(/[;.]/)[0].replace(/\s+/g," ").trim();
+    if(s && (!short || s.length<short.length)) short=s;
+  }
+  return labLower(short);
+}
+/* Specificity: does this beat text quote the analysis (verbatim window)?
+   Used for live badges here and by the contract test. Returns the match. */
+function labQuoteFields(zone){
+  var e=labZoneEntry(zone), out=[];
+  if(e && e.kind==="finding"){
+    var d=e.data;
+    out.push(d.tldr, d.observation);
+    (d.signs||[]).forEach(function(s){ out.push(s); });
+    (d.action||[]).forEach(function(s){ out.push(s); });
+  } else if(e){
+    out.push(e.data.why, e.data.needed_view, e.data.title);
+  }
+  return out.filter(function(s){ return String(s||"").length>=12; });
+}
+function labQuotes(text, zone){
+  var t=String(text||"").toLowerCase().replace(/^(first|second|third|also),?\s+/,"").replace(/[.]+$/,"");
+  var fields=labQuoteFields(zone);
+  for(var i=0;i<fields.length;i++){
+    var f=String(fields[i]).toLowerCase();
+    for(var s=0;s+15<=f.length;s+=5){
+      var w=f.slice(s, s+15).replace(/^\W+|\W+$/g,"");
+      if(w.length>=12 && t.indexOf(w)>=0) return w;
+    }
+  }
+  return "";
+}
+function labBeatBody(f){ return labFlaw(f)+" — "+labFix(f); }
+function labPraise(f){ return (f.zone_score||0)>=85 && /^(good|optimal)$/.test(f.status||""); }
+function labRetakeText(q){
+  var title=labLower(q.title||q.zone||"zone");
+  var need=String(q.needed_view||"another angle").replace(/\s+/g," ").trim().replace(/[.]+$/,"");
+  return title+" needs "+labLower(need)+" — send one next run";
+}
+function labEstSecs(text){ return 2.2 + 0.04*String(text||"").length; }
+function buildLabStory(){
+  var pool=(ANALYSIS.findings||[]).filter(function(f){ return labZoneSuitable(f.zone) && !labPraise(f) && labFlaw(f) && labFix(f); })
+    .slice().sort(function(a,b){ return (a.zone_score||0)-(b.zone_score||0); });
+  var steps=[{kind:"overview", zone:null, view:"hero", label:"Intro", text:LAB_INTRO_TEXT}];
+  var total=LAB_START_S+labEstSecs(LAB_INTRO_TEXT);
+  function fits(text){ return total+labEstSecs(text)+LAB_GAP_MS/1000<=LAB_BUDGET_S; }
+  var ORD=["First","Second","Third"], nOrd=0;
+  var used=0;
+  for(var i=0;i<pool.length && used<3;i++){
+    var body=labBeatBody(pool[i]);
+    var text=ORD[nOrd]+", "+body+".";
+    if(!fits(text)) continue;
+    nOrd++; used++;
+    steps.push({kind:"focus", zone:pool[i].zone, view:"zone", label:pool[i].title,
+      text:text, flaw:labFlaw(pool[i]), fix:labFix(pool[i])});
+    total+=labEstSecs(text)+LAB_GAP_MS/1000;
+  }
+  var retakes=(ANALYSIS.insufficient||[]).filter(function(q){ return !labZoneSuitable(q.zone); });
+  if(used>0 && retakes.length){
+    var rt="Also, "+labRetakeText(retakes[0])+".";
+    if(fits(rt)){
+      steps.push({kind:"retake", zone:retakes[0].zone, view:"zone",
+        label:(retakes[0].title||"Retake"), text:rt});
+      total+=labEstSecs(rt)+LAB_GAP_MS/1000;
+    }
+  }
+  if(fits(LAB_CTA_TEXT)) steps.push({kind:"free", zone:null, view:"hero", label:"Your turn", text:LAB_CTA_TEXT});
+  return steps;
+}
+/* ============ end rewrite ============ */
+
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function totalEst(steps, est){
+  var t=LAB_START_S;
+  steps.forEach(function(s){ t+=est(s.text); });
+  t+=(LAB_GAP_MS/1000)*Math.max(0,steps.length-1);
+  return t;
+}
+function renderStory(steps, est, budget, beatsEl, totalEl, meterEl, takeEl, annotate){
+  var total=totalEst(steps, est);
+  totalEl.innerHTML="est <b>"+total.toFixed(2)+"s</b> / budget "+budget.toFixed(1)+"s · "+steps.length+" steps";
+  var bar=meterEl.querySelector("i");
+  bar.style.width=Math.min(100, total/budget*100)+"%";
+  meterEl.classList.toggle("over", total>budget);
+  var html="";
+  steps.forEach(function(s, i){
+    var e=est(s.text);
+    html+='<div class="beat" data-i="'+i+'"><div class="meta">#'+(i+1)+" · "+esc(s.kind)+(s.zone?' · <span class="z">'+esc(s.zone)+"</span>":"")+" · est "+e.toFixed(2)+"s</div>";
+    html+='<div class="txt">'+esc(s.text)+"</div>";
+    if(annotate) html+='<div class="chips">';
+    if(annotate && s.kind==="focus" && s.flaw)
+      html+='<span class="chip flaw">flaw: '+esc(s.flaw)+'</span><span class="chip fix">fix: '+esc(s.fix)+"</span>";
+    if(annotate && s.kind==="retake")
+      html+='<span class="chip retake">retake · max 1 · never lead</span>';
+    if(annotate) html+="</div>";
+    html+="</div>";
+  });
+  beatsEl.innerHTML=html;
+  if(takeEl){
+    var fixes=steps.filter(function(s){ return s.kind==="focus" && s.fix; })
+      .map(function(s){ return "<li>"+esc(s.fix)+"</li>"; }).join("");
+    takeEl.innerHTML=fixes||"<li>— none —</li>";
+  }
+}
+function render(){
+  if(!ANALYSIS) return;
+  LAB_BUDGET_S=parseFloat(document.getElementById("budget").value)||18;
+  LAB_FLAW_MAX=parseInt(document.getElementById("flawmax").value,10)||52;
+  LAB_FIX_MAX=parseInt(document.getElementById("fixmax").value,10)||44;
+  var cur=buildCappedStory();
+  var lab=buildLabStory();
+  renderStory(cur, curEstSecs, DEMO_BUDGET_S,
+    document.getElementById("curBeats"), document.getElementById("curTotal"),
+    document.getElementById("curMeter"), null, false);
+  renderStory(lab, labEstSecs, LAB_BUDGET_S,
+    document.getElementById("labBeats"), document.getElementById("labTotal"),
+    document.getElementById("labMeter"), document.getElementById("labTake"), true);
+  _labSteps=lab;
+  document.getElementById("labBeats").querySelectorAll(".beat").forEach(function(row){
+    var i=+row.getAttribute("data-i"), s=lab[i];
+    if(s.kind!=="focus" && s.kind!=="retake") return;
+    var t=row.querySelector(".txt");
+    t.setAttribute("contenteditable", "true");
+    t.setAttribute("spellcheck", "false");
+    var badge=document.createElement("span");
+    badge.className="chip qbadge fix";
+    row.querySelector(".chips").appendChild(badge);
+    t.addEventListener("input", function(){ s.text=t.textContent; labRefresh(); });
+  });
+  labRefresh();
+}
+var _labSteps=null;
+function labRefresh(){
+  /* Live recompute after a beat edit: est, budget bar, quote badges, take-home. */
+  if(!_labSteps) return;
+  var total=totalEst(_labSteps, labEstSecs);
+  document.getElementById("labTotal").innerHTML="est <b>"+total.toFixed(2)+"s</b> / budget "+LAB_BUDGET_S.toFixed(1)+"s · "+_labSteps.length+" steps (edited)";
+  var m=document.getElementById("labMeter");
+  m.querySelector("i").style.width=Math.min(100,total/LAB_BUDGET_S*100)+"%";
+  m.classList.toggle("over", total>LAB_BUDGET_S);
+  document.getElementById("labBeats").querySelectorAll(".beat").forEach(function(row){
+    var i=+row.getAttribute("data-i"), s=_labSteps[i];
+    var e=labEstSecs(s.text);
+    row.querySelector(".meta").innerHTML="#"+(i+1)+" · "+esc(s.kind)+(s.zone?' · <span class="z">'+esc(s.zone)+"</span>":"")+" · est "+e.toFixed(2)+"s";
+    var b=row.querySelector(".qbadge");
+    if(b){
+      var q=labQuotes(s.text, s.zone);
+      b.textContent=q?("quotes: \u201c"+q+"\u201d"):"no analysis quote";
+      b.className="chip qbadge "+(q?"fix":"retake");
+    }
+  });
+  var items=_labSteps.filter(function(s){ return s.kind==="focus" || s.kind==="retake"; })
+    .map(function(s){ return "<li>"+esc(s.text)+"</li>"; }).join("");
+  document.getElementById("labTake").innerHTML=items||"<li>— none —</li>";
+}
+function showErr(m){ var e=document.getElementById("err"); e.textContent=m; e.style.display=m?"block":"none"; }
+function loadJob(jid){
+  showErr("");
+  fetch("/api/analysis/"+encodeURIComponent(jid)).then(function(r){
+    if(!r.ok) throw new Error("job not found ("+r.status+")");
+    return r.json();
+  }).then(function(a){ ANALYSIS=a; render(); })
+  .catch(function(e){ showErr("Could not load "+jid+": "+e.message); });
+}
+document.getElementById("load").addEventListener("click", function(){
+  loadJob(document.getElementById("jid").value.trim());
+});
+document.querySelectorAll("[data-job]").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.getElementById("jid").value=b.getAttribute("data-job");
+    loadJob(b.getAttribute("data-job"));
+  });
+});
+["budget","flawmax","fixmax"].forEach(function(id){
+  document.getElementById(id).addEventListener("change", render);
+});
+document.getElementById("labReset").addEventListener("click", render);
+loadJob(document.getElementById("jid").value.trim());
+</script>
+</body>
+</html>

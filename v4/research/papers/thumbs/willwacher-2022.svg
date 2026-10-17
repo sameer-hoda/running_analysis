@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+<rect width="400" height="300" rx="16" fill="#0a0c11"/>
+<rect width="400" height="300" rx="16" fill="none" stroke="#1c232d" stroke-width="2"/>
+<rect x="0" y="0" width="10" height="300" rx="5" fill="#c8f04a"/>
+<text x="28" y="42" font-size="12" letter-spacing="3" fill="#c8f04a" font-family="system-ui,sans-serif">RUNFORM EVIDENCE</text>
+<text x="28" y="96" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">Running-related biomechanical risk</text>
+<text x="28" y="122" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">factors for overuse injuries in</text>
+<text x="28" y="148" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">distance runners: a systematic</text>
+<text x="28" y="174" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">review considering injury</text>
+<text x="28" y="200" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">specificity and the potentials for</text>
+<text x="28" y="226" font-size="19" font-weight="700" fill="#f4f7f2" font-family="system-ui,sans-serif">future research</text>
+<text x="28" y="260" font-size="13" fill="#8b938a" font-family="system-ui,sans-serif">Willwacher S et al.</text>
+<text x="28" y="280" font-size="12" fill="#5b635c" font-family="system-ui,sans-serif">Sports Medicine · 2022</text>
+<text x="28" y="278" font-size="11" fill="#c8f04a" font-family="system-ui,sans-serif">knees hips pelvis feet strike</text>
+</svg>

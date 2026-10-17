@@ -1,0 +1,217 @@
+[
+ {
+  "image": "16f20f72-eedd-43e9-9487-c3846f77a36e.jpg.avif",
+  "job": null,
+  "stage": "rejected",
+  "is_running": null,
+  "overall_score": null,
+  "findings": null,
+  "insufficient": null,
+  "anchors": null,
+  "markers": null,
+  "markers_expected": null,
+  "errors": [],
+  "score": 80,
+  "notes": [
+   "no JPEG/PNG/WebP image found"
+  ]
+ },
+ {
+  "image": "depositphotos_97352806-stock-photo-runner-man-running-on-beach.jpg",
+  "job": "7f851b47e3aa",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 72,
+  "findings": 5,
+  "insufficient": 2,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 5,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "depositphotos_97352806-stock-photo-runner-man-running-on-beach.jpg.png"
+ },
+ {
+  "image": "gettyimages-2002620668-612x612.jpg",
+  "job": "be868f5d50a2",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 67,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "gettyimages-2002620668-612x612.jpg.png"
+ },
+ {
+  "image": "images-10.jpeg",
+  "job": "9942331dd961",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 72,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-10.jpeg.png"
+ },
+ {
+  "image": "images-11.jpeg",
+  "job": "fd3d69b264f7",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 69,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-11.jpeg.png"
+ },
+ {
+  "image": "images-3.jpeg",
+  "job": "2d3afcba28d8",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 71,
+  "findings": 5,
+  "insufficient": 2,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 5,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-3.jpeg.png"
+ },
+ {
+  "image": "images-4.jpeg",
+  "job": "e0eca3df5689",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 69,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-4.jpeg.png"
+ },
+ {
+  "image": "images-5.jpeg",
+  "job": "571c160a25e0",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 68,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-5.jpeg.png"
+ },
+ {
+  "image": "images-6.jpeg",
+  "job": "d130a4dce64d",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 67,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-6.jpeg.png"
+ },
+ {
+  "image": "images-7.jpeg",
+  "job": "8a4247441511",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 70,
+  "findings": 5,
+  "insufficient": 2,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 5,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-7.jpeg.png"
+ },
+ {
+  "image": "images-8.jpeg",
+  "job": "55179b8e1b1d",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 71,
+  "findings": 5,
+  "insufficient": 2,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 5,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-8.jpeg.png"
+ },
+ {
+  "image": "images-9.jpeg",
+  "job": "0959ae8fdba7",
+  "stage": "done",
+  "is_running": true,
+  "overall_score": 70,
+  "findings": 6,
+  "insufficient": 1,
+  "anchors": null,
+  "markers": 7,
+  "markers_expected": 6,
+  "errors": [],
+  "score": 100,
+  "notes": [
+   "3D loaded"
+  ],
+  "screenshot": "images-9.jpeg.png"
+ }
+]

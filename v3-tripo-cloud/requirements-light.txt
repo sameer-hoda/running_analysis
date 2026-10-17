@@ -1,0 +1,7 @@
+# t3.small cloud sandbox — NO torch, NO ultralytics, NO TripoSR local.
+# Mesh comes from the Tripo v3 API (site/tripo_cloud.py); EC2 only does
+# stdlib HTTP + Pillow + trimesh/numpy normalize + Gemini/Inworld proxies.
+Pillow>=10
+trimesh>=4
+numpy>=1.26
+google-genai>=1.0.0

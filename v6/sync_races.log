@@ -1,0 +1,24 @@
+2026-10-10T16:40:34 sync start
+2026-10-10T16:40:44 live feed: 223 rows -> 98 events
+2026-10-10T16:40:44 local feed: 12 files, 451 rows -> 6 new events (fallback/fill)
+2026-10-10T16:40:44 104 events -> /Users/sameerhoda/Projects/running_analysis/v6/races.snapshot.json
+2026-10-10T16:40:44 102 canonical names (0 new), 0+75 rows skipped (no usable date)
+2026-10-10T16:40:44 sync ok
+2026-10-10T16:40:48 sync start
+2026-10-10T16:40:57 live feed: 223 rows -> 98 events
+2026-10-10T16:40:57 local feed: 12 files, 451 rows -> 6 new events (fallback/fill)
+2026-10-10T16:40:57 104 events -> /Users/sameerhoda/Projects/running_analysis/v6/races.snapshot.json
+2026-10-10T16:40:57 102 canonical names (0 new), 0+75 rows skipped (no usable date)
+2026-10-10T16:40:57 sync ok
+2026-10-10T18:48:05 sync start
+2026-10-10T18:48:15 live feed: 223 rows -> 107 events
+2026-10-10T18:48:15 local feed: 12 files, 451 rows -> 6 new events (fallback/fill)
+2026-10-10T18:48:15 113 events -> /Users/sameerhoda/Projects/running_analysis/v6/races.snapshot.json
+2026-10-10T18:48:15 108 canonical names (6 new), 0+75 rows skipped (no usable date)
+2026-10-10T18:48:15 sync ok
+2026-10-10T18:48:40 sync start
+2026-10-10T18:48:51 live feed: 223 rows -> 107 events
+2026-10-10T18:48:51 local feed: 12 files, 451 rows -> 6 new events (fallback/fill)
+2026-10-10T18:48:51 113 events -> /Users/sameerhoda/Projects/running_analysis/v6/races.snapshot.json
+2026-10-10T18:48:51 108 canonical names (0 new), 0+75 rows skipped (no usable date)
+2026-10-10T18:48:51 sync ok

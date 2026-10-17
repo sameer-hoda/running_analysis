@@ -1,0 +1,17 @@
+PROMPT (for Gemini 2.5 Flash Image / nano banana) — X card, landscape:
+
+Photorealistic early-morning shot of a lone amateur runner on an empty city road in New Delhi, India Gate faint in hazy distance, warm dawn light, phone-style candid framing, white daylight sky, small Strava-orange (#FC5200) race bib accent on the runner's shirt. Clean, minimal, no purple gradients, no collage, no stock-grid look. Absolutely no readable text, no words, no letters, no numbers, no logos, no watermarks.
+
+Negative: purple, gradient background, text, typography, collage grid, watermark, logo, dark moody filter.
+
+STATUS: RENDERED as x-card.png (Gemini 2.5 Flash Image, 16:9, visually checked).
+
+RUNNABLE COMMAND (pick one):
+
+belt:
+belt app run google/gemini-2-5-flash-image --input '{"prompt": "Photorealistic early-morning shot of a lone amateur runner on an empty city road in New Delhi, India Gate faint in hazy distance, warm dawn light, candid phone-photo framing, small Strava-orange (#FC5200) race bib accent on shirt. Clean minimal daylight, no purple gradients, no collage. Absolutely no readable text, words, letters, numbers, logos, or watermarks.", "aspect_ratio": "16:9"}'
+
+curl:
+curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=$GEMINI_API_KEY" -H 'Content-Type: application/json' -d '{"contents":[{"parts":[{"text":"Photorealistic early-morning shot of a lone amateur runner on an empty city road in New Delhi, India Gate faint in hazy distance, warm dawn light, candid phone-photo framing, small Strava-orange (#FC5200) race bib accent on shirt. Clean minimal daylight, no purple gradients, no collage. Absolutely no readable text, words, letters, numbers, logos, or watermarks."}]}]}' -o launch-kit/images/x-card-raw.json
+
+Save output as launch-kit/images/x-card.png
