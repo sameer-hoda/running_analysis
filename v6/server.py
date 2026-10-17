@@ -253,6 +253,19 @@ def _resolve_athlete(handler):
     return _cookie_athlete(handler.headers.get("Cookie", ""))
 
 
+def _known_athlete(handler):
+    """aid only when a real athlete record exists — never create one.
+
+    A well-formed cookie for an unknown athlete (or none at all) yields "",
+    so no route can read, mutate, or claim success on someone else's (or
+    nobody's) data.
+    """
+    aid = _resolve_athlete(handler)
+    if aid and load_athlete(aid).get("refresh_token"):
+        return aid
+    return ""
+
+
 # --------------------------------------------------------------------------
 # Strava API helpers (server-side only: the secret never leaves this file)
 
@@ -325,10 +338,10 @@ def _revoke_and_clear(athlete_id):
 
 
 def _athlete_and_stats(token):
-    """(athlete_id, month_km, year_km) or ("", None, None) on failure."""
+    """(athlete_id, month_km, year_km, name); ("", None, None, "") on failure."""
     status, me = _strava("GET", "/api/v3/athlete", token=token)
     if status != 200 or not me.get("id"):
-        return "", None, None
+        return "", None, None, ""
     athlete_id = me["id"]
     status, stats = _strava(
         "GET", f"/api/v3/athletes/{athlete_id}/stats", token=token)
@@ -487,21 +500,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
         except ValueError:
             payload = {}
         if parsed.path == "/api/pause":
-            aid = _resolve_athlete(self)
+            aid = _known_athlete(self)
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
                 return
             save_athlete(aid, {"paused": True})
             self._json(200, {"paused": True})
         elif parsed.path == "/api/resume":
-            aid = _resolve_athlete(self)
+            aid = _known_athlete(self)
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
                 return
             save_athlete(aid, {"paused": False})
             self._json(200, {"paused": False})
         elif parsed.path == "/api/disconnect":
-            aid = _resolve_athlete(self)
+            aid = _known_athlete(self)
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
                 return
@@ -515,7 +528,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(raw)
         elif parsed.path == "/api/delete-account":
-            aid = _resolve_athlete(self)
+            aid = _known_athlete(self)
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
                 return
@@ -590,7 +603,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     # -- status / stamp / subscribe -------------------------------------------
     def _handle_status(self):
-        aid = _resolve_athlete(self)
+        aid = _known_athlete(self)
         state = load_athlete(aid) if aid else {}
         token = _fresh_token(state, aid) if state.get("refresh_token") else ""
         if not token:
@@ -627,11 +640,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def _handle_export(self):
         """Each user can download everything stored about them."""
-        aid = _resolve_athlete(self)
-        state = load_athlete(aid) if aid else {}
-        if not aid or not state:
+        aid = _known_athlete(self)
+        if not aid:
             self._json(401, {"ok": False, "detail": "not connected"})
             return
+        state = load_athlete(aid)
         self._json(200, {
             "ok": True,
             "athlete_id": state.get("athlete_id", aid),
@@ -642,7 +655,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         })
 
     def _handle_stamp_latest(self, dry):
-        aid = _resolve_athlete(self)
+        aid = _known_athlete(self)
         state = load_athlete(aid) if aid else {}
         token = _fresh_token(state, aid) if state.get("refresh_token") else ""
         if not token:
