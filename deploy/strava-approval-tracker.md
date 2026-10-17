@@ -47,6 +47,13 @@ Live EC2 redeploy is the one remaining step (see bottom).
   Manage page handles 401s without false confirmations and shows a
   timestamped written deletion confirmation. Verified by seeded
   no-cookie/wrong-cookie/own-cookie probes locally and live.
+- [x] Auth hardening round 2 — `_athlete_and_stats` failure tuple fixed
+  (was a 3-tuple crashing status into an nginx 502 on bad tokens);
+  pause/resume/disconnect/delete/export now require a *known* record, so a
+  well-formed stranger cookie can no longer create junk athlete files;
+  fixed `syncLoginPill` scope bug that silently broke the post-delete
+  confirmation. Browser-verified: confirmation panel renders with timestamp,
+  buttons disable, pause round-trip 5ms with in-place updates.
 
 ## Still yours (not code)
 
