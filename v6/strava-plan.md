@@ -1,5 +1,12 @@
 # v6 Strava Plan — OAuth SSO, Scopes, Consent & Compliance (finalized)
 
+> Update 2026-10-17: this plan is kept as history. Current truth lives in
+> `strava-application/`. Known deltas: scopes are now
+> `read,activity:read,activity:write` (§3's two-scope set was widened because
+> reading the new run's description needs `activity:read`); the connect flow,
+> webhook receiver, per-athlete store, policy pages, official Connect buttons,
+> and `View on Strava` links are implemented (§10.8 TODO-1 and TODO-3 done).
+
 Source of truth: `v6/connect.html` (this lane's mock connect flow).
 Read-only reference: `v5/mock.html`, `v5/worker-contracts.md` (§3–§4), `v5/events.snapshot.json`.
 Scope of this doc: plan only. No real secrets, no network calls, no production code.

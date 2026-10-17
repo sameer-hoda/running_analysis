@@ -141,6 +141,8 @@
   .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--paper)}
   .btn.primary:hover{background:var(--accent-pressed); border-color:var(--accent-pressed)}
   .btn.quiet{border-color:var(--line); font-weight:600}
+  .strava-official{display:inline-block;line-height:0}
+  .strava-official img{display:block;border:0;width:237px;height:48px}
   .btn:disabled{opacity:.45; cursor:not-allowed}
   .scopefine{font-size:var(--text-mono-sm); font-family:var(--font-mono); color:var(--muted); margin:var(--space-3) 0 0; max-width:65ch}
   .pill{
@@ -221,7 +223,7 @@
     <div class="card">
       <p style="margin:0"><span class="pill on" id="loginpill" role="status">Connected</span></p>
       <div class="row" id="connectrow" hidden>
-        <button class="btn primary" id="loginbtn" type="button">Connect with Strava</button>
+        <a class="strava-official" id="loginbtn" href="#"><img src="assets/btn_strava_connect_with_orange.png" srcset="assets/btn_strava_connect_with_orange_x2.png 2x" width="237" height="48" alt="Connect with Strava"></a>
       </div>
       <div class="confirm" id="logoutconfirm" hidden>
         <p id="logoutconfirmtext" role="alert">Disconnect Strava? Future runs will stop getting countdown descriptions. Descriptions already written stay as they are — nothing is deleted, and your titles were never touched.</p>
@@ -240,7 +242,7 @@
   <section aria-labelledby="h-data">
     <h2 id="h-data">Your data</h2>
     <div class="card">
-      <p class="scopefine">Only your own activities are updated, and only with your consent. <a href="https://www.strava.com/settings/apps">View on Strava — connected apps</a>.</p>
+      <p class="scopefine">Only your own activities are updated, and only with your consent. <a id="viewstrava" href="https://www.strava.com/settings/apps" style="font-weight:700;color:#FC5200">View on Strava</a>.</p>
       <div class="row">
         <button class="btn quiet" id="exportbtn" type="button">Download my data</button>
         <button class="btn quiet" id="deletebtn" type="button">Delete my data</button>
@@ -279,6 +281,10 @@ function syncServer() {
       if (typeof s.days === "number" && s.days >= 0) { N = s.days; }
       if (s.goal) { GOAL = s.goal; }
       state.expired = !!s.expired;
+      var vs = document.getElementById("viewstrava");
+      if (vs && s.athlete_id) {
+        vs.href = "https://www.strava.com/athletes/" + encodeURIComponent(s.athlete_id);
+      }
       var rg = document.querySelector(".racerow .goal");
       if (rg && GOAL) {
         rg.innerHTML = "";
@@ -381,7 +387,8 @@ document.getElementById("logoutyes").addEventListener("click", function () {
   document.getElementById("logoutbtn").focus();
   render();
 });
-document.getElementById("loginbtn").addEventListener("click", function () {
+document.getElementById("loginbtn").addEventListener("click", function (e) {
+  if (e) e.preventDefault();
   if (state.connected) return;
   if (window.MyNextPRStrava && window.MyNextPRStrava.ready()) {
     window.location.href = window.MyNextPRStrava.authorizeUrl("manage");

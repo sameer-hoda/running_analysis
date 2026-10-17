@@ -1,7 +1,8 @@
 """Build v6/races.snapshot.json from the live mynextbib feed, local fallback.
 
-Live source (read-only scp GET; this script NEVER writes to EC2):
-  scp -i ~/.ssh/SSH_KEY_REMOVED ec2-user@HOST_REMOVED:~/mynextbib_v3/dist/prd.json
+Live source (read-only scp GET; this script NEVER writes to EC2): configured
+via MYNEXTBIB_FEED_KEY / MYNEXTBIB_FEED_HOST / MYNEXTBIB_FEED_PATH in the
+environment; unset means local feeds only.
 
 Fallback (local checkout only, used when the live pull fails AND to fill
 gaps the live feed leaves, e.g. live rows with no usable distances):
@@ -67,10 +68,11 @@ ALIASES = os.path.join(HERE, 'aliases.json')
 LOG_FILE = os.path.join(HERE, 'sync_races.log')
 
 # Live feed access (read-only GET via scp; no remote writes, no credentials
-# in code — the key path below names a file, its contents are never read).
-LIVE_KEY = os.path.expanduser('~/.ssh/SSH_KEY_REMOVED')
-LIVE_USER_HOST = 'ec2-user@HOST_REMOVED'
-LIVE_REMOTE = '~/mynextbib_v3/dist/prd.json'
+# in code — set MYNEXTBIB_FEED_KEY/HOST in the environment of whoever runs
+# the live pull; when unset, the script uses local feeds only).
+LIVE_KEY = os.path.expanduser(os.environ.get('MYNEXTBIB_FEED_KEY', ''))
+LIVE_USER_HOST = os.environ.get('MYNEXTBIB_FEED_HOST', '')
+LIVE_REMOTE = os.environ.get('MYNEXTBIB_FEED_PATH', '~/mynextbib_v3/dist/prd.json')
 LIVE_TIMEOUT_S = 90
 
 def log(msg):

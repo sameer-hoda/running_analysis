@@ -85,6 +85,9 @@ input.digit-card:hover{border-color:var(--muted)}
 .preview-body{font-family:var(--font-mono);font-size:13.5px;line-height:1.6;white-space:pre-wrap;margin-top:8px}
 .btn{display:inline-block;border:0;border-radius:var(--radius-control);padding:13px 20px;font-size:var(--text-cta);font-weight:800;cursor:pointer;width:100%;font-family:inherit}
 .btn-acc{background:var(--accent);color:var(--paper);margin-top:var(--space-3)}
+.strava-official{display:inline-block;line-height:0;margin-top:var(--space-3)}
+.strava-official img{display:block;border:0;width:237px;height:48px}
+.strava-official[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
 .btn-acc:hover:not(:disabled){background:var(--accent-pressed)}
 .btn-acc:disabled{background:var(--soft);color:var(--muted);border:var(--border-line);cursor:not-allowed}
 .gate{font-size:var(--text-mono-sm);font-family:var(--font-mono);color:var(--muted);margin-top:var(--space-2);line-height:1.6;font-variant-numeric:tabular-nums}
@@ -194,8 +197,9 @@ input.digit-card:hover{border-color:var(--muted)}
 <p class="preview-body" id="preview"></p>
 </div>
 <p class="gate">Monthly/yearly totals above are samples — live numbers appear after you connect Strava.</p>
-<button class="btn btn-acc" id="connectBtn" type="button" disabled aria-describedby="gateNote">Pick a race first — then connect</button>
+<a class="strava-official" id="connectBtn" href="#" aria-disabled="true" aria-describedby="gateNote"><img src="assets/btn_strava_connect_with_orange.png" srcset="assets/btn_strava_connect_with_orange_x2.png 2x" width="237" height="48" alt="Connect with Strava"></a>
 <p class="gate" id="gateNote" role="status"></p>
+<p class="gate" id="manageRow" hidden><a id="manageLink" href="manage.html">Manage updates →</a></p>
 <div class="signup" id="signup"></div>
 <p class="fine">Connect uses the official Strava sign-in (scopes: <code>read</code> + <code>activity:read</code> + <code>activity:write</code>); only your own activities are updated, and only with your consent. Countdowns go in the activity <code>description</code>; your titles stay yours. See <a href="privacy.html">Privacy</a>, <a href="terms.html">Terms</a>, <a href="support.html">Support</a>. Compatible with Strava.</p>
 </aside>
@@ -399,21 +403,22 @@ function renderPanel(){
   }
   var btn = document.getElementById("connectBtn");
   var gate = document.getElementById("gateNote");
+  var manageRow = document.getElementById("manageRow");
   if(!e){
-    btn.disabled = true;
-    btn.textContent = "Pick a race first — then connect";
+    btn.setAttribute("aria-disabled", "true");
+    btn.hidden = false; manageRow.hidden = true;
     gate.textContent = "Select an upcoming race to enable connecting.";
   }else if(isPast(e)){
-    btn.disabled = true;
-    btn.textContent = "Connect with Strava";
+    btn.setAttribute("aria-disabled", "true");
+    btn.hidden = false; manageRow.hidden = true;
     gate.textContent = "This race date has passed — pick an upcoming race to connect.";
   }else{
-    btn.disabled = false;
     if(state.connected){
-      btn.textContent = "Connected ✓ — Manage updates";
+      btn.hidden = true; manageRow.hidden = false;
       gate.textContent = "Connected. Future runs for " + e.name + " will carry the countdown in their descriptions.";
     }else{
-      btn.textContent = "Connect with Strava";
+      btn.setAttribute("aria-disabled", "false");
+      btn.hidden = false; manageRow.hidden = true;
       gate.textContent = "";
     }
   }
@@ -662,8 +667,9 @@ document.getElementById("goalOpt").addEventListener("change", function(){
   renderPanel();
 });
 document.getElementById("clearBtn").addEventListener("click", clearFilters);
-document.getElementById("connectBtn").addEventListener("click", function(){
-  if(this.disabled) return;
+document.getElementById("connectBtn").addEventListener("click", function(ev){
+  if(ev) ev.preventDefault();
+  if(this.hidden || this.getAttribute("aria-disabled") === "true") return;
   var e = selEvent();
   if(!e || isPast(e)){ renderPanel(); return; }
   if(state.connected){ window.location.href = "manage.html"; return; }

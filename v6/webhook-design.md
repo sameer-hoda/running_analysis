@@ -1,5 +1,11 @@
 # Webhook Receiver — Design Memo (Proposal)
 
+> Update 2026-10-17: IMPLEMENTED in `server.py` (`_handle_webhook_verify`,
+> `_handle_webhook_event`, `_handle_subscribe`) with per-athlete routing,
+> stamped-ID dedup, and athlete-revocation purge. The proposal text below is
+> kept as history; behavior details that differ (e.g. no separate queue,
+> receiver holds tokens to stamp) are in `strava-application/03-architecture.md`.
+
 Status: PROPOSAL ONLY. Nothing in this memo is implemented. No code, no
 receiver endpoint, no subscription, and no network calls exist. This memo
 describes intended behavior so a later lane can review and approve it

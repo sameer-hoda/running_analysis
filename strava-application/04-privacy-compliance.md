@@ -9,7 +9,7 @@ Summary of the [API Agreement](https://www.strava.com/legal/api) (2026) and [API
 - No AI training, grounding, embeddings, or RAG on Strava data.
 - No aggregation, analytics, advertising, resale, or third-party transfer.
 - No scraping or bulk export. Webhooks instead of polling.
-- Cache: activity content kept at most 7 days (we keep only stamped IDs). User deletions reflected within 48 hours; full delete within 30 days.
+- Cache: no activity content cached at all. A stamped-ID dedup log (IDs plus timestamps) is pruned to the last 7 days on every write. User deletions reflected promptly; full delete immediate, always within 30 days.
 
 ## User rights (all live in-app)
 
@@ -25,4 +25,4 @@ Summary of the [API Agreement](https://www.strava.com/legal/api) (2026) and [API
 
 ## Security
 
-Tokens live server-side only, never in pages, logs, exports, or the repo. Breach notification to Strava legal within 24 hours if ever needed. Support contact: `support@mynextpr.com` (mailbox must exist).
+Tokens live server-side only, never in pages, logs, exports, or the repo. Breach notification to Strava legal within 24 hours if ever needed. Support contact: the repo's public issue tracker (no unprovisioned mailbox is claimed anywhere).

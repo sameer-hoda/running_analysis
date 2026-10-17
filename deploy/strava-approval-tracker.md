@@ -43,8 +43,8 @@ Live EC2 redeploy is the one remaining step (see bottom).
 
 ## Still yours (not code)
 
-1. Create the `support@mynextpr.com` mailbox (referenced by support page).
-2. Redeploy to EC2 (standard steps in `deploy/mynextpr-ec2.md`).
+1. Support contact is the repo's public issue tracker (no mailbox exists for the domain — do not claim one before review).
+2. Redeploy to EC2 (standard steps in the private ops file).
 3. Take screenshots of every screen showing Strava data + the Connect button,
    plus a short OAuth video.
 4. Fill the review form + send the approval email (draft already with you).

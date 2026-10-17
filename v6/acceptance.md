@@ -109,8 +109,7 @@ pass with notes (see regression table; R6 notes token drift
 Covers the same five files; `sync_races.py` adds a read-only live pull.
 
 - [ ] B2.1 Live pull is read-only scp GET
-  (`ec2-user@HOST_REMOVED:~/mynextbib_v3/dist/prd.json`, key referenced
-  by path `~/.ssh/SSH_KEY_REMOVED`, never read into the repo); nothing is
+  (feed host/key from `MYNEXTBIB_FEED_*` env, never in the repo); nothing is
   written to EC2. Local feeds fill gaps (rows the live feed lacks or
   leaves bucket-less) and serve as full fallback when the pull fails.
   Live rows win (name, date) ties. Verified by inspection (live pull

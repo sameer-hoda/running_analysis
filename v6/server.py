@@ -206,6 +206,33 @@ def list_athlete_ids():
         return []
 
 
+# -- stamped-ID dedup log (7-day retention) -----------------------------------
+# Only activity IDs + first-stamp timestamps are kept (no activity content),
+# solely to avoid double-stamping retries. Entries older than 7 days are
+# pruned on every write, per the cache limit in the privacy policy.
+STAMP_TTL_S = 7 * 24 * 3600
+STAMP_CAP = 200
+
+
+def _stamped_ids(state):
+    raw = state.get("stamped", [])
+    if isinstance(raw, dict):
+        return {str(k): v for k, v in raw.items()}
+    if isinstance(raw, list):  # legacy format: IDs without timestamps
+        return {str(i): 0 for i in raw}
+    return {}
+
+
+def _remember_stamped(athlete_id, state, activity_id):
+    now = time.time()
+    kept = {k: v for k, v in _stamped_ids(state).items()
+            if now - float(v or 0) < STAMP_TTL_S}
+    kept[str(activity_id)] = now
+    trimmed = dict(sorted(kept.items(), key=lambda kv: kv[1])[-STAMP_CAP:])
+    save_athlete(athlete_id, {"stamped": trimmed})
+    return trimmed
+
+
 def _cookie_athlete(cookie_header):
     for part in str(cookie_header or "").split(";"):
         name, _, value = part.partition("=")
@@ -573,6 +600,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             "connected": True,
             "paused": bool(state.get("paused")),
             "athlete": name or str(athlete_id),
+            "athlete_id": athlete_id,
             "race": race.get("race", ""),
             "date": race.get("date", ""),
             "city": race.get("city", ""),
@@ -596,7 +624,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             "athlete_id": state.get("athlete_id", aid),
             "race": state.get("race", {}),
             "paused": bool(state.get("paused")),
-            "stamped_activity_ids": state.get("stamped", []),
+            "stamped_activity_ids": sorted(_stamped_ids(state)),
             "note": "Tokens are never included in exports.",
         })
 
@@ -635,8 +663,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             _race_dist_km(race.get("dist"), race.get("race")),
             month_km, year_km, dry=dry)
         if ok and not dry and aid:
-            stamped = (state.get("stamped", []) + [latest.get("id")])[-200:]
-            save_athlete(aid, {"stamped": stamped})
+            _remember_stamped(aid, state, latest.get("id"))
         self._json(200 if ok else 502, {
             "ok": ok, "detail": detail, "activity": latest.get("id"),
             "dry": dry,
@@ -676,9 +703,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._json(400, {"ok": False})
             return
         if payload.get("object_type") == "athlete":
-            # Strava revocation / deauthorization: drop that athlete's data.
+            # Strava sends athlete events when access is revoked
+            # (updates: {"authorized": "false"}). Athlete events have no
+            # other cause, so any of them drops that athlete's data.
+            updates = payload.get("updates", {})
+            authorized = updates.get("authorized", "false")
             owner = payload.get("owner_id")
-            if owner:
+            if owner and str(authorized).lower() != "true":
                 clear_athlete(str(owner))
             self._json(200, {"ok": True, "detail": "athlete removed"})
             return
@@ -695,9 +726,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if not token or state.get("paused"):
             self._json(200, {"ok": True, "detail": "paused or disconnected"})
             return
-        stamped = state.get("stamped", [])
         activity_id = payload.get("object_id")
-        if activity_id in stamped:
+        if str(activity_id) in _stamped_ids(state):
             self._json(200, {"ok": True, "detail": "already stamped"})
             return
         race = state.get("race", {}) if isinstance(state.get("race"), dict) else {}
@@ -720,8 +750,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             _race_dist_km(race.get("dist"), race.get("race")),
             month_km, year_km)
         if ok:
-            stamped = (stamped + [activity_id])[-200:]
-            save_athlete(str(owner), {"stamped": stamped})
+            _remember_stamped(str(owner), state, activity_id)
         self._json(200, {"ok": ok, "detail": detail})
 
 
@@ -753,11 +782,11 @@ def _poller(interval_seconds=300):
                         params={"per_page": 5, "page": 1})
                     if status != 200 or not isinstance(acts, list):
                         continue
-                    stamped = state.get("stamped", [])
+                    seen = _stamped_ids(state)
                     _, month_km, year_km, _ = _athlete_and_stats(token)
                     for act in acts:
                         aid = act.get("id")
-                        if not aid or aid in stamped:
+                        if not aid or str(aid) in seen:
                             continue
                         if str(act.get("type", "")).lower() not in (
                                 "run", "trailrun", ""):
@@ -767,8 +796,9 @@ def _poller(interval_seconds=300):
                             _race_dist_km(race.get("dist"), race.get("race")),
                             month_km, year_km)
                         if ok:
-                            stamped = (stamped + [aid])[-200:]
-                            save_athlete(athlete_id, {"stamped": stamped})
+                            state = load_athlete(athlete_id)
+                            _remember_stamped(athlete_id, state, aid)
+                            seen = _stamped_ids(state)
                 except Exception:
                     continue
         except Exception:
@@ -832,6 +862,18 @@ def _self_test():
         check("clear drops one athlete",
               load_athlete("111") == {}
               and load_athlete("222").get("access_token") == "tok222")
+        import time as _t
+        save_athlete("333", {"stamped": {"old": _t.time() - 8 * 86400,
+                                         "fresh": _t.time()}})
+        _remember_stamped("333", load_athlete("333"), "new")
+        ids = _stamped_ids(load_athlete("333"))
+        check("7-day prune drops old ids",
+              "old" not in ids and "fresh" in ids and "new" in ids)
+        save_athlete("444", {"stamped": [111, 222]})
+        check("legacy list migrates",
+              set(_stamped_ids(load_athlete("444"))) == {"111", "222"})
+        clear_athlete("333")
+        clear_athlete("444")
     finally:
         ATHLETES_DIR = real_dir
         import shutil

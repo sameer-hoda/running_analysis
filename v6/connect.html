@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>mynextpr — Connect with Strava</title>
+<title>mynextpr — Connect</title>
 <meta name="description" content="Pick your race. Every run you log gets its countdown written into its Strava description — automatically. Titles are never touched.">
 <link rel="stylesheet" href="tokens.css">
 <style>
@@ -107,6 +107,9 @@
     transition:background 200ms ease-out,opacity 200ms ease-out}
   .strava:hover:not([aria-disabled="true"]),.strava:active:not([aria-disabled="true"]){background:var(--accent-pressed)}
   .strava[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+  .strava-official{display:inline-block;line-height:0}
+  .strava-official img{display:block;border:0;width:237px;height:48px}
+  .strava-official[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
   .ghost{display:block;text-align:center;background:none;color:var(--on-panel-muted);
     border:1px solid var(--on-panel-muted);border-radius:var(--radius-control);
     font-size:var(--text-hint);font-weight:600;padding:10px var(--space-4);
@@ -171,7 +174,8 @@
       <p class="status" id="status" role="status" aria-live="polite" aria-atomic="true">Select a race above.</p>
       <p class="count" id="charcount" aria-hidden="true"></p>
       <div class="cta-row">
-        <button class="strava" id="connect" type="button" aria-disabled="true" aria-describedby="status consent-fine">Pick a race first — then connect</button>
+        <a class="strava-official" id="connect" href="#" aria-disabled="true" aria-describedby="status consent-fine"><img src="assets/btn_strava_connect_with_orange.png" srcset="assets/btn_strava_connect_with_orange_x2.png 2x" width="237" height="48" alt="Connect with Strava"></a>
+        <p class="hint" id="connectgate" role="status">Pick a race first — then connect.</p>
         <button class="ghost" id="disconnect" type="button" hidden aria-describedby="status">Disconnect</button>
       </div>
       <h2 class="visually-hidden" id="consent-h">What connecting allows</h2>
@@ -334,19 +338,19 @@ function renderPreview(){
     $("status").textContent = t;
     btn.setAttribute("aria-disabled", "true");
     btn.setAttribute("data-gate", state.race ? "past-race" : "no-race");
-    btn.textContent = state.race ? "Connect with Strava" : "Pick a race first — then connect";
+    $("connectgate").hidden = false;
     dc.hidden = true;
   } else if (state.connected){
     $("status").textContent = "Connected. " + t;
     btn.setAttribute("aria-disabled", "true");
     btn.setAttribute("data-gate", "connected");
-    btn.textContent = "Connect with Strava";
+    $("connectgate").hidden = true;
     dc.hidden = false;
   } else {
     $("status").textContent = t;
     btn.setAttribute("aria-disabled", "false");
     btn.setAttribute("data-gate", "ready");
-    btn.textContent = "Connect with Strava";
+    $("connectgate").hidden = true;
     dc.hidden = true;
   }
   $("charcount").textContent = state.race ? t.length + " characters" : "";
@@ -358,7 +362,8 @@ function renderAll(){
   renderRaces(); renderPreview();
 }
 $("goal").addEventListener("input", renderPreview);
-$("connect").onclick = function(){
+$("connect").onclick = function(e){
+  if (e) e.preventDefault();
   if (state.connected) return;
   if (!state.race){ $("status").textContent = "Pick a race first — then connect."; return; }
   if (isPast(state.race[1])){ $("status").textContent = statusText(); return; }

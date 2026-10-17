@@ -1,6 +1,6 @@
 # 5. Deploy and operations
 
-Live host details, key location, and running processes are in the [EC2 context](../deploy/mynextpr-ec2.md) (key paths only, never secrets).
+Live host details, key location, and running processes live in a private ops file outside the repo (`mynextpr-ec2.private.md` in the owner's home directory) — never in the public tree.
 
 ## Stack
 

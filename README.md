@@ -3,7 +3,7 @@
 Pick a race, connect Strava, and every finished run gets a live countdown written into its activity **description**. Titles are never touched.
 
 - Live: [mynextpr.com](https://mynextpr.com)
-- Status: v6 live on EC2, Strava review in progress for all-user access.
+- Status: v6 live on EC2, preparing the Strava review submission for all-user access.
 
 ## How it works
 
@@ -15,12 +15,12 @@ Pick a race, connect Strava, and every finished run gets a live countdown writte
 
 - `v6/` — the live app: static pages plus a stdlib Python backend ([server backend](v6/server.py), [update engine](v6/update_engine.py)).
 - `strava-application/` — the whole Strava application in one folder: overview, OAuth and scopes, architecture, compliance, deploy, and the approval pack.
-- `deploy/` — EC2 context doc and the Strava approval tracker (key paths only, never secrets).
+- `deploy/` — Strava approval tracker (no host details or secrets).
 
 ## Docs
 
 - [Strava application](strava-application/README.md) — start here for anything Strava.
-- [EC2 context](deploy/mynextpr-ec2.md) — instance, SSH key location, what runs.
+- [Deploy and operations](strava-application/05-deploy-and-operations.md) — host details live in a private ops file outside the repo.
 - [Approval tracker](deploy/strava-approval-tracker.md) — gap closure status.
 - [v6 Strava plan](v6/strava-plan.md) — original OAuth and consent plan (historical; scopes have since widened to include `activity:read`).
 

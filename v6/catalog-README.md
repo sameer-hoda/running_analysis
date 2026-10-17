@@ -27,9 +27,9 @@ failed run never overwrites the last good snapshot. Example crontab
 10 3 * * * /usr/bin/python3 /path/to/worktree/v6/sync_races.py
 ```
 
-Live pull first (read-only `scp` GET of
-`ec2-user@HOST_REMOVED:~/mynextbib_v3/dist/prd.json` via `~/.ssh/SSH_KEY_REMOVED`;
-nothing is ever written to EC2), then local feeds
+Live pull first (read-only `scp` GET of the feed path configured via
+`MYNEXTBIB_FEED_KEY`/`MYNEXTBIB_FEED_HOST`; nothing is ever written to EC2),
+then local feeds
 (`~/Projects/mynextbib/v1/scraper_v2/*_events.json`) fill gaps: rows the
 live feed lacks or leaves bucket-less, plus full fallback when the live
 pull fails. Live rows win on (name, date) ties. Keeps events with a

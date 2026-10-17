@@ -9,4 +9,4 @@ Everything about mynextpr's Strava integration, in one folder. Current truth as 
 - [Deploy and operations](05-deploy-and-operations.md) — EC2, redeploy, rollback.
 - [Approval pack](06-approval-pack.md) — review checklist and the submission email.
 
-Related, kept where they live: the [v6 Strava plan](../v6/strava-plan.md) (historical), [webhook design memo](../v6/webhook-design.md) (proposal; since implemented), [EC2 context](../deploy/mynextpr-ec2.md), [approval tracker](../deploy/strava-approval-tracker.md).
+Related, kept where they live: the [v6 Strava plan](../v6/strava-plan.md) (historical), [webhook design memo](../v6/webhook-design.md) (implemented; proposal kept as history), [approval tracker](../deploy/strava-approval-tracker.md). Host and key details live in a private ops file outside the repo.

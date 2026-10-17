@@ -9,8 +9,8 @@ nightly with `python3 v6/sync_races.py`.
 The script `scp`-GETs one file and never writes to EC2:
 
 ```sh
-scp -i ~/.ssh/SSH_KEY_REMOVED -o BatchMode=yes -o ConnectTimeout=15 \
-  ec2-user@HOST_REMOVED:~/mynextbib_v3/dist/prd.json <tmpfile>
+scp -i "$MYNEXTBIB_FEED_KEY" -o BatchMode=yes -o ConnectTimeout=15 \
+  "$MYNEXTBIB_FEED_HOST:$MYNEXTBIB_FEED_PATH" <tmpfile>
 ```
 
 - Key is referenced by path only; its contents are never read into the
@@ -68,7 +68,7 @@ picker goal field.
 
 | Symptom | Cause / fix |
 |---|---|
-| `live feed: key not found` | `~/.ssh/SSH_KEY_REMOVED` absent; local-only run, still valid |
+| `live feed: key not found` | `MYNEXTBIB_FEED_KEY` unset; local-only run, still valid |
 | `live feed: scp failed` | Network/host down; local fallback covers it |
 | `0 events` | Feeds moved or all dates past; check `FEED_GLOB` path and system date |
 | Picker shows stale data | Re-run sync, then hard-refresh; picker reads the snapshot over HTTP |
