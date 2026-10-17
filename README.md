@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="launch-kit/images/hero.png" alt="A runner tying shoes on an empty road at sunrise" width="100%">
-</p>
-
 <h1 align="center">mynextpr — every run, closer to race day</h1>
 
 <p align="center">
@@ -25,9 +21,12 @@
 
 Training for a race is months of lonely mornings. mynextpr keeps the finish line inside every run: after you cross it, your Strava activity carries a line like *"34 days to go for Tata Mumbai Marathon — Target sub-30"*, next to your month and year totals. Zero habit change, zero manual editing.
 
-<p align="center">
-  <img src="launch-kit/images/ig-45.png" alt="Runner's legs at sunrise with '15 days to go' overlay" width="60%">
-</p>
+What lands in your activity description after each run:
+
+```
+34 days to go for Tata Mumbai Marathon — Target sub-30 · via mynextpr
+October: 42 km · 2026: 610 km
+```
 
 ## How it works
 
@@ -42,10 +41,6 @@ Training for a race is months of lonely mornings. mynextpr keeps the finish line
 - **No activity content cached.** Only a stamped-ID dedup log, pruned to 7 days.
 - **Instant, complete deletion.** Disconnect revokes Strava access and wipes the record; a timestamped on-screen confirmation proves it.
 - Public [privacy policy](https://mynextpr.com/privacy.html), [terms](https://mynextpr.com/terms.html), and [support](https://mynextpr.com/support.html) with a private contact form — no data ever published.
-
-<p align="center">
-  <img src="launch-kit/images/x-card.png" alt="Runner approaching India Gate at dawn" width="60%">
-</p>
 
 ## Under the hood
 
