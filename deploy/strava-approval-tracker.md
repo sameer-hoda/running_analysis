@@ -40,6 +40,13 @@ Live EC2 redeploy is the one remaining step (see bottom).
   served, or exported; `.athletes/` added to `.gitignore`.
 - [x] Maintained tests — `server.py --self-test` (isolation, cookies,
   revocation, scope lock) alongside the existing engine self-test.
+- [x] Strict login cookie (post-review fix) — removed the lone-athlete
+  fallback: no/wrong cookie resolves to nobody on status, export, pause,
+  resume, stamp, disconnect, and delete-account (401s, no cross-athlete
+  reads or writes). Webhooks/poller still resolve server-side by owner_id.
+  Manage page handles 401s without false confirmations and shows a
+  timestamped written deletion confirmation. Verified by seeded
+  no-cookie/wrong-cookie/own-cookie probes locally and live.
 
 ## Still yours (not code)
 

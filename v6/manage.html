@@ -248,6 +248,11 @@
         <button class="btn quiet" id="deletebtn" type="button">Delete my data</button>
       </div>
       <p class="scopefine" id="datamsg" role="status"></p>
+      <div class="confirm" id="deleteconfirm" hidden>
+        <h3>Your data is deleted</h3>
+        <p id="deleteconfirmtext" role="alert"></p>
+        <p class="scopefine">Keep this page as your written confirmation. Questions: <a href="support.html">Support</a> · <a href="privacy.html#delete">Privacy — deleting your data</a>.</p>
+      </div>
     </div>
   </section>
 
@@ -353,9 +358,10 @@ document.getElementById("pausebtn").addEventListener("click", function () {
   if (serverLive) {
     var btn = this;
     btn.disabled = true;
-    api(want ? "/api/pause" : "/api/resume", "POST").then(function () {
+    api(want ? "/api/pause" : "/api/resume", "POST").then(function (d) {
       btn.disabled = false;
-      setPaused(want);
+      if (d) { setPaused(want); }
+      else { syncServer(); }
     });
     return;
   }
@@ -379,7 +385,7 @@ document.getElementById("logoutconfirm").addEventListener("keydown", function (e
 document.getElementById("logoutyes").addEventListener("click", function () {
   state.connected = false;
   state.paused = false;
-  if (serverLive) { api("/api/disconnect", "POST"); }
+  if (serverLive) { api("/api/disconnect", "POST").then(function (d) { if (!d) syncServer(); }); }
   try { window.localStorage.removeItem("mynextpr.connected"); } catch(e) {}
   var p = document.getElementById("loginpill");
   p.textContent = "Not connected"; p.className = "pill";
@@ -423,11 +429,25 @@ document.getElementById("exportbtn").addEventListener("click", function () {
 document.getElementById("deletebtn").addEventListener("click", function () {
   var m = document.getElementById("datamsg");
   if (!window.confirm("Delete all my mynextpr data? This revokes Strava access and cannot be undone.")) return;
-  api("/api/delete-account", "POST").then(function () {
+  api("/api/delete-account", "POST").then(function (d) {
+    if (!d || !d.deleted) {
+      m.textContent = "Delete failed — you may already be disconnected. Reload and try again.";
+      syncServer();
+      return;
+    }
     state.connected = false; state.paused = false;
     try { window.localStorage.removeItem("mynextpr.connected"); } catch(e) {}
     syncLoginPill(); render();
-    m.textContent = "Deleted. Your tokens, race, and stamp history are gone from this server.";
+    var box = document.getElementById("deleteconfirm");
+    var when = new Date();
+    document.getElementById("deleteconfirmtext").textContent =
+      "Deleted on " + when.toLocaleString() + ". Your Strava access was revoked and your tokens, race selection, and stamp history were permanently removed from this server. Descriptions already written on your Strava activities stay as they are unless you edit them on Strava.";
+    box.hidden = false;
+    document.getElementById("exportbtn").disabled = true;
+    document.getElementById("deletebtn").disabled = true;
+    box.querySelector("h3").setAttribute("tabindex", "-1");
+    box.querySelector("h3").focus();
+    m.textContent = "";
   });
 });
 try {

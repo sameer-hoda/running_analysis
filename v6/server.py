@@ -242,15 +242,15 @@ def _cookie_athlete(cookie_header):
 
 
 def _resolve_athlete(handler):
-    """Which athlete is calling? Cookie wins; a lone athlete is the fallback
-    (keeps single-user browsers and cookie-less health checks working)."""
-    aid = _cookie_athlete(handler.headers.get("Cookie", ""))
-    if aid and os.path.isfile(_athlete_path(aid)):
-        return aid
-    ids = list_athlete_ids()
-    if len(ids) == 1 and not aid:
-        return ids[0]
-    return aid
+    """Which athlete is calling? Strictly the `mnp_athlete` login cookie.
+
+    There is deliberately NO fallback: with a single athlete connected, a
+    visitor without (or with a wrong) cookie must never resolve to that
+    athlete — otherwise /api/status, /api/export, pause/resume/stamp and
+    even disconnect/delete would be open to anyone. Webhooks and the
+    poller don't use this function (they resolve server-side by owner_id).
+    """
+    return _cookie_athlete(handler.headers.get("Cookie", ""))
 
 
 # --------------------------------------------------------------------------
@@ -438,7 +438,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if rel.startswith(".") or rel.endswith(".py") or ".." in rel:
             self._send(403, "forbidden")
             return
-        full = os.path.join(ROOT, rel)
+        # Sandbox preview: /v7/* maps to the sibling v7/ dir so the picker
+        # gets same-origin data, strava.js, and /api/* in one server.
+        if rel == "v7" or rel.startswith("v7/"):
+            full = os.path.join(os.path.dirname(ROOT), rel)
+        else:
+            full = os.path.join(ROOT, rel)
         if not os.path.isfile(full):
             self._send(404, "not found")
             return
@@ -483,18 +488,24 @@ class Handler(http.server.BaseHTTPRequestHandler):
             payload = {}
         if parsed.path == "/api/pause":
             aid = _resolve_athlete(self)
-            if aid:
-                save_athlete(aid, {"paused": True})
+            if not aid:
+                self._json(401, {"ok": False, "detail": "not connected"})
+                return
+            save_athlete(aid, {"paused": True})
             self._json(200, {"paused": True})
         elif parsed.path == "/api/resume":
             aid = _resolve_athlete(self)
-            if aid:
-                save_athlete(aid, {"paused": False})
+            if not aid:
+                self._json(401, {"ok": False, "detail": "not connected"})
+                return
+            save_athlete(aid, {"paused": False})
             self._json(200, {"paused": False})
         elif parsed.path == "/api/disconnect":
             aid = _resolve_athlete(self)
-            if aid:
-                _revoke_and_clear(aid)
+            if not aid:
+                self._json(401, {"ok": False, "detail": "not connected"})
+                return
+            _revoke_and_clear(aid)
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-store")
@@ -505,8 +516,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(raw)
         elif parsed.path == "/api/delete-account":
             aid = _resolve_athlete(self)
-            if aid:
-                _revoke_and_clear(aid)
+            if not aid:
+                self._json(401, {"ok": False, "detail": "not connected"})
+                return
+            _revoke_and_clear(aid)
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-store")
@@ -843,6 +856,22 @@ def _self_test():
         check("cookie empty", _cookie_athlete("") == "")
         check("cookie non-numeric rejected",
               _cookie_athlete("mnp_athlete=abc") == "")
+
+        class _Headers(dict):
+            def get(self, key, default=None):
+                return super().get(key, default)
+
+        class _Req:
+            def __init__(self, cookie):
+                self.headers = _Headers(
+                    {"Cookie": cookie} if cookie is not None else {})
+
+        check("strict: no cookie resolves to nobody",
+              _resolve_athlete(_Req(None)) == "")
+        check("strict: wrong cookie never becomes the lone athlete",
+              _resolve_athlete(_Req("mnp_athlete=999")) == "999")
+        check("strict: own cookie resolves",
+              _resolve_athlete(_Req("mnp_athlete=111")) == "111")
         save_athlete("111", {"access_token": "tok111", "race": {"race": "TMM"}})
         save_athlete("222", {"access_token": "tok222", "race": {"race": "DHM"}})
         check("isolated reads",
