@@ -407,11 +407,12 @@ document.getElementById("loginbtn").addEventListener("click", function (e) {
   hideConfirm(false);
   setPaused(false);
 });
-(function syncLoginPill() {
+function syncLoginPill() {
   var p = document.getElementById("loginpill");
   p.textContent = state.connected ? "Connected" : "Not connected";
   p.className = "pill" + (state.connected ? " on" : "");
-})();
+}
+syncLoginPill();
 document.getElementById("exportbtn").addEventListener("click", function () {
   var m = document.getElementById("datamsg");
   m.textContent = "Preparing download…";
