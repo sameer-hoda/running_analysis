@@ -23,8 +23,59 @@ code{background:#f4f4f4;padding:.1rem .35rem;border-radius:4px}
 
 <div class="card">
 <h2>Contact us</h2>
-<p>Open an issue at <a href="https://github.com/sameer-hoda/running_analysis/issues">running_analysis issues</a>. Include your Strava athlete ID (shown on the <a href="manage.html">Manage</a> page after connecting) and what happened. We aim to reply within 2 business days.</p>
+<p>Use this form for help, privacy requests, or security reports. Messages go to a private inbox read only by the site operator — nothing is published, and your athlete ID is never shown publicly. We aim to reply within 2 business days.</p>
+<form id="supportform" action="javascript:void(0)">
+<label for="topic">Topic</label><br>
+<select id="topic" name="topic">
+<option value="general">General help</option>
+<option value="privacy">Privacy / delete my data</option>
+<option value="security">Security issue</option>
+<option value="bug">Something is broken</option>
+</select><br><br>
+<label for="athlete">Strava athlete ID (optional — shown on the <a href="manage.html">Manage</a> page)</label><br>
+<input id="athlete" name="athlete" type="text" inputmode="numeric" autocomplete="off"><br><br>
+<label for="contact">Where to reach you (optional)</label><br>
+<input id="contact" name="contact" type="text" autocomplete="off"><br><br>
+<label for="message">Message</label><br>
+<textarea id="message" name="message" rows="5" cols="40" required minlength="10" maxlength="2000"></textarea><br><br>
+<button type="submit" id="sendbtn">Send privately</button>
+<p id="supportmsg" role="status"></p>
+</form>
 </div>
+<script>
+(function () {
+  var form = document.getElementById("supportform");
+  if (!form) return;
+  form.addEventListener("submit", function () {
+    var m = document.getElementById("supportmsg");
+    var btn = document.getElementById("sendbtn");
+    m.textContent = "Sending…";
+    btn.disabled = true;
+    fetch("/api/support", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        topic: document.getElementById("topic").value,
+        athlete_id: document.getElementById("athlete").value,
+        contact: document.getElementById("contact").value,
+        message: document.getElementById("message").value
+      })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      btn.disabled = false;
+      if (d && d.ok) {
+        m.textContent = "Received. Your reference is " + d.ref +
+          " — keep it for any follow-up. Nothing you wrote was published.";
+        form.reset();
+      } else {
+        m.textContent = "Not sent: " + ((d && d.detail) || "try again later.");
+      }
+    }).catch(function () {
+      btn.disabled = false;
+      m.textContent = "Not sent — the server did not answer. Try again later.";
+    });
+  });
+})();
+</script>
 
 <h2>Do it yourself first</h2>
 <ul>
@@ -37,7 +88,7 @@ code{background:#f4f4f4;padding:.1rem .35rem;border-radius:4px}
 </ul>
 
 <h2>Report a privacy or security issue</h2>
-<p>Open an issue at <a href="https://github.com/sameer-hoda/running_analysis/issues">running_analysis issues</a> with “Privacy” or “Security” in the title and details. Security issues are triaged first.</p>
+<p>Use the form above with topic “Privacy” or “Security” and details. Security issues are triaged first. Never post your athlete ID or activity details anywhere public.</p>
 
 <p class="fine">mynextpr · Compatible with Strava. Not endorsed by Strava.</p>
 </body>

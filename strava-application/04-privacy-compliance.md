@@ -25,4 +25,6 @@ Summary of the [API Agreement](https://www.strava.com/legal/api) (2026) and [API
 
 ## Security
 
-Tokens live server-side only, never in pages, logs, exports, or the repo. Breach notification to Strava legal within 24 hours if ever needed. Support contact: the repo's public issue tracker (no unprovisioned mailbox is claimed anywhere).
+Tokens live server-side only, never in pages, logs, exports, or the repo. Breach notification to Strava legal within 24 hours if ever needed. Support contact: a private on-site form (`support.html` → `POST /api/support`)
+stored in a server-side inbox read only by the operator — never published,
+never a public tracker, no mailbox claimed.

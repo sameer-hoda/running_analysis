@@ -50,6 +50,9 @@ CONTENT_TYPES = {
     ".jpeg": "image/jpeg",
     ".png": "image/png",
     ".svg": "image/svg+xml",
+    ".txt": "text/plain; charset=utf-8",
+    ".xml": "application/xml; charset=utf-8",
+    ".ico": "image/x-icon",
 }
 
 import sys
@@ -325,6 +328,42 @@ def _fresh_token(state, athlete_id=""):
     return body.get("access_token", "")
 
 
+SUPPORT_TOPICS = ("general", "privacy", "security", "bug")
+INBOX_DIR = os.path.join(ROOT, ".support-inbox")
+INBOX_FILE = os.path.join(INBOX_DIR, "inbox.jsonl")
+INBOX_MAX_BYTES = 5 * 1024 * 1024
+
+
+def _valid_support(payload):
+    """Validate a support-form submission. Returns (entry, error)."""
+    if not isinstance(payload, dict):
+        return None, "bad request"
+    topic = str(payload.get("topic", "")).strip().lower()
+    message = str(payload.get("message", "")).strip()
+    athlete_id = "".join(
+        ch for ch in str(payload.get("athlete_id", "")) if ch.isdigit())[:20]
+    contact = str(payload.get("contact", "")).strip()[:120]
+    if topic not in SUPPORT_TOPICS:
+        return None, "unknown topic"
+    if not (10 <= len(message) <= 2000):
+        return None, "message must be 10-2000 characters"
+    try:
+        size = os.path.getsize(INBOX_FILE)
+    except OSError:
+        size = 0
+    if size > INBOX_MAX_BYTES:
+        return None, "inbox full — try again later"
+    entry = {
+        "id": "%d-%d" % (int(time.time()), os.getpid() % 100000),
+        "ts": int(time.time()),
+        "topic": topic,
+        "athlete_id": athlete_id,
+        "contact": contact,
+        "message": message,
+    }
+    return entry, ""
+
+
 def _revoke_and_clear(athlete_id):
     """Best-effort remote revoke, then always drop local data."""
     state = load_athlete(athlete_id)
@@ -541,6 +580,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(raw)))
             self.end_headers()
             self.wfile.write(raw)
+        elif parsed.path == "/api/support":
+            self._handle_support(payload)
         elif parsed.path == "/api/stamp-latest":
             dry = urllib.parse.parse_qs(parsed.query).get("dry", ["0"])[0] == "1"
             self._handle_stamp_latest(dry)
@@ -637,6 +678,22 @@ class Handler(http.server.BaseHTTPRequestHandler):
             "month_km": month_km,
             "year_km": year_km,
         })
+
+    def _handle_support(self, payload):
+        """Private contact form. Messages land in a server-side inbox file
+        (git-ignored, read by the operator over SSH) — never published."""
+        entry, error = _valid_support(payload)
+        if error:
+            self._json(400, {"ok": False, "detail": error})
+            return
+        try:
+            os.makedirs(INBOX_DIR, exist_ok=True)
+            with open(INBOX_FILE, "a") as fh:
+                fh.write(json.dumps(entry) + "\n")
+        except OSError:
+            self._json(500, {"ok": False, "detail": "could not store message"})
+            return
+        self._json(200, {"ok": True, "ref": entry["id"]})
 
     def _handle_export(self):
         """Each user can download everything stored about them."""
@@ -916,6 +973,24 @@ def _self_test():
               set(_stamped_ids(load_athlete("444"))) == {"111", "222"})
         clear_athlete("333")
         clear_athlete("444")
+        global INBOX_FILE
+        real_inbox, INBOX_FILE = INBOX_FILE, os.path.join(tmp, "inbox.jsonl")
+        try:
+            ok_entry, err = _valid_support({
+                "topic": "privacy", "message": "please delete my data please",
+                "athlete_id": "12ab34", "contact": "x" * 200})
+            check("support accepts valid",
+                  err == "" and ok_entry["topic"] == "privacy"
+                  and ok_entry["athlete_id"] == "1234"
+                  and len(ok_entry["contact"]) == 120)
+            _, err = _valid_support({"topic": "spam", "message": "x" * 20})
+            check("support rejects bad topic", err != "")
+            _, err = _valid_support({"topic": "bug", "message": "short"})
+            check("support rejects short message", err != "")
+            _, err = _valid_support({"topic": "bug", "message": "x" * 2001})
+            check("support rejects long message", err != "")
+        finally:
+            INBOX_FILE = real_inbox
     finally:
         ATHLETES_DIR = real_dir
         import shutil
