@@ -25,6 +25,8 @@ Env (.env, never committed): STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET,
 Stdlib only. No tokens or secrets are ever logged or served to pages.
 """
 
+import calendar
+import datetime
 import http.server
 import json
 import os
@@ -236,6 +238,80 @@ def _remember_stamped(athlete_id, state, activity_id):
     return trimmed
 
 
+# --------------------------------------------------------------------------
+# Telegram activity alerts (best-effort, owner-only, never blocks requests)
+
+
+def _race_line(race):
+    """One-line human summary of a chosen race: name (date), goal + dist."""
+    if not isinstance(race, dict):
+        return "-"
+    name = str(race.get("race") or "-")
+    date = str(race.get("date") or "")
+    goal = str(race.get("goal") or "")
+    dist = str(race.get("dist") or "")
+    line = name + (" (" + date + ")" if date else "")
+    extra = " ".join(p for p in (goal, dist) if p)
+    return line + (" — goal " + extra if extra else "")
+
+
+def _esc(text):
+    """Escape dynamic text for Telegram HTML messages."""
+    return (str(text).replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;"))
+
+
+def _who(athlete_id, state=None):
+    """Friendly runner label: stored first name, else the bare ID."""
+    name = ""
+    if isinstance(state, dict):
+        name = str(state.get("firstname") or "")
+    return name or ("runner " + str(athlete_id))
+
+
+def _dayword(n):
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        return ""
+    if n > 1:
+        return "%d days to go" % n
+    if n == 1:
+        return "1 day to go"
+    return "race day today"
+
+
+def _km(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return "—"
+    return "%.1f" % value
+
+
+def _notify(text):
+    """Send one owner alert via Telegram as formatted HTML. Silent no-op
+    unless the server .env sets both TELEGRAM_BOT_TOKEN and
+    TELEGRAM_CHAT_ID. Sends in a daemon thread so slow networks never
+    delay a response. Compose with _esc() around every dynamic value."""
+    token = ENV.get("TELEGRAM_BOT_TOKEN", "")
+    chat = ENV.get("TELEGRAM_CHAT_ID", "")
+    if not token or not chat or not text:
+        return None
+    def _send():
+        try:
+            req = urllib.request.Request(
+                "https://api.telegram.org/bot" + token + "/sendMessage",
+                data=json.dumps(
+                    {"chat_id": chat, "text": text[:3500],
+                     "parse_mode": "HTML",
+                     "disable_web_page_preview": True}).encode(),
+                headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(req, timeout=10).read(64)
+        except Exception:
+            pass
+    threading.Thread(target=_send, daemon=True).start()
+    return True
+
+
 def _cookie_athlete(cookie_header):
     for part in str(cookie_header or "").split(";"):
         name, _, value = part.partition("=")
@@ -272,8 +348,61 @@ def _known_athlete(handler):
 # --------------------------------------------------------------------------
 # Strava API helpers (server-side only: the secret never leaves this file)
 
+# Rate-limit handling (see https://developers.strava.com/docs/rate-limits/):
+# read endpoints share 100 req/15min + 1000/day per app; 429s reset at the
+# next natural quarter hour (:00/:15/:30/:45). Every api/v3 call below goes
+# through the guard so a burst of webhooks + the poller backs off instead
+# of burning the daily quota. The token endpoint is exempt (auth, uncounted).
+_RATE_LOCK = threading.Lock()
+_RATE_LIMITED_UNTIL = 0.0
+_LAST_429_NOTICE = {}  # activity key -> timestamp of last 429 Telegram alert
+NOTICE_TTL_S = 900
+
+
+def _seconds_to_reset(now=None):
+    """Seconds until the next natural quarter hour (+5s safety buffer)."""
+    now = time.time() if now is None else now
+    secs = 900 - (now % 900)
+    return secs + 5
+
+
+def _rate_limited():
+    with _RATE_LOCK:
+        return time.time() < _RATE_LIMITED_UNTIL
+
+
+def _note_429(headers=None):
+    """Record a 429: back off until Retry-After or the next reset window."""
+    delay = 0
+    try:
+        if headers:
+            retry = headers.get("Retry-After", "")
+            delay = int(str(retry).strip())
+    except (TypeError, ValueError):
+        delay = 0
+    if delay <= 0:
+        delay = _seconds_to_reset()
+    delay = min(max(delay, 1), 3600)
+    with _RATE_LOCK:
+        global _RATE_LIMITED_UNTIL
+        _RATE_LIMITED_UNTIL = max(_RATE_LIMITED_UNTIL, time.time() + delay)
+    return delay
+
+
+def _should_notify_429(key):
+    """True once per activity per window — stops Telegram retry storms."""
+    now = time.time()
+    with _RATE_LOCK:
+        last = _LAST_429_NOTICE.get(str(key), 0)
+        if now - last < NOTICE_TTL_S:
+            return False
+        _LAST_429_NOTICE[str(key)] = now
+        return True
+
 
 def _strava(method, path, token=None, params=None, timeout=15):
+    if path.startswith("/api/v3") and _rate_limited():
+        return 429, {"_error": "rate limited, retry later"}
     data = None
     headers = {"Accept": "application/json"}
     if token:
@@ -296,6 +425,11 @@ def _strava(method, path, token=None, params=None, timeout=15):
             detail = exc.read().decode("utf-8", "replace")[:300]
         except Exception:
             detail = ""
+        if exc.code == 429 and path.startswith("/api/v3"):
+            try:
+                _note_429(exc.headers)
+            except Exception:
+                _note_429(None)
         return exc.code, {"_error": detail}
 
 
@@ -376,26 +510,101 @@ def _revoke_and_clear(athlete_id):
     clear_athlete(athlete_id)
 
 
-def _athlete_and_stats(token):
-    """(athlete_id, month_km, year_km, name); ("", None, None, "") on failure."""
+def _athlete_name(token):
+    """(athlete_id, name); ("", "") on failure. No caching, one read."""
     status, me = _strava("GET", "/api/v3/athlete", token=token)
-    if status != 200 or not me.get("id"):
-        return "", None, None, ""
-    athlete_id = me["id"]
-    status, stats = _strava(
-        "GET", f"/api/v3/athletes/{athlete_id}/stats", token=token)
-    month_km = year_km = None
-    if status == 200:
-        try:
-            month_km = float(stats["recent_run_totals"]["distance"]) / 1000.0
-        except (KeyError, TypeError, ValueError):
-            pass
-        try:
-            year_km = float(stats["ytd_run_totals"]["distance"]) / 1000.0
-        except (KeyError, TypeError, ValueError):
-            pass
+    if status != 200 or not isinstance(me, dict) or not me.get("id"):
+        return "", ""
     name = f"{me.get('firstname', '')} {me.get('lastname', '')}".strip()
-    return athlete_id, month_km, year_km, name
+    return me["id"], name
+
+
+# Activity types counted toward run totals (same filter as the stamp path).
+_RUN_TYPES = ("run", "trailrun", "")
+
+
+def _period_epochs(ref_iso=None):
+    """(month_after, year_after, ref_iso): epoch bounds for calendar sums.
+
+    ref_iso is a YYYY-MM-DD day — the stamped run's local date when known,
+    else today. Windows start at UTC midnight of the 1st / Jan 1st, so a
+    run within hours of a boundary in a far timezone can land on either
+    side; the label always follows the run's own date.
+    """
+    try:
+        day = (engine.parse_iso_day(ref_iso) if ref_iso
+               else datetime.date.today())
+    except (TypeError, ValueError):
+        day = datetime.date.today()
+    month_start = datetime.date(day.year, day.month, 1)
+    year_start = datetime.date(day.year, 1, 1)
+    return (calendar.timegm(month_start.timetuple()),
+            calendar.timegm(year_start.timetuple()), day.isoformat())
+
+
+def _sum_run_km(token, after_epoch, max_pages=5):
+    """(total_km, seen_ids, ok): sum run distances over listed activities.
+
+    Only run/trailrun types count. ok is False when the listing failed —
+    callers then omit that total instead of printing a stale number.
+    """
+    total_m = 0.0
+    seen = set()
+    page = 1
+    while page <= max_pages:
+        status, acts = _strava(
+            "GET", "/api/v3/athlete/activities", token=token,
+            params={"after": int(after_epoch), "per_page": 200, "page": page})
+        if status != 200 or not isinstance(acts, list):
+            return total_m / 1000.0, seen, False
+        if not acts:
+            break
+        for act in acts:
+            if not isinstance(act, dict):
+                continue
+            aid = act.get("id")
+            if aid is not None:
+                seen.add(str(aid))
+            if str(act.get("type", "")).lower() not in _RUN_TYPES:
+                continue
+            try:
+                total_m += float(act.get("distance") or 0)
+            except (TypeError, ValueError):
+                continue
+        if len(acts) < 200:
+            break
+        page += 1
+    return total_m / 1000.0, seen, True
+
+
+def _run_month_year_totals(token, run_date_iso=None, run_id=None, run_m=None):
+    """(month_km, year_km, ref_iso): calendar-month + YTD run totals.
+
+    Summed live from the activity list so the numbers are always current:
+    Strava's aggregate stats lag behind the webhook that fires seconds
+    after upload, and `recent_*` is a rolling 28 days, not a calendar
+    month. The run being stamped is added when the listing does not
+    contain it yet (never double-counted when it does). Each side is
+    None when its listing failed — never a stale cached number.
+    """
+    month_after, year_after, ref = _period_epochs(run_date_iso)
+    try:
+        extra = float(run_m or 0) / 1000.0
+    except (TypeError, ValueError):
+        extra = 0.0
+    extra = extra if extra > 0 else 0.0
+    month_km = year_km = None
+    m_total, m_seen, m_ok = _sum_run_km(token, month_after)
+    if m_ok:
+        month_km = m_total
+        if run_id is not None and str(run_id) not in m_seen:
+            month_km += extra
+    y_total, y_seen, y_ok = _sum_run_km(token, year_after)
+    if y_ok:
+        year_km = y_total
+        if run_id is not None and str(run_id) not in y_seen:
+            year_km += extra
+    return month_km, year_km, ref
 
 
 def _race_dist_km(dist_label, race_name=""):
@@ -419,12 +628,19 @@ def _race_dist_km(dist_label, race_name=""):
 
 
 def _stamp_activity(token, activity_id, race, goal, dist_km, month_km,
-                    year_km, today_iso=None, dry=False):
-    """Compute the block and PUT it on the activity. Returns (ok, detail)."""
-    status, act = _strava("GET", f"/api/v3/activities/{activity_id}",
-                          token=token)
-    if status != 200:
-        return False, f"fetch failed: HTTP {status}"
+                    year_km, today_iso=None, dry=False, act=None):
+    """Compute the block and PUT it on the activity. Returns (ok, detail).
+
+    Pass the already-fetched activity dict (from the webhook pre-read) via
+    `act` to skip the duplicate GET — that alone cuts one read per run.
+    """
+    if not isinstance(act, dict):
+        status, act = _strava("GET", f"/api/v3/activities/{activity_id}",
+                              token=token)
+        if status == 429:
+            return False, "fetch failed: HTTP 429 (rate limited, will retry)"
+        if status != 200:
+            return False, f"fetch failed: HTTP {status}"
     block = engine.build_description(
         race.get("race", ""), race.get("date", ""), goal or "",
         dist_km, month_km, year_km, today_iso)
@@ -434,6 +650,8 @@ def _stamp_activity(token, activity_id, race, goal, dist_km, month_km,
         return True, merged
     status, _ = _strava("PUT", f"/api/v3/activities/{activity_id}",
                         token=token, params={"description": merged})
+    if status == 429:
+        return False, "write failed: HTTP 429 (rate limited, will retry)"
     if status != 200:
         return False, f"write failed: HTTP {status}"
     return True, merged
@@ -557,7 +775,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
                 return
+            label = _who(aid, load_athlete(aid))
             _revoke_and_clear(aid)
+            _notify("⏸️ <b>%s paused out</b>\nDisconnected — tokens revoked, data cleared." %
+                    _esc(label))
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-store")
@@ -571,7 +792,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
                 return
+            label = _who(aid, load_athlete(aid))
             _revoke_and_clear(aid)
+            _notify("🗑️ <b>%s deleted everything</b>\nTokens revoked, all data wiped." %
+                    _esc(label))
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-store")
@@ -596,6 +820,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def _handle_exchange(self, query):
         code = (query.get("code") or [""])[0]
         if (query.get("error") or [""])[0]:
+            _notify("🚫 <b>Sign-in declined</b>\nA visitor said no at Strava — no runner added.")
             self._send(400, "Strava sign-in was declined. Go back and try again.",
                         "text/plain; charset=utf-8")
             return
@@ -610,6 +835,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             "grant_type": "authorization_code",
         })
         if status != 200 or not body.get("access_token"):
+            _notify("⚠️ <b>Connect failed</b>\nToken swap with Strava returned HTTP %s — "
+                    "the code may have expired. Runner asked to try again." % status)
             self._send(502, "Token exchange failed. The code may have expired — connect again.",
                         "text/plain; charset=utf-8")
             return
@@ -628,9 +855,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if me_status == 200 and me.get("id"):
                 athlete_id = me["id"]
         if not athlete_id:
+            _notify("⚠️ <b>Connect failed</b>\nStrava returned no athlete id — nothing was set up.")
             self._send(502, "Connected, but Strava did not return an athlete.",
                         "text/plain; charset=utf-8")
             return
+        profile = body.get("athlete")
+        if not isinstance(profile, dict):
+            profile = {}
+        firstname = str(profile.get("firstname") or "")
         save_athlete(str(athlete_id), {
             "access_token": body.get("access_token", ""),
             "refresh_token": body.get("refresh_token", ""),
@@ -639,6 +871,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
             "race": race,
             "paused": False,
         })
+        if firstname:
+            save_athlete(str(athlete_id), {"firstname": firstname})
+        goal = str(race.get("goal") or "")
+        _notify("🎉 <b>New runner: %s!</b>\n"
+                "🏁 %s (%s)\n"
+                "%s\n"
+                "🆔 %s" % (
+                    _esc(firstname or ("runner " + str(athlete_id))),
+                    _esc(str(race.get("race") or "-")),
+                    _esc(str(race.get("date") or "?")),
+                    ("🎯 Goal %s · %s" % (_esc(goal), _esc(str(race.get("dist") or ""))))
+                    if goal else "🎯 No goal time — countdown only",
+                    _esc(athlete_id)))
         self._redirect("/manage.html?connected=1",
                        self._athlete_cookie_value(athlete_id))
 
@@ -650,10 +895,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if not token:
             self._json(200, {"connected": False})
             return
-        athlete_id, month_km, year_km, name = _athlete_and_stats(token)
+        athlete_id, name = _athlete_name(token)
         if not athlete_id:
             self._json(200, {"connected": False})
             return
+        month_km, year_km, _ = _run_month_year_totals(token)
         race = state.get("race", {}) if isinstance(state.get("race"), dict) else {}
         days = None
         expired = False
@@ -740,11 +986,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if str(latest.get("type", "")).lower() not in ("run", "trailrun", ""):
             self._json(200, {"ok": False, "detail": "latest activity is not a run"})
             return
-        _, month_km, year_km, _ = _athlete_and_stats(token)
+        run_date = str(latest.get("start_date_local") or "")[:10] or None
+        month_km, year_km, ref = _run_month_year_totals(
+            token, run_date, latest.get("id"), latest.get("distance"))
         ok, detail = _stamp_activity(
             token, latest.get("id"), race, race.get("goal", ""),
             _race_dist_km(race.get("dist"), race.get("race")),
-            month_km, year_km, dry=dry)
+            month_km, year_km, today_iso=ref, dry=dry)
         if ok and not dry and aid:
             _remember_stamped(aid, state, latest.get("id"))
         self._json(200 if ok else 502, {
@@ -793,7 +1041,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             authorized = updates.get("authorized", "false")
             owner = payload.get("owner_id")
             if owner and str(authorized).lower() != "true":
+                label = _who(owner, load_athlete(str(owner)))
                 clear_athlete(str(owner))
+                _notify("🚪 <b>%s left</b>\nRevoked Strava access — all data purged." %
+                        _esc(label))
             self._json(200, {"ok": True, "detail": "athlete removed"})
             return
         if payload.get("object_type") != "activity" or payload.get(
@@ -810,40 +1061,117 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._json(200, {"ok": True, "detail": "paused or disconnected"})
             return
         activity_id = payload.get("object_id")
+        aspect = payload.get("aspect_type")
+        who = _who(owner, state)
         if str(activity_id) in _stamped_ids(state):
+            _notify("⏭️ <b>Already stamped</b> — %s\nActivity %s needed nothing." %
+                    (_esc(who), _esc(activity_id)))
             self._json(200, {"ok": True, "detail": "already stamped"})
             return
         race = state.get("race", {}) if isinstance(state.get("race"), dict) else {}
         if not race.get("race") or not race.get("date"):
+            _notify("⏭️ <b>Skipped</b> — %s\nActivity %s: no race selected yet." %
+                    (_esc(who), _esc(activity_id)))
             self._json(200, {"ok": True, "detail": "no race selected"})
             return
         try:
             if engine.days_to_go(race["date"]) < 0:
+                _notify("⏭️ <b>Skipped</b> — %s\nActivity %s: race day passed." %
+                        (_esc(who), _esc(activity_id)))
                 self._json(200, {"ok": True, "detail": "race finished — updates stopped"})
                 return
         except ValueError:
             pass
         status, act = _strava("GET", f"/api/v3/activities/{activity_id}", token=token)
+        if status == 429:
+            detail = "rate limited, will retry on next delivery"
+            sys.stderr.write(
+                f"mynextpr: webhook 429 for activity {activity_id}\n")
+            if _should_notify_429(f"webhook-{activity_id}"):
+                _notify("⏳ <b>Rate limited</b> — %s\nActivity %s: %s." %
+                        (_esc(who), _esc(activity_id), _esc(detail)))
+            self._json(200, {"ok": False, "detail": detail})
+            return
+        if not isinstance(act, dict):
+            act = {}
         if status == 200 and str(act.get("type", "")).lower() not in ("run", "trailrun", ""):
+            _notify("⏭️ <b>Skipped</b> — %s\nActivity %s is a %s, not a run." %
+                    (_esc(who), _esc(activity_id),
+                     _esc(str(act.get("type") or "?"))))
             self._json(200, {"ok": True, "detail": "not a run"})
             return
-        _, month_km, year_km, _ = _athlete_and_stats(token)
+        run_name = str(act.get("name") or "A run")
+        try:
+            run_km = float(act.get("distance") or 0) / 1000.0
+        except (TypeError, ValueError):
+            run_km = 0.0
+        run_date = str(act.get("start_date_local") or "")[:10]
+        _notify("🔔 <b>Webhook: new activity</b> — %s\n"
+                "🏃 “%s” · %.1f km · %s" %
+                (_esc(who), _esc(run_name), run_km, _esc(run_date)))
+        run_date = str(act.get("start_date_local") or "")[:10] or None
+        month_km, year_km, ref = _run_month_year_totals(
+            token, run_date, activity_id, act.get("distance"))
         ok, detail = _stamp_activity(
             token, activity_id, race, race.get("goal", ""),
             _race_dist_km(race.get("dist"), race.get("race")),
-            month_km, year_km)
+            month_km, year_km, today_iso=ref,
+            act=act if status == 200 else None)
         if ok:
             _remember_stamped(str(owner), state, activity_id)
+            days = None
+            try:
+                days = engine.days_to_go(race["date"])
+            except ValueError:
+                pass
+            goal = str(race.get("goal") or "")
+            pace = ""
+            try:
+                pace = engine.goal_to_pace(
+                    goal, _race_dist_km(race.get("dist"), race.get("race"))) if goal else ""
+            except Exception:
+                pace = ""
+            try:
+                ref_day = engine.parse_iso_day(ref)
+            except ValueError:
+                ref_day = datetime.date.today()
+            today = ref_day.strftime("%B")
+            year = str(ref_day.year)
+            _notify("✅ <b>Stamped “%s”</b> — %s\n"
+                    "⏳ %s — %s%s\n"
+                    "📊 %s so far: %s km · %s so far: %s km" % (
+                        _esc(run_name), _esc(who),
+                        _esc(_dayword(days)), _esc(str(race.get("race") or "")),
+                        (" — target %s%s" % (_esc(goal), (" at %s/km" % _esc(pace)) if pace else ""))
+                        if goal else "",
+                        _esc(today), _esc(_km(month_km)),
+                        _esc(year), _esc(_km(year_km))))
+        else:
+            sys.stderr.write(
+                f"mynextpr: stamp failed for activity {activity_id}: {detail}\n")
+            if "429" in str(detail):
+                if _should_notify_429(f"stamp-{activity_id}"):
+                    _notify("❌ <b>Stamp failed</b> — %s\nActivity %s: %s" %
+                            (_esc(who), _esc(activity_id), _esc(detail)))
+            else:
+                _notify("❌ <b>Stamp failed</b> — %s\nActivity %s: %s" %
+                        (_esc(who), _esc(activity_id), _esc(detail)))
         self._json(200, {"ok": ok, "detail": detail})
 
 
-def _poller(interval_seconds=300):
-    """Automatic updates without webhooks: every few minutes, stamp any
-    unseen runs. Same guards as the webhook path (paused/disconnected =
-    skip, non-runs skipped, never double-stamps). Iterates every athlete."""
+def _poller(interval_seconds=900):
+    """Catch-up pass for missed webhooks: every 15 minutes, stamp unseen runs.
+
+    Same guards as the webhook path (paused/disconnected = skip, non-runs
+    skipped, never double-stamps). The 15-minute cadence matches Strava's
+    rate-limit window; the loop also yields immediately while rate-limited
+    so backfill never burns the daily quota (see rate-limits doc).
+    """
     while True:
         time.sleep(interval_seconds)
         try:
+            if _rate_limited():
+                continue
             for athlete_id in list_athlete_ids():
                 try:
                     state = load_athlete(athlete_id)
@@ -866,7 +1194,6 @@ def _poller(interval_seconds=300):
                     if status != 200 or not isinstance(acts, list):
                         continue
                     seen = _stamped_ids(state)
-                    _, month_km, year_km, _ = _athlete_and_stats(token)
                     for act in acts:
                         aid = act.get("id")
                         if not aid or str(aid) in seen:
@@ -874,14 +1201,23 @@ def _poller(interval_seconds=300):
                         if str(act.get("type", "")).lower() not in (
                                 "run", "trailrun", ""):
                             continue
+                        run_date = (str(act.get("start_date_local") or "")[:10]
+                                    or None)
+                        month_km, year_km, ref = _run_month_year_totals(
+                            token, run_date, aid, act.get("distance"))
                         ok, _ = _stamp_activity(
                             token, aid, race, race.get("goal", ""),
                             _race_dist_km(race.get("dist"), race.get("race")),
-                            month_km, year_km)
+                            month_km, year_km, today_iso=ref)
                         if ok:
                             state = load_athlete(athlete_id)
                             _remember_stamped(athlete_id, state, aid)
                             seen = _stamped_ids(state)
+                            _notify("✅ <b>Stamped (catch-up)</b> — %s\n"
+                                    "Activity %s · %s" % (
+                                        _esc(_who(athlete_id, state)),
+                                        _esc(aid),
+                                        _esc(_race_line(race))))
                 except Exception:
                     continue
         except Exception:
@@ -954,6 +1290,30 @@ def _self_test():
         check("unknown athlete empty", load_athlete("999") == {})
         check("two athletes listed",
               "111" in list_athlete_ids() and "222" in list_athlete_ids())
+        check("escapes html", _esc("<b>&") == "&lt;b&gt;&amp;")
+        check("who prefers name",
+              _who("42", {"firstname": "Sam"}) == "Sam")
+        check("who falls back to id", _who("42", {}) == "runner 42")
+        check("dayword plural", _dayword(91) == "91 days to go")
+        check("dayword one", _dayword(1) == "1 day to go")
+        check("dayword zero", _dayword(0) == "race day today")
+        check("km formats", _km(99.8) == "99.8" and _km(None) == "—")
+        check("race line full",
+              _race_line({"race": "TMM", "date": "2027-01-17",
+                          "goal": "4:00", "dist": "Full"})
+              == "TMM (2027-01-17) — goal 4:00 Full")
+        check("race line sparse", _race_line({"race": "DHM"}) == "DHM")
+        check("race line bad input", _race_line(None) == "-")
+        real_tele = (ENV.pop("TELEGRAM_BOT_TOKEN", None),
+                     ENV.pop("TELEGRAM_CHAT_ID", None))
+        try:
+            check("notify no-op unconfigured", _notify("test") is None)
+            check("notify no-op empty", _notify("") is None)
+        finally:
+            if real_tele[0] is not None:
+                ENV["TELEGRAM_BOT_TOKEN"] = real_tele[0]
+            if real_tele[1] is not None:
+                ENV["TELEGRAM_CHAT_ID"] = real_tele[1]
         check("minimal scopes locked",
               tuple(MINIMAL_SCOPES) == ("read", "activity:read", "activity:write"))
         check("engine scopes match", tuple(engine.SCOPES) == tuple(MINIMAL_SCOPES))
@@ -991,6 +1351,92 @@ def _self_test():
             check("support rejects long message", err != "")
         finally:
             INBOX_FILE = real_inbox
+        global _RATE_LIMITED_UNTIL
+        _RATE_LIMITED_UNTIL = 0.0
+        with _RATE_LOCK:
+            _LAST_429_NOTICE.clear()
+        check("reset window sane",
+              1 <= _seconds_to_reset(0) <= 905
+              and _seconds_to_reset(899) < _seconds_to_reset(0))
+        _note_429(None)
+        check("429 sets backoff", _rate_limited())
+        real_strava = globals()["_strava"]
+        check("guard short-circuits api/v3 during backoff",
+              real_strava("GET", "/api/v3/athlete", token="x")[0] == 429)
+        check("sums degrade to unknown during backoff, never stale",
+              _run_month_year_totals("tok-x", "2026-11-15", 10, 3000)[:2]
+              == (None, None))
+        _RATE_LIMITED_UNTIL = 0.0
+        check("period bounds split calendar month and year",
+              _period_epochs("2026-11-15")[2] == "2026-11-15"
+              and _period_epochs("2026-11-15")[1]
+              <= _period_epochs("2026-11-15")[0])
+        check("period bounds fall back to today on garbage",
+              _period_epochs("not-a-date")[2]
+              == datetime.date.today().isoformat())
+
+        def _fake_list(method, path, token=None, params=None, timeout=15):
+            if path == "/api/v3/athlete":
+                return 200, {"id": 42, "firstname": "Sam", "lastname": "H"}
+            page = int((params or {}).get("page", 1))
+            if page > 1:
+                return 200, []
+            return 200, [
+                {"id": 7, "type": "Run", "distance": 5000,
+                 "start_date_local": "2026-11-01T07:00:00Z"},
+                {"id": 8, "type": "Ride", "distance": 20000,
+                 "start_date_local": "2026-11-01T08:00:00Z"},
+                {"id": 9, "type": "TrailRun", "distance": 12000,
+                 "start_date_local": "2026-11-02T07:00:00Z"},
+            ]
+        try:
+            globals()["_strava"] = _fake_list
+            m, y, ref = _run_month_year_totals("tok", "2026-11-15", 10, 3000)
+            check("sums include the stamped run, skip non-runs",
+                  m == 20.0 and y == 20.0 and ref == "2026-11-15")
+            m2, _, _ = _run_month_year_totals("tok", "2026-11-15", 7, 5000)
+            check("sums never double-count an already listed run",
+                  m2 == 17.0)
+            check("athlete name resolves",
+                  _athlete_name("tok") == (42, "Sam H"))
+        finally:
+            globals()["_strava"] = real_strava
+
+        def _fake_fail(method, path, token=None, params=None, timeout=15):
+            return 500, {}
+        try:
+            globals()["_strava"] = _fake_fail
+            m3, y3, ref3 = _run_month_year_totals(
+                "tok", "2026-11-15", 10, 3000)
+            check("failed listings degrade to unknown, never stale",
+                  (m3, y3) == (None, None) and ref3 == "2026-11-15")
+            check("athlete lookup fails closed",
+                  _athlete_name("tok") == ("", ""))
+        finally:
+            globals()["_strava"] = real_strava
+        calls = []
+        def _fake_strava(method, path, token=None, params=None, timeout=15):
+            calls.append((method, path))
+            if method == "PUT":
+                return 200, {}
+            return 200, {"description": "prior"}
+        try:
+            globals()["_strava"] = _fake_strava
+            ok, _ = _stamp_activity(
+                "tok-z", "1",
+                {"race": "TMM", "date": "2027-01-17"},
+                "4:00", 42.195, 42.0, 310.0,
+                act={"description": "prior", "type": "Run"})
+            check("stamp reuses pre-fetched activity (one PUT, no GET)",
+                  ok and calls == [("PUT", "/api/v3/activities/1")])
+        finally:
+            globals()["_strava"] = real_strava
+        check("429 notice dedupes",
+              _should_notify_429("selftest-429") is True
+              and _should_notify_429("selftest-429") is False)
+        with _RATE_LOCK:
+            _LAST_429_NOTICE.clear()
+        _RATE_LIMITED_UNTIL = 0.0
     finally:
         ATHLETES_DIR = real_dir
         import shutil
