@@ -11,10 +11,25 @@ Path to all-user access: self-upgrade to 10 athletes in [API settings](https://w
 - Official OAuth endpoint for sign-in; Compatible-with-Strava wording only.
 - Webhook-driven updates; no polling storms; `no-store` API responses.
 
+## Strava API settings — Application description (paste exactly)
+
+> Manual step for the owner (a repo edit does not update Strava settings):
+> open [API settings](https://www.strava.com/settings/api), replace the
+> Application description with the two sentences below, and save.
+
+```text
+mynextpr adds a countdown to your chosen race to the description of your Strava runs. Activity titles are never changed.
+```
+
+Checked against the final code: stamping writes the countdown block into the
+activity description only (`v6/server.py` + `v6/update_engine.py`); titles
+are never read or written (pinned by automated tests).
+
 ## Still needed from the owner
 
 1. Create the `support@mynextpr.com` mailbox.
-2. Redeploy to EC2.
+2. Paste the Application description above into Strava API settings and save.
+3. Redeploy to EC2.
 3. Screenshots of every screen showing Strava data plus the Connect button, and a short OAuth video.
 4. Submit the form, then send the email below to `developers@strava.com`.
 
@@ -33,7 +48,7 @@ Scopes requested: read, activity:read, activity:write. Webhook-driven, no pollin
 
 Callback domain: mynextpr.com. Redirect: https://mynextpr.com/exchange_token.
 
-Compliance: per-user display only, 7-day cache max, 48-hour deletion reflection, 30-day full delete, public privacy policy and support contact on site, official Connect buttons, no AI use, no aggregation or resale.
+Compliance: per-user display only, no activity content cached (stamped-ID dedup log pruned to 7 days), deletion completes promptly and always within 30 days, public privacy policy and support contact on site, official Connect buttons, no AI use, no aggregation or resale.
 
 Screenshots and OAuth video attached. Please advise next steps.
 
