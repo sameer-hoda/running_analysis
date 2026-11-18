@@ -1,14 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-B63L6BJZLY"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-B63L6BJZLY');
-</script>
+<!-- Analytics loads only after opt-in (v6/consent.js + privacy.html) -->
+<script src="consent.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>mynextpr — Privacy Policy</title>
@@ -45,6 +39,34 @@ nav a{margin-right:1rem}
 <li>We do not train AI models on your data, do not aggregate or anonymize it for analytics, do not sell or transfer it, and do not use it for advertising.</li>
 <li>Activity content is not cached at all. The only activity-derived record is a stamped-ID dedup log (IDs plus timestamps, no content), pruned to entries from the last 7 days on every write.</li>
 </ul>
+
+<h2>Analytics consent</h2>
+<p>Analytics is off until you opt in. Nothing is loaded or stored before you choose.</p>
+<p>Current choice: <strong id="ga-state">not set yet</strong></p>
+<p>
+  <button type="button" id="ga-accept">Accept analytics</button>
+  <button type="button" id="ga-reject">Reject analytics</button>
+</p>
+<p class="fine">Accept loads Google Analytics 4 (page views on mynextpr.com only, URL query and hash stripped). Reject loads nothing. Essential sign-in keeps working either way. You can return here to change your choice.</p>
+<script>
+(function () {
+  function paint() {
+    var el = document.getElementById("ga-state");
+    if (!el) return;
+    var s = (window.mnpConsent && window.mnpConsent.state()) || null;
+    el.textContent = s === "granted" ? "accepted" : s === "denied" ? "rejected" : "not set yet";
+  }
+  document.getElementById("ga-accept").addEventListener("click", function () {
+    window.mnpConsent.grant(); paint();
+  });
+  document.getElementById("ga-reject").addEventListener("click", function () {
+    window.mnpConsent.deny(); paint();
+  });
+  document.addEventListener("mnp:consent", paint);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", paint);
+  else paint();
+})();
+</script>
 
 <h2>Withdrawing consent</h2>
 <p>Pause updates any time on the <a href="manage.html">Manage</a> page. Disconnecting stops all future writes. You can also revoke access in your <a href="https://www.strava.com/settings/apps">Strava app settings</a> — revoking there deletes your data here automatically.</p>
