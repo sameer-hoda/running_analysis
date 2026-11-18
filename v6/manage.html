@@ -159,6 +159,11 @@
     padding:4px 12px; font-variant-numeric:tabular-nums;
   }
   .pill.on{background:var(--ink); color:var(--paper)}
+  .demotag{
+    display:inline-block; font-family:var(--font-mono); font-size:var(--text-mono-sm);
+    border:1px dashed var(--muted); border-radius:var(--radius-pill);
+    padding:4px 12px; color:var(--muted); margin-left:8px; vertical-align:middle;
+  }
   /* Dark preview panel: the one contrast moment */
   .preview{
     background:var(--panel); color:var(--on-panel);
@@ -195,7 +200,7 @@
   <h1><span class="n" id="bignum">8</span> days to race day.</h1>
   <p class="lede">Every finished run updates its Strava description. Nothing else to do here.</p>
 
-  <p class="statusline"><span class="dot" id="syncdot" aria-hidden="true"></span><span class="race" id="statusline">Delhi Half Marathon — 8 days to go — updates on</span></p>
+  <p class="statusline"><span class="dot" id="syncdot" aria-hidden="true"></span><span class="race" id="statusline">Example Harbor Half Marathon — demo preview — updates on</span></p>
 
   <div class="confirm" id="expiredbanner" hidden>
     <p role="alert">That race is finished — updates stopped on their own. Pick your next start line to restart the countdown.</p>
@@ -207,8 +212,8 @@
   <section aria-labelledby="h-race">
     <h2 id="h-race">Your race</h2>
     <div class="racerow">
-      <p class="name">Delhi Half Marathon</p>
-      <p class="meta">18 Oct 2026 · New Delhi · 8 days to go</p>
+      <p class="name">Example Harbor Half Marathon <span class="demotag" id="demotag">Demo preview</span></p>
+      <p class="meta">Example only — connect Strava to see your race</p>
       <p class="goal">Target (optional): sub-2</p>
       <p class="goal"><a href="picker.html">Change race →</a></p>
     </div>
@@ -270,7 +275,8 @@
 <script src="strava.js"></script>
 <script>
 "use strict";
-var RACE = "Delhi Half Marathon";
+var RACE = "Example Harbor Half Marathon";
+var demoMode = true; /* example data until the server returns a real race */
 var N = 8;
 var GOAL = "sub-2";
 var state = { paused: false, connected: true, expired: false };
@@ -294,6 +300,7 @@ function syncServer() {
       if (typeof s.days === "number" && s.days >= 0) { N = s.days; }
       if (s.goal) { GOAL = s.goal; }
       state.expired = !!s.expired;
+      demoMode = !s.race;
       var vs = document.getElementById("viewstrava");
       if (vs && s.athlete_id) {
         vs.href = "https://www.strava.com/athletes/" + encodeURIComponent(s.athlete_id);
@@ -321,6 +328,8 @@ function syncServer() {
 }
 
 function render() {
+  var dt = document.getElementById("demotag");
+  if (dt) dt.hidden = !demoMode;
   var expired = !!state.expired;
   var status = !state.connected ? "updates off"
     : expired ? "race finished — updates stopped"
