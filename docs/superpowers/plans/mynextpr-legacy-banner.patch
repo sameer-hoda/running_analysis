@@ -1,0 +1,22 @@
+diff --git a/README.md b/README.md
+index 3a84c47..516eecf 100644
+--- a/README.md
++++ b/README.md
+@@ -5,16 +5,12 @@
+ </p>
+ 
+ <p align="center">
+-  <strong>Live at <a href="https://mynextpr.com">mynextpr.com</a></strong> ·
++  <strong>RunForm (legacy)</strong> — a separate earlier project, not the site live at mynextpr.com ·
+   Upload one running photo, get an AI form score, zone-by-zone flaws with fixes,
+   your stride rebuilt in 3D, and a coach who walks you through it out loud.
+   Free, about two minutes.
+ </p>
+ 
+-<p align="center">
+-  <a href="https://mynextpr.com"><img src="https://img.shields.io/badge/View_Live_Site-mynextpr.com-c8f04a?style=for-the-badge&logo=google-chrome&logoColor=0e1206" alt="View live site — mynextpr.com"></a>
+-</p>
+-
+ <p align="center">
+   <img src="docs/readme_landing.png" alt="RunForm homepage" width="860">
+ </p>
