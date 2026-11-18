@@ -18,7 +18,7 @@ JSON API responses are `no-store`. Tokens are never logged, served, or exported.
 
 ## Per-athlete store
 
-One file per athlete: `v6/.athletes/{athlete_id}.json` (tokens, race, pause flag, stamped IDs). Callers resolve via the `mnp_athlete` cookie; a lone athlete is the fallback. The old single `.tokens.json` migrates itself on first read. Webhooks route by `owner_id`; the poller iterates all athletes every few minutes as backup. Activity content is never retained beyond the stamped-ID list.
+One file per athlete: `v6/.athletes/{athlete_id}.json` (tokens, race, pause flag, stamped IDs). Callers resolve via the `mnp_athlete` cookie; a lone athlete is the fallback. The old single `.tokens.json` migrates itself on first read. Webhooks route by `owner_id`; there is no scheduled scan — stamping is webhook-only since Nov 2026. Activity content is never retained beyond the stamped-ID list.
 
 ## Frontend pages
 

@@ -10,8 +10,9 @@ Live EC2 redeploy is the one remaining step (see bottom).
 - [x] Per-athlete token store — `server.py`: `.athletes/{id}.json`, cookie
   `mnp_athlete`, legacy `.tokens.json` auto-migrates on first read.
 - [x] Per-athlete isolation — status/pause/resume/stamp/export/delete resolve
-  the caller from the cookie; webhook routes by `owner_id`; poller iterates
-  all athletes; a foreign cookie sees `connected: false` (probed).
+  the caller from the cookie; webhook routes by `owner_id` (scheduled
+  polling removed Nov 2026 — stamping is webhook-only); a foreign cookie
+  sees `connected: false` (probed).
 - [x] Revocation handling — Strava athlete webhooks delete that athlete's file;
   Disconnect and `/api/delete-account` revoke remotely then wipe locally.
 - [x] Minimal scopes locked — `read, activity:read, activity:write` in
@@ -43,7 +44,7 @@ Live EC2 redeploy is the one remaining step (see bottom).
 - [x] Strict login cookie (post-review fix) — removed the lone-athlete
   fallback: no/wrong cookie resolves to nobody on status, export, pause,
   resume, stamp, disconnect, and delete-account (401s, no cross-athlete
-  reads or writes). Webhooks/poller still resolve server-side by owner_id.
+  reads or writes). Webhooks still resolve server-side by owner_id.
   Manage page handles 401s without false confirmations and shows a
   timestamped written deletion confirmation. Verified by seeded
   no-cookie/wrong-cookie/own-cookie probes locally and live.

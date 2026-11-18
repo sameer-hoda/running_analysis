@@ -326,8 +326,8 @@ def _resolve_athlete(handler):
     There is deliberately NO fallback: with a single athlete connected, a
     visitor without (or with a wrong) cookie must never resolve to that
     athlete — otherwise /api/status, /api/export, pause/resume/stamp and
-    even disconnect/delete would be open to anyone. Webhooks and the
-    poller don't use this function (they resolve server-side by owner_id).
+    even disconnect/delete would be open to anyone. Webhooks don't use
+    this function (they resolve server-side by owner_id).
     """
     return _cookie_athlete(handler.headers.get("Cookie", ""))
 
@@ -351,8 +351,8 @@ def _known_athlete(handler):
 # Rate-limit handling (see https://developers.strava.com/docs/rate-limits/):
 # read endpoints share 100 req/15min + 1000/day per app; 429s reset at the
 # next natural quarter hour (:00/:15/:30/:45). Every api/v3 call below goes
-# through the guard so a burst of webhooks + the poller backs off instead
-# of burning the daily quota. The token endpoint is exempt (auth, uncounted).
+# through the guard so a burst of webhooks backs off instead of burning
+# the daily quota. The token endpoint is exempt (auth, uncounted).
 _RATE_LOCK = threading.Lock()
 _RATE_LIMITED_UNTIL = 0.0
 _LAST_429_NOTICE = {}  # activity key -> timestamp of last 429 Telegram alert
@@ -1159,78 +1159,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self._json(200, {"ok": ok, "detail": detail})
 
 
-def _poller(interval_seconds=900):
-    """Catch-up pass for missed webhooks: every 15 minutes, stamp unseen runs.
-
-    Same guards as the webhook path (paused/disconnected = skip, non-runs
-    skipped, never double-stamps). The 15-minute cadence matches Strava's
-    rate-limit window; the loop also yields immediately while rate-limited
-    so backfill never burns the daily quota (see rate-limits doc).
-    """
-    while True:
-        time.sleep(interval_seconds)
-        try:
-            if _rate_limited():
-                continue
-            for athlete_id in list_athlete_ids():
-                try:
-                    state = load_athlete(athlete_id)
-                    token = (_fresh_token(state, athlete_id)
-                             if state.get("refresh_token") else "")
-                    if not token or state.get("paused"):
-                        continue
-                    race = (state.get("race", {})
-                            if isinstance(state.get("race"), dict) else {})
-                    if not race.get("race") or not race.get("date"):
-                        continue
-                    try:
-                        if engine.days_to_go(race["date"]) < 0:
-                            continue
-                    except ValueError:
-                        pass
-                    status, acts = _strava(
-                        "GET", "/api/v3/athlete/activities", token=token,
-                        params={"per_page": 5, "page": 1})
-                    if status != 200 or not isinstance(acts, list):
-                        continue
-                    seen = _stamped_ids(state)
-                    for act in acts:
-                        aid = act.get("id")
-                        if not aid or str(aid) in seen:
-                            continue
-                        if str(act.get("type", "")).lower() not in (
-                                "run", "trailrun", ""):
-                            continue
-                        run_date = (str(act.get("start_date_local") or "")[:10]
-                                    or None)
-                        month_km, year_km, ref = _run_month_year_totals(
-                            token, run_date, aid, act.get("distance"))
-                        ok, _ = _stamp_activity(
-                            token, aid, race, race.get("goal", ""),
-                            _race_dist_km(race.get("dist"), race.get("race")),
-                            month_km, year_km, today_iso=ref)
-                        if ok:
-                            state = load_athlete(athlete_id)
-                            _remember_stamped(athlete_id, state, aid)
-                            seen = _stamped_ids(state)
-                            _notify("✅ <b>Stamped (catch-up)</b> — %s\n"
-                                    "Activity %s · %s" % (
-                                        _esc(_who(athlete_id, state)),
-                                        _esc(aid),
-                                        _esc(_race_line(race))))
-                except Exception:
-                    continue
-        except Exception:
-            pass
-
-
 def main():
     missing = [k for k in ("STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET")
                if not ENV.get(k)]
     if missing:
         sys.stderr.write(f"mynextpr: .env missing {', '.join(missing)}\n")
-    poller = threading.Thread(target=_poller, daemon=True)
-    poller.start()
     server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print(f"mynextpr backend on http://localhost:{PORT} (serves v6/ + API)")
     try:
