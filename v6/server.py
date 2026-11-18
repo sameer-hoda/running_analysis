@@ -1037,6 +1037,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
             # Strava sends athlete events when access is revoked
             # (updates: {"authorized": "false"}). Athlete events have no
             # other cause, so any of them drops that athlete's data.
+            # Note: a stamp PUT already past its state read can still land
+            # once after this wipe; later writes are blocked (no state →
+            # "unknown athlete"). Single-write, non-corrupting window.
             updates = payload.get("updates", {})
             authorized = updates.get("authorized", "false")
             owner = payload.get("owner_id")
@@ -1090,7 +1093,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if _should_notify_429(f"webhook-{activity_id}"):
                 _notify("⏳ <b>Rate limited</b> — %s\nActivity %s: %s." %
                         (_esc(who), _esc(activity_id), _esc(detail)))
-            self._json(200, {"ok": False, "detail": detail})
+            # Non-2xx so Strava redelivers; no poller backstop remains.
+            self._json(429, {"ok": False, "detail": detail})
             return
         if not isinstance(act, dict):
             act = {}
@@ -1156,7 +1160,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
             else:
                 _notify("❌ <b>Stamp failed</b> — %s\nActivity %s: %s" %
                         (_esc(who), _esc(activity_id), _esc(detail)))
-        self._json(200, {"ok": ok, "detail": detail})
+        # Transient failures answer non-2xx so Strava redelivers (the poller
+        # backstop is gone); deliberate skips and permanent failures stay 200.
+        if ok:
+            retry_code = 200
+        elif "429" in str(detail):
+            retry_code = 429
+        elif "HTTP 5" in str(detail):
+            retry_code = 502
+        else:
+            retry_code = 200
+        self._json(retry_code, {"ok": ok, "detail": detail})
 
 
 def main():
