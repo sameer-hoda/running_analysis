@@ -279,8 +279,15 @@ try { state.connected = window.localStorage.getItem("mynextpr.connected") === "1
    server truth (real Strava tokens + the toggle below). When the backend
    is unreachable, the same controls fall back to local preview states. */
 var serverLive = false;
+function csrfToken() {
+  try {
+    var m = document.cookie.match(/(?:^|;\s*)mnp_csrf=([^;]*)/);
+    return m ? decodeURIComponent(m[1]) : "";
+  } catch (e) { return ""; }
+}
 function api(path, method) {
-  return fetch(path, {method: method || "GET", credentials: "same-origin"})
+  return fetch(path, {method: method || "GET", credentials: "same-origin",
+    headers: {"X-CSRF-Token": csrfToken()}})
     .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
     .catch(function () { return null; });
 }

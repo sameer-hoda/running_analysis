@@ -8,6 +8,20 @@
   function cfg() {
     return window.MYNEXTPR_STRAVA || {};
   }
+  function oauthState(state) {
+    var nonce = "";
+    try {
+      var m = document.cookie.match(/(?:^|;\s*)mnp_oauth=([^;]*)/);
+      nonce = m ? decodeURIComponent(m[1]) : "";
+    } catch (e) {}
+    var obj = null;
+    try { obj = JSON.parse(state); } catch (e) { obj = null; }
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+      obj = { next: state };
+    }
+    obj.nonce = nonce;
+    return JSON.stringify(obj);
+  }
   function authorizeUrl(state) {
     var c = cfg();
     var u = new URL("https://www.strava.com/oauth/authorize");
@@ -16,7 +30,7 @@
     u.searchParams.set("response_type", "code");
     u.searchParams.set("scope", c.scopes || "read,activity:read,activity:write");
     u.searchParams.set("approval_prompt", "auto");
-    if (state) u.searchParams.set("state", state);
+    if (state) u.searchParams.set("state", oauthState(state));
     return u.toString();
   }
   function ready() {

@@ -3,6 +3,7 @@
 v6/strava-config.js
 v6/.tokens.json
 v6/.athletes/
+v6/.sessions/
 *.pem
 __pycache__/
 *.pyc

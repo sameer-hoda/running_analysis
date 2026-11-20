@@ -30,6 +30,7 @@ import datetime
 import http.server
 import json
 import os
+import secrets
 import threading
 import time
 import urllib.parse
@@ -39,7 +40,10 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PORT = int(os.environ.get("PORT", "8123"))
 STATE_PATH = os.path.join(ROOT, ".tokens.json")  # legacy single-athlete file
 ATHLETES_DIR = os.path.join(ROOT, ".athletes")  # per-athlete files: {id}.json
-ATHLETE_COOKIE = "mnp_athlete"
+ATHLETE_COOKIE = "mnp_athlete"  # legacy: set once, never trusted
+SESSION_COOKIE = "mnp_session"
+SESSIONS_DIR = os.path.join(ROOT, ".sessions")  # session token -> athlete
+SESSION_TTL_S = 30 * 24 * 3600
 MINIMAL_SCOPES = ("read", "activity:read", "activity:write")
 
 CONTENT_TYPES = {
@@ -184,7 +188,180 @@ def save_athlete(athlete_id, patch):
             return {}
 
 
+def _token_hash(token):
+    import hashlib
+    return hashlib.sha256(str(token or "").encode()).hexdigest()
+
+
+def _write_private(path, data):
+    """Atomic write with explicit owner-only permissions (never inherited)."""
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        fd = os.open(path + ".tmp", os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+                     0o600)
+        with os.fdopen(fd, "w") as fh:
+            json.dump(data, fh)
+        os.replace(path + ".tmp", path)
+        return True
+    except OSError:
+        return False
+
+
+def _session_path(token):
+    import hashlib
+    safe = str(token or "")
+    if len(safe) != 43 or any(
+            ch not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+            for ch in safe):
+        return ""
+    return os.path.join(
+        SESSIONS_DIR, hashlib.sha256(safe.encode()).hexdigest() + ".json")
+
+
+def _create_session(athlete_id):
+    """Fresh opaque session for one verified login. Old ones die (rotation).
+
+    Only hashes touch disk: the raw token lives in the login Set-Cookie
+    and server memory, never in files, logs, or backups.
+    """
+    _clear_sessions(athlete_id)
+    token = secrets.token_urlsafe(32)
+    csrf = secrets.token_urlsafe(32)
+    now = time.time()
+    if not _write_private(_session_path(token),
+                          {"athlete_id": str(athlete_id), "created": now,
+                           "expires": now + SESSION_TTL_S,
+                           "csrf": _token_hash(csrf)}):
+        return "", ""
+    return token, csrf
+
+
+def _session_record(cookie_header):
+    """(athlete_id, csrf_hash) behind a live session token, else ("", "").
+
+    File-backed, so server restarts keep sessions; expiry is checked on
+    every request. The lookup key is the token hash: raw tokens never
+    touch disk.
+    """
+    token = ""
+    for part in str(cookie_header or "").split(";"):
+        name, _, value = part.partition("=")
+        if name.strip() == SESSION_COOKIE:
+            token = value.strip()
+            break
+    path = _session_path(token)
+    if not path:
+        return "", ""
+    try:
+        with open(path) as fh:
+            data = json.load(fh)
+    except (OSError, ValueError):
+        return "", ""
+    if not isinstance(data, dict) or data.get("expires", 0) < time.time():
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+        return "", ""
+    return str(data.get("athlete_id") or ""), str(data.get("csrf") or "")
+
+
+def _session_athlete(cookie_header):
+    aid, _ = _session_record(cookie_header)
+    return aid
+
+
+def _check_csrf(handler):
+    """One token per session: the page sends X-CSRF-Token, we compare hashes.
+
+    Missing/invalid Origin-independent check; SameSite=Lax + Secure
+    cookies remain the transport layer, not the proof.
+    """
+    aid, csrf_hash = _session_record(handler.headers.get("Cookie", ""))
+    if not aid or not csrf_hash:
+        return False
+    sent = handler.headers.get("X-CSRF-Token", "") or ""
+    if not sent:
+        try:
+            body = json.loads(handler._csrf_body or "{}")
+            sent = str(body.get("csrf") or "")
+        except (ValueError, AttributeError):
+            sent = ""
+    return bool(sent) and _token_hash(sent) == csrf_hash
+
+
+_OAUTH_SECRET = secrets.token_bytes(32)  # per-boot; pending logins only
+OAUTH_NONCE_TTL_S = 900
+
+
+def _issue_oauth_nonce():
+    import hashlib
+    import hmac
+    body = "%d.%s" % (int(time.time()), secrets.token_hex(8))
+    mac = hmac.new(_OAUTH_SECRET, body.encode(),
+                   hashlib.sha256).hexdigest()[:32]
+    return body + "." + mac
+
+
+_USED_NONCES = {}  # mac -> expiry; per-boot, pending logins only
+
+
+def _consume_oauth_nonce(nonce, cookie_nonce):
+    """Validate an OAuth nonce and burn it. Replays always fail.
+
+    Checks: HMAC over the timestamp with the per-boot secret, freshness,
+    and equality with the nonce cookie from the initiating browser. A
+    recorded mac can never be reused, so a captured callback URL is dead
+    after the first exchange. Restarting the server clears pending
+    nonces (in-flight logins simply start over).
+    """
+    import hashlib
+    import hmac
+    try:
+        ts, _, mac = str(nonce or "").split(".", 2)
+        body, _, _ = str(nonce or "").rpartition(".")
+        want = hmac.new(_OAUTH_SECRET, body.encode(),
+                        hashlib.sha256).hexdigest()[:32]
+        if not hmac.compare_digest(mac, want):
+            return False
+        if abs(time.time() - int(ts)) > OAUTH_NONCE_TTL_S:
+            return False
+    except (ValueError, TypeError):
+        return False
+    if not cookie_nonce or not hmac.compare_digest(str(cookie_nonce),
+                                                   str(nonce)):
+        return False
+    now = time.time()
+    for seen, expiry in [item for item in _USED_NONCES.items()
+                         if item[1] <= now]:
+        del _USED_NONCES[seen]
+    if mac in _USED_NONCES:
+        return False
+    _USED_NONCES[mac] = now + OAUTH_NONCE_TTL_S
+    return True
+
+
+def _clear_sessions(athlete_id):
+    """Drop every session belonging to one athlete (logout / revoke)."""
+    try:
+        names = os.listdir(SESSIONS_DIR)
+    except OSError:
+        return
+    for name in names:
+        if not name.endswith(".json"):
+            continue
+        full = os.path.join(SESSIONS_DIR, name)
+        try:
+            with open(full) as fh:
+                data = json.load(fh)
+            if isinstance(data, dict) and str(data.get("athlete_id")) == str(athlete_id):
+                os.remove(full)
+        except (OSError, ValueError):
+            pass
+
+
 def clear_athlete(athlete_id):
+    _clear_sessions(athlete_id)
     path = _athlete_path(athlete_id)
     if not path:
         return
@@ -312,6 +489,14 @@ def _notify(text):
     return True
 
 
+def _cookie_value(cookie_header, name):
+    for part in str(cookie_header or "").split(";"):
+        key, _, value = part.partition("=")
+        if key.strip() == name:
+            return value.strip()
+    return ""
+
+
 def _cookie_athlete(cookie_header):
     for part in str(cookie_header or "").split(";"):
         name, _, value = part.partition("=")
@@ -333,13 +518,15 @@ def _resolve_athlete(handler):
 
 
 def _known_athlete(handler):
-    """aid only when a real athlete record exists — never create one.
+    """aid only for a live server-side session — never from the public ID.
 
-    A well-formed cookie for an unknown athlete (or none at all) yields "",
-    so no route can read, mutate, or claim success on someone else's (or
+    Identity comes from mnp_session (opaque token mapped server-side to an
+    athlete at verified OAuth time). The legacy mnp_athlete ID cookie is
+    never trusted: public IDs are not proof, so a forged/known ID yields ""
+    and no route can read, mutate, or claim success on someone else's (or
     nobody's) data.
     """
-    aid = _resolve_athlete(handler)
+    aid = _session_athlete(handler.headers.get("Cookie", ""))
     if aid and load_athlete(aid).get("refresh_token"):
         return aid
     return ""
@@ -687,18 +874,30 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def _redirect(self, location, cookie=""):
         self.send_response(302)
         self.send_header("Location", location)
-        if cookie:
-            self.send_header("Set-Cookie", cookie)
+        cookies = [cookie] if isinstance(cookie, str) else list(cookie or [])
+        for value in cookies:
+            if value:
+                self.send_header("Set-Cookie", value)
         self.end_headers()
 
     @staticmethod
     def _athlete_cookie_value(athlete_id):
-        return (f"{ATHLETE_COOKIE}={athlete_id}; Path=/; Max-Age=31536000; "
-                "SameSite=Lax")
+        # Legacy name kept so old cookies get overwritten, never trusted.
+        return (f"{ATHLETE_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax")
+
+    @staticmethod
+    def _session_cookie_value(token):
+        return (f"{SESSION_COOKIE}={token}; Path=/; "
+                f"Max-Age={SESSION_TTL_S}; HttpOnly; Secure; SameSite=Lax")
+
+    @staticmethod
+    def _csrf_cookie_value(token):
+        return (f"mnp_csrf={token}; Path=/; "
+                f"Max-Age={SESSION_TTL_S}; Secure; SameSite=Lax")
 
     @staticmethod
     def _expired_athlete_cookie():
-        return f"{ATHLETE_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax"
+        return f"{SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax"
 
     # -- static ------------------------------------------------------------
     def _serve_static(self, path):
@@ -727,6 +926,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return
         self.send_response(200)
         self.send_header("Content-Type", ctype)
+        if ext == ".html":
+            self.send_header(
+                "Set-Cookie",
+                "mnp_oauth=%s; Path=/; Max-Age=%d; Secure; SameSite=Lax"
+                % (_issue_oauth_nonce(), OAUTH_NONCE_TTL_S))
         self.send_header("Content-Length", str(len(raw)))
         if ext == ".mp4":
             self.send_header("Accept-Ranges", "bytes")
@@ -748,10 +952,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
         else:
             self._serve_static(parsed.path)
 
+    def _csrf_ok(self):
+        if not _check_csrf(self):
+            self._json(403, {"ok": False, "detail": "bad csrf token"})
+            return False
+        return True
+
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         length = int(self.headers.get("Content-Length", "0") or 0)
         raw = self.rfile.read(length) if length else b""
+        self._csrf_body = raw
         try:
             payload = json.loads(raw.decode("utf-8") or "{}")
         except ValueError:
@@ -761,6 +972,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
                 return
+            if not self._csrf_ok():
+                return
             save_athlete(aid, {"paused": True})
             self._json(200, {"paused": True})
         elif parsed.path == "/api/resume":
@@ -768,12 +981,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
                 return
+            if not self._csrf_ok():
+                return
             save_athlete(aid, {"paused": False})
             self._json(200, {"paused": False})
         elif parsed.path == "/api/disconnect":
             aid = _known_athlete(self)
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
+                return
+            if not self._csrf_ok():
                 return
             label = _who(aid, load_athlete(aid))
             _revoke_and_clear(aid)
@@ -791,6 +1008,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             aid = _known_athlete(self)
             if not aid:
                 self._json(401, {"ok": False, "detail": "not connected"})
+                return
+            if not self._csrf_ok():
                 return
             label = _who(aid, load_athlete(aid))
             _revoke_and_clear(aid)
@@ -840,14 +1059,18 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._send(502, "Token exchange failed. The code may have expired — connect again.",
                         "text/plain; charset=utf-8")
             return
-        race = {}
         raw_state = (query.get("state") or [""])[0]
         try:
             parsed_state = json.loads(raw_state) if raw_state else {}
-            if isinstance(parsed_state, dict) and parsed_state.get("race"):
-                race = parsed_state
         except ValueError:
-            pass
+            parsed_state = {}
+        if not isinstance(parsed_state, dict) or not _consume_oauth_nonce(
+                parsed_state.get("nonce"),
+                _cookie_value(self.headers.get("Cookie", ""), "mnp_oauth")):
+            self._send(400, "Sign-in expired or tampered — start again from the site.",
+                        "text/plain; charset=utf-8")
+            return
+        race = parsed_state if parsed_state.get("race") else {}
         athlete_id = (body.get("athlete") or {}).get("id", "")
         if not athlete_id:
             me_status, me = _strava(
@@ -863,14 +1086,24 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if not isinstance(profile, dict):
             profile = {}
         firstname = str(profile.get("firstname") or "")
-        save_athlete(str(athlete_id), {
+        patch = {
             "access_token": body.get("access_token", ""),
             "refresh_token": body.get("refresh_token", ""),
             "expires_at": body.get("expires_at", 0),
             "athlete_id": athlete_id,
-            "race": race,
-            "paused": False,
-        })
+        }
+        if race:
+            # Fresh race choice from picker/connect: adopt it, unpause.
+            patch["race"] = race
+            patch["paused"] = False
+        elif not load_athlete(str(athlete_id)):
+            # Brand-new record with no race yet: sane defaults only.
+            patch["race"] = {}
+            patch["paused"] = False
+        # Otherwise (reconnect with no race in state): tokens refresh but
+        # the stored race, goal, paused flag and stamping history are left
+        # exactly as they were.
+        save_athlete(str(athlete_id), patch)
         if firstname:
             save_athlete(str(athlete_id), {"firstname": firstname})
         goal = str(race.get("goal") or "")
@@ -884,8 +1117,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     ("🎯 Goal %s · %s" % (_esc(goal), _esc(str(race.get("dist") or ""))))
                     if goal else "🎯 No goal time — countdown only",
                     _esc(athlete_id)))
+        session, csrf = _create_session(str(athlete_id))
+        if not session:
+            self._send(500, "Could not start a session — try again.",
+                        "text/plain; charset=utf-8")
+            return
         self._redirect("/manage.html?connected=1",
-                       self._athlete_cookie_value(athlete_id))
+                       [self._session_cookie_value(session),
+                        self._csrf_cookie_value(csrf),
+                        self._athlete_cookie_value(athlete_id)])
 
     # -- status / stamp / subscribe -------------------------------------------
     def _handle_status(self):
@@ -963,6 +1203,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         token = _fresh_token(state, aid) if state.get("refresh_token") else ""
         if not token:
             self._json(401, {"ok": False, "detail": "not connected"})
+            return
+        if not dry and not self._csrf_ok():
             return
         if state.get("paused"):
             self._json(200, {"ok": False, "detail": "paused"})
